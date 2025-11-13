@@ -1,6 +1,6 @@
 # 🇮🇩 **SEA App — ai-demo-SEA**
 
-**SEA App — ai-demo-SEA** adalah demo multi-bagian untuk **Student Engagement Assistant (SEA)** yang menampilkan alur pembelajaran berbasis AI.
+**SEA App — ai-demo-SEA** adalah demo multi-bagian untuk **Smart Education Assistant (SEA)** yang menampilkan alur pembelajaran berbasis AI.
 Sistem ini terdiri dari:
 
 * **backend/** — API Laravel 11 (MySQL/SQLite) + Gemini proxy
@@ -243,7 +243,7 @@ Seeder dapat dijalankan dari folder `backend/`.
 
 # 🇬🇧 **SEA App — ai-demo-SEA (English Version)**
 
-A multi-part demonstration project for the **Student Engagement Assistant (SEA)**, showcasing an AI-powered learning workflow across:
+A multi-part demonstration project for the **Smart Education Assistant (SEA)**, showcasing an AI-powered learning workflow across:
 
 * **backend/** — Laravel 11 API (MySQL/SQLite) + Gemini proxy
 * **sea_app/** — Flutter client for desktop/mobile
