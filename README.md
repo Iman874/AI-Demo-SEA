@@ -1,6 +1,6 @@
-# 🇮🇩 **Flow App — ai-demo-SEA**
+# 🇮🇩 **SEA App — ai-demo-SEA**
 
-**Flow App — ai-demo-SEA** adalah demo multi-bagian untuk **Student Engagement Assistant (SEA)** yang menampilkan alur pembelajaran berbasis AI.
+**SEA App — ai-demo-SEA** adalah demo multi-bagian untuk **Student Engagement Assistant (SEA)** yang menampilkan alur pembelajaran berbasis AI.
 Sistem ini terdiri dari:
 
 * **backend/** — API Laravel 11 (MySQL/SQLite) + Gemini proxy
@@ -233,7 +233,7 @@ Seeder dapat dijalankan dari folder `backend/`.
 
 ## 📝 Attribution
 
-* Flow App — ai-demo-SEA
+* SEA App — ai-demo-SEA
 * Developed by: **Rosul Iman**
 * Advisor: **Prof. Dr. Muhammad Anwar, S.Pd., M.T.**
 
@@ -241,7 +241,7 @@ Seeder dapat dijalankan dari folder `backend/`.
 
 ---
 
-# 🇬🇧 **Flow App — ai-demo-SEA (English Version)**
+# 🇬🇧 **SEA App — ai-demo-SEA (English Version)**
 
 A multi-part demonstration project for the **Student Engagement Assistant (SEA)**, showcasing an AI-powered learning workflow across:
 
@@ -394,6 +394,6 @@ Includes:
 
 ## 📝 Attribution
 
-* Flow App — ai-demo-SEA
+* SEA App — ai-demo-SEA
 * Developed by **Rosul Iman**
 * Advisor: **Prof. Dr. Muhammad Anwar, S.Pd., M.T.**
