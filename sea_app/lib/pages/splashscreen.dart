@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 // import halaman choice user
 import 'page_choice_user.dart';
+import 'connection_config_page.dart';
+import '../services/api_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,10 +27,23 @@ class SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      _controller.reverse().then((_) {
+    Future.delayed(const Duration(milliseconds: 1500), () async {
+      _controller.reverse().then((_) async {
+        if (!mounted) return;
+        // Always show connection configuration after splash
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => ChoiceUserPage()),
+          MaterialPageRoute(
+            builder: (_) => ConnectionConfigPage(
+              onConfigured: () async {
+                // Optional: quick connectivity check
+                await ApiService.checkConnection();
+                if (!mounted) return;
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => ChoiceUserPage()),
+                );
+              },
+            ),
+          ),
         );
       });
     });

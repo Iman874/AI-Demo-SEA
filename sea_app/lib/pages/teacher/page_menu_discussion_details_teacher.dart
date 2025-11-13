@@ -118,16 +118,13 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
         }
       }
 
-      if (_summaries.isNotEmpty) {
-        final first = _summaries.first;
-        final uResp = await ApiService.getDiscussionUnderstandings(summaryId: first.id);
-        if (uResp.statusCode == 200) {
-          final ub = jsonDecode(uResp.body);
-          final items = (ub['data'] as List<dynamic>?) ?? [];
-          _understandings = items.map((e) => ResultUnderstanding.fromJson(e as Map<String, dynamic>)).toList();
-          // compute stats immediately after loading
-          _computeUnderstandingStats();
-        }
+      // Fetch understanding results aggregated for the whole discussion (across all chatrooms)
+      final uResp = await ApiService.getDiscussionUnderstandings(discussionId: widget.discussionId);
+      if (uResp.statusCode == 200) {
+        final ub = jsonDecode(uResp.body);
+        final items = (ub['data'] as List<dynamic>?) ?? [];
+        _understandings = items.map((e) => ResultUnderstanding.fromJson(e as Map<String, dynamic>)).toList();
+        _computeUnderstandingStats();
       }
 
       // try resolve class name from classes endpoint if fkIdClass available

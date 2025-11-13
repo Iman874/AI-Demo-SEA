@@ -292,10 +292,13 @@ class QuizController extends Controller
             foreach ($questions as $q) {
                 $choices = [];
                 if (Schema::hasTable('question_answer_choices')) {
+                        // Only return the base choices for the question, not per-result rows
                         $joins = DB::table('question_answer_choices')
                             ->where('fk_id_question', $q->id_question)
+                            ->whereNull('fk_id_resultquiz')
                             ->join('answer_choices', 'answer_choices.id_answerchoice', '=', 'question_answer_choices.fk_id_answerchoice')
                             ->select('answer_choices.id_answerchoice as id', 'answer_choices.content')
+                            ->distinct()
                             ->get();
                         foreach ($joins as $c) {
                             // NOTE: do NOT include is_correct here to prevent leaking answers to clients
@@ -345,9 +348,11 @@ class QuizController extends Controller
                 if (count($questionIds) > 0) {
                     $corrects = DB::table('question_answer_choices')
                         ->where('question_answer_choices.is_correct', 1)
+                        ->whereNull('question_answer_choices.fk_id_resultquiz')
                         ->join('answer_choices', 'answer_choices.id_answerchoice', '=', 'question_answer_choices.fk_id_answerchoice')
                         ->select('question_answer_choices.fk_id_question as question_id', 'answer_choices.id_answerchoice as choice_id')
                         ->whereIn('question_answer_choices.fk_id_question', $questionIds)
+                        ->distinct()
                         ->get();
                     foreach ($corrects as $c) {
                         $correctMap[(string)$c->question_id] = (string)$c->choice_id;

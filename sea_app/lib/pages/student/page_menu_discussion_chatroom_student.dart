@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../../services/api_service.dart';
 
 // import models
 // use AuthProvider to get current user instead of local dummy
@@ -11,11 +11,11 @@ import '../../models/summary_discussion.dart';
 import '../../models/discussion_room.dart';
 
 // import utils
-import '../../services/api_service.dart';
 
 // import components
 import '../../component/window/window_add_summary.dart';
-import '../../controller/controller_message_ai.dart';
+// Controller deprecated; use ApiService.studentChat
+import '../../controller/controller_message_ai.dart'; // DEPRECATED retained for migration; will remove later
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 
@@ -111,10 +111,9 @@ class _DiscussionPageChatRoomStudentState
 
   Future<void> _loadPersistedMessages() async {
     try {
-      final uri = Uri.parse('http://127.0.0.1:8000/api/discussion/messages?chatroom_id=${chatRoom.id}');
-      final resp = await http.get(uri);
-      if (resp.statusCode == 200) {
-        final decoded = resp.body.isNotEmpty ? jsonDecode(resp.body) as Map<String, dynamic> : <String, dynamic>{};
+      final rawResp = await ApiService.getDiscussionMessages(chatroomId: chatRoom.id);
+      if (rawResp.statusCode == 200) {
+        final decoded = rawResp.body.isNotEmpty ? jsonDecode(rawResp.body) as Map<String, dynamic> : <String, dynamic>{};
         final list = (decoded['data'] as List<dynamic>?) ?? [];
         final persisted = list.map((m) {
           return MessageModel(
@@ -151,8 +150,7 @@ class _DiscussionPageChatRoomStudentState
 
   Future<void> _loadPersistedSummaries() async {
     try {
-      final uri = Uri.parse('http://127.0.0.1:8000/api/discussion/summaries?chatroom_id=${chatRoom.id}');
-      final resp = await http.get(uri);
+      final resp = await ApiService.getDiscussionSummariesDb(chatroomId: chatRoom.id);
       if (resp.statusCode == 200) {
         final decoded = resp.body.isNotEmpty ? jsonDecode(resp.body) as Map<String, dynamic> : <String, dynamic>{};
         final list = (decoded['data'] as List<dynamic>?) ?? [];
@@ -163,20 +161,51 @@ class _DiscussionPageChatRoomStudentState
         summaries = persisted;
         if (!mounted) return;
         setState(() {});
-        if (currentSummary != null && understandingResult == null) {
-          final result = await checkUnderstanding(
-            messages: messages,
-            materials: materials,
-            summary: currentSummary?.content ?? '',
-          );
-          if (!mounted) return;
-          setState(() {
-            understandingResult = result;
-          });
+        // Ensure we have an understanding for the current summary without recomputing unnecessarily
+        if (currentSummary != null) {
+          await _ensureUnderstandingForCurrentSummary();
         }
       }
     } catch (e) {
       // ignore
+    }
+  }
+
+  Future<void> _ensureUnderstandingForCurrentSummary() async {
+    final sum = currentSummary;
+    if (sum == null) return;
+    // If UI already has a result, trust it
+    if (understandingResult != null && understandingResult!.trim().isNotEmpty) return;
+
+    try {
+      // 1) Try get stored understanding from backend
+  final resp = await ApiService.getDiscussionUnderstandings(summaryId: sum.id);
+      if (resp.statusCode == 200) {
+        final decoded = resp.body.isNotEmpty ? jsonDecode(resp.body) as Map<String, dynamic> : <String, dynamic>{};
+        final list = (decoded['data'] as List<dynamic>?) ?? [];
+        if (list.isNotEmpty) {
+          final first = list.first as Map<String, dynamic>;
+          final type = (first['type'] ?? '').toString();
+          if (type.isNotEmpty) {
+            if (!mounted) return;
+            setState(() { understandingResult = type; });
+            return; // done
+          }
+        }
+      }
+
+      // 2) Not found -> compute once and persist by passing ids
+      final result = await checkUnderstanding(
+        messages: messages,
+        materials: materials,
+        summary: sum.content,
+        chatroomId: chatRoom.id,
+  summaryId: sum.id,
+      );
+      if (!mounted) return;
+      setState(() { understandingResult = result; });
+    } catch (_) {
+      // silent fail; UI stays as-is
     }
   }
 
@@ -233,16 +262,9 @@ class _DiscussionPageChatRoomStudentState
                   setState(() {});
                   // if summary now exists for this user, auto-run understanding and persist
                   if (currentSummary != null) {
-                    // call understanding API
                     if (!mounted) return;
                     setState(() { understandingResult = null; });
-                    final result = await checkUnderstanding(
-                      messages: messages,
-                      materials: materials,
-                      summary: currentSummary?.content ?? '',
-                    );
-                    if (!mounted) return;
-                    setState(() { understandingResult = result; });
+                    await _ensureUnderstandingForCurrentSummary();
                   }
                 },
                 child: Text(currentSummary == null ? "Add Summary" : "Edit Summary"),

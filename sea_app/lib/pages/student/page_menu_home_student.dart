@@ -18,6 +18,10 @@ import '../page_guide.dart';
 import '../../theme/dark_theme.dart';
 import '../../component/window/window_join_class.dart';
 import '../../component/window/window_message.dart';
+import 'page_menu_discussion_detail_student.dart';
+import 'page_menu_quiz_result_student.dart';
+import '../../models/question.dart';
+import '../../models/answer_question.dart';
 
 class MenuHomeStudent extends StatefulWidget {
   const MenuHomeStudent({super.key});
@@ -229,6 +233,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
   final classes = (auth.token != null) ? _classes : <ClassModel>[];
   // Quizzes loaded from server
   final quizzes = _activeQuizzes;
+  final recentQuizzes = _completedQuizzes; // treat completed as recent for home display
   // Only show discussions that are open and have an AI chatroom active
   final discussions = _discussions.where((d) => d.status == "open" && d.chatroomActive == true).toList();
 
@@ -367,6 +372,95 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
             ),
             CardQuizList(quizzes: quizzes, onViewResult: (quiz) {}),
 
+            if (recentQuizzes.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
+                child: Text(
+                  "Recent Quizzes",
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              CardQuizList(
+                quizzes: recentQuizzes,
+                onViewResult: (quiz) async {
+                  final navigator = Navigator.of(context);
+                  final auth = Provider.of<AuthProvider>(context, listen: false);
+                  final token = auth.token;
+                  try {
+                    final detailResp = await ApiService.getQuizResultDetails(userId: auth.user?.id ?? '', quizId: quiz.idQuiz, token: token);
+                    if (detailResp.statusCode == 200) {
+                      final body = jsonDecode(detailResp.body);
+                      final data = body['data'] ?? {};
+                      final perQ = (data['per_question'] as List<dynamic>?) ?? [];
+                      final summary = data['summary'] ?? data;
+
+                      // fetch questions to obtain choices content
+                      final qResp = await ApiService.getQuizQuestions(quizId: quiz.idQuiz);
+                      List<dynamic> qItems = [];
+                      if (qResp.statusCode == 200) {
+                        final qb = jsonDecode(qResp.body);
+                        qItems = (qb['data'] as List<dynamic>?) ?? [];
+                      }
+
+                      // build Question objects similar to quiz menu page
+                      final questions = qItems.map((e) {
+                        final choices = (e['choices'] as List<dynamic>?)?.map((c) => AnswerQuestion(
+                              idAnswerChoice: (c['id'] ?? '').toString(),
+                              content: (c['content'] ?? '').toString(),
+                              isCorrect: false,
+                              createAt: DateTime.now(),
+                              updateAt: DateTime.now(),
+                            )).toList() ?? [];
+                        return Question(
+                          idQuestion: (e['id_question'] ?? '').toString(),
+                          number: (e['number'] ?? 0) as int,
+                          question: (e['question_text'] ?? '').toString(),
+                          poin: (e['point'] ?? 0) as int,
+                          fkIdQuiz: quiz.idQuiz,
+                          fkIdMaterial: e['fk_id_material']?.toString(),
+                          answerChoices: choices,
+                          createAt: DateTime.now(),
+                          updateAt: DateTime.now(),
+                        );
+                      }).toList();
+
+                      final answers = <String, String>{};
+                      for (var pq in perQ) {
+                        final qid = (pq['question_id'] ?? '').toString();
+                        final sel = (pq['selected_choice_id'] ?? '')?.toString() ?? '';
+                        if (qid.isNotEmpty && sel.isNotEmpty) answers[qid] = sel;
+                      }
+
+                      final score = (summary['score'] is int) ? summary['score'] as int : int.tryParse((summary['score'] ?? '').toString()) ?? 0;
+
+                      if (!mounted) return;
+                      await navigator.push(MaterialPageRoute(builder: (_) => PageMenuQuizResultStudent(
+                        questions: questions,
+                        answers: answers,
+                        score: score,
+                        perQuestion: perQ,
+                      )));
+                    } else {
+                      if (!mounted) return;
+                      await showDialog(context: navigator.context, builder: (_) => AlertDialog(
+                        title: const Text('Error'),
+                        content: Text('Could not load quiz result (status ${detailResp.statusCode})'),
+                        actions: [TextButton(onPressed: () => Navigator.of(navigator.context).pop(), child: const Text('OK'))],
+                      ));
+                    }
+                  } catch (e) {
+                    if (!mounted) return;
+                    await showDialog(context: navigator.context, builder: (_) => AlertDialog(
+                      title: const Text('Error'),
+                      content: Text(e.toString()),
+                      actions: [TextButton(onPressed: () => Navigator.of(navigator.context).pop(), child: const Text('OK'))],
+                    ));
+                  }
+                },
+                buttonLabel: "View Quiz Results",
+              ),
+            ],
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
               child: Text(
@@ -374,7 +468,13 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-            CardDiscussionList(discussions: discussions, onViewDetails: (discussion) {}),
+            CardDiscussionList(
+              discussions: discussions,
+              onViewDetails: (discussion) async {
+                await Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiscussionDetailStudentPage(discussion: discussion)));
+              },
+              buttonLabel: "Join Discussion",
+            ),
             const SizedBox(height: 24),
           ],
         ),

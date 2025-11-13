@@ -1,13 +1,7 @@
-// ignore_for_file: unused_import
-
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+// This window now uses ApiService for network calls. Direct HTTP removed.
 import 'package:flutter/material.dart';
 import '../../models/summary_discussion.dart';
-import '../../models/user.dart';
-import '../../models/chat_room_ai.dart';
-
-const String _apiSubmitSummary = 'http://127.0.0.1:8000/api/discussion/submit_summary';
+import '../../services/api_service.dart';
 
 class WindowAddSummary extends StatefulWidget {
   final List<SummaryDiscussion> summaries;
@@ -53,14 +47,10 @@ class _WindowAddSummaryState extends State<WindowAddSummary> {
 
       // call backend to persist summary and mark completion
       try {
-        final resp = await http.post(
-          Uri.parse(_apiSubmitSummary),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'chatroom_id': widget.chatRoomId,
-            'user_id': widget.userId,
-            'content': _controller.text.trim(),
-          }),
+        final resp = await ApiService.submitDiscussionSummary(
+          chatroomId: widget.chatRoomId,
+          userId: widget.userId,
+          content: _controller.text.trim(),
         );
         if (resp.statusCode == 200) {
           if (!mounted) return;

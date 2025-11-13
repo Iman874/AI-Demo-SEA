@@ -1,50 +1,165 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../../component/card/card_material.dart';
 import '../../component/card/card_question.dart';
 import '../../models/quiz.dart';
 import '../../models/material.dart';
 import '../../models/question.dart';
+import '../../services/api_service.dart';
 
-class PageMenuQuizResultTeacher extends StatelessWidget {
-  const PageMenuQuizResultTeacher({super.key});
+class PageMenuQuizResultTeacher extends StatefulWidget {
+  final String quizId;
+  final String title;
+  final String? classId;
+  const PageMenuQuizResultTeacher({super.key, required this.quizId, required this.title, this.classId});
+
+  @override
+  State<PageMenuQuizResultTeacher> createState() => _PageMenuQuizResultTeacherState();
+}
+
+class _PageMenuQuizResultTeacherState extends State<PageMenuQuizResultTeacher> {
+  bool _loading = true;
+  String? _error;
+  int _duration = 0; // minutes
+  List<MaterialPdf> _materials = [];
+  List<Question> _questions = [];
+  List<Map<String, String>> _answers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAll();
+  }
+
+  String _formatDuration(int minutes) {
+    if (minutes <= 0) return '—';
+    final h = minutes ~/ 60;
+    final m = minutes % 60;
+    if (h > 0 && m > 0) return '${h} Hour ${m} Minute';
+    if (h > 0) return h == 1 ? '1 Hour' : '${h} Hours';
+    return '${m} Minute';
+  }
+
+  Future<void> _loadAll() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      // 1) Quiz info for duration
+      try {
+        final qResp = await ApiService.getQuizzes();
+        if (qResp.statusCode == 200) {
+          final body = jsonDecode(qResp.body);
+          final items = (body['data'] as List<dynamic>?) ?? [];
+          for (var e in items) {
+            final id = (e['id_quiz'] ?? e['id'] ?? '').toString();
+            if (id == widget.quizId) {
+              final dur = (e['duration'] is int) ? e['duration'] as int : int.tryParse(e['duration']?.toString() ?? '') ?? 0;
+              _duration = dur;
+              break;
+            }
+          }
+        }
+      } catch (_) {}
+
+      // 2) Materials for this quiz
+      try {
+        final mResp = await ApiService.getMaterials(quizId: widget.quizId);
+        if (mResp.statusCode == 200) {
+          final body = jsonDecode(mResp.body);
+          final items = (body['data'] as List<dynamic>?) ?? [];
+          _materials = items.map((e) => MaterialPdfJson.fromJson(Map<String, dynamic>.from(e))).toList();
+        }
+      } catch (_) {}
+
+      // 3) Questions for this quiz
+      try {
+        final qq = await ApiService.getQuizQuestions(quizId: widget.quizId);
+        if (qq.statusCode == 200) {
+          final qb = jsonDecode(qq.body);
+          final qItems = (qb['data'] as List<dynamic>?) ?? [];
+          _questions = qItems.map((e) => Question(
+            idQuestion: (e['id_question'] ?? '').toString(),
+            number: (e['number'] ?? 0) as int,
+            question: (e['question_text'] ?? '').toString(),
+            poin: (e['point'] ?? 0) as int,
+            fkIdQuiz: widget.quizId,
+            fkIdMaterial: e['fk_id_material']?.toString(),
+            answerChoices: const [],
+            createAt: DateTime.now(),
+            updateAt: DateTime.now(),
+          )).toList();
+        }
+      } catch (_) {}
+
+      // 4) Results for this quiz (teacher-wide)
+      Map<String, String> nameById = {};
+      if (widget.classId != null && widget.classId!.isNotEmpty) {
+        try {
+          final cm = await ApiService.getClassMembers(classId: widget.classId!);
+          if (cm.statusCode == 200) {
+            final body = jsonDecode(cm.body);
+            final items = (body['data'] as List<dynamic>?) ?? [];
+            for (var u in items) {
+              final id = (u['id_user'] ?? u['id'] ?? '').toString();
+              final nm = (u['name'] ?? '').toString();
+              if (id.isNotEmpty) nameById[id] = nm;
+            }
+          }
+        } catch (_) {}
+      }
+
+      try {
+        final rResp = await ApiService.getQuizResults(quizId: widget.quizId);
+        if (rResp.statusCode == 200) {
+          final body = jsonDecode(rResp.body);
+          final rows = (body['data'] as List<dynamic>?) ?? [];
+          _answers = rows.map((r) {
+            final uid = (r['fk_id_user'] ?? r['user_id'] ?? '').toString();
+            final nm = nameById[uid] ?? 'User $uid';
+            return {
+              'name': nm,
+              'user_id': uid,
+            };
+          }).toList();
+        }
+      } catch (_) {}
+
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      if (mounted) setState(() { _loading = false; });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Dummy data
-    final quiz = sampleQuizzes.first;
-  final materials = <MaterialPdf>[];
-    final questions = [
-      Question(
-        idQuestion: "q1",
-        number: 1,
-        question: "What is integral?",
-        poin: 10,
-        fkIdQuiz: quiz.idQuiz,
-        fkIdMaterial: "m1",
-        answerChoices: [],
-        createAt: DateTime.now(),
-        updateAt: DateTime.now(),
-      ),
-      Question(
-        idQuestion: "q2",
-        number: 2,
-        question: "Explain Newton's law.",
-        poin: 10,
-        fkIdQuiz: quiz.idQuiz,
-        fkIdMaterial: "m2",
-        answerChoices: [],
-        createAt: DateTime.now(),
-        updateAt: DateTime.now(),
-      ),
-    ];
-    final answers = [
-      {"name": "Tulusna", "answer": "Integral adalah ..."},
-      {"name": "Hafiz Priyadi", "answer": "Newton's law ..."},
-    ];
+    if (_loading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Quiz - View Results")),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Quiz - View Results")),
+        body: Center(child: Text('Error: $_error')),
+      );
+    }
+    final quiz = Quiz(
+      idQuiz: widget.quizId,
+      title: widget.title,
+      duration: _duration,
+      createBy: '',
+      createAt: DateTime.now(),
+      updateAt: DateTime.now(),
+    );
+
+    final materials = _materials;
+    final questions = _questions;
+    final answers = _answers;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Halaman Quiz - Lihat Hasil"),
+        title: const Text("Quiz - View Results"),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
       ),
@@ -78,8 +193,8 @@ class PageMenuQuizResultTeacher extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _infoRow("Quiz Title", quiz.title),
-                    _infoRow("Quiz Duration", "1 Hour 30 Minute"),
-                    _infoRow("Number of Questions", "50 Questions"),
+                    _infoRow("Quiz Duration", _formatDuration(_duration)),
+                    _infoRow("Number of Questions", "${questions.length} Questions"),
                   ],
                 ),
               ),

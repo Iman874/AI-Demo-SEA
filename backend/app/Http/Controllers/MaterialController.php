@@ -20,12 +20,36 @@ class MaterialController extends Controller
         // Only apply filters if the underlying columns exist (migrations might not have been run)
         if ($quizId && Schema::hasColumn('material_quiz', 'fk_id_quiz')) {
             $query->where('fk_id_quiz', $quizId);
+
+            // Also include materials referenced by questions for this quiz (in case materials were linked only via questions)
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('questions') &&
+                    \Illuminate\Support\Facades\Schema::hasColumn('questions', 'fk_id_quiz') &&
+                    \Illuminate\Support\Facades\Schema::hasColumn('questions', 'fk_id_material')) {
+                    $idsViaQuestions = \Illuminate\Support\Facades\DB::table('questions')
+                        ->where('fk_id_quiz', $quizId)
+                        ->whereNotNull('fk_id_material')
+                        ->pluck('fk_id_material')
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all();
+                    if (!empty($idsViaQuestions)) {
+                        $query->orWhereIn('id_material', $idsViaQuestions);
+                    }
+                }
+            } catch (\Throwable $_) {
+                // ignore optional enrichment errors
+            }
         }
         if ($discussionId && Schema::hasColumn('material_quiz', 'fk_id_discussionroom')) {
             $query->where('fk_id_discussionroom', $discussionId);
         }
 
         $items = $query->orderBy('created_at', 'desc')->get();
+
+        // ensure unique materials if multiple conditions matched (e.g., both fk_id_quiz and via questions)
+        $items = $items->unique('id_material')->values();
 
         $data = $items->map(function ($m) {
             return [

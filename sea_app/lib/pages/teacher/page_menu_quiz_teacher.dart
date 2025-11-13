@@ -19,38 +19,52 @@ class PageMenuQuizTeacher extends StatefulWidget {
 
 class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
   String? selectedClassId;
+  String? selectedQuizId; // track which quiz's materials are shown
 
   @override
   void initState() {
     super.initState();
     // Load classes from backend
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final prov = Provider.of<QuizProvider>(context, listen: false);
-      prov.loadClasses().then((ok) {
-        if (ok && prov.classes.isNotEmpty) {
-          setState(() {
-            selectedClassId = prov.classes.first['id_class'].toString();
-          });
-          // Load quizzes for the selected class
-          prov.loadQuizzes(classId: prov.classes.first['id_class'].toString());
+      final ok = await prov.loadClasses();
+      if (ok && prov.classes.isNotEmpty) {
+        selectedClassId = prov.classes.first['id_class'].toString();
+        await prov.loadQuizzes(classId: selectedClassId);
+        // After quizzes load, auto-select first quiz and fetch its materials
+        if (prov.quizzes.isNotEmpty) {
+          selectedQuizId = prov.quizzes.first['id_quiz']?.toString() ?? prov.quizzes.first['id']?.toString();
+          await prov.loadMaterials(quizId: selectedQuizId);
+        } else {
+          // No quizzes → clear materials list
+          await prov.loadMaterials();
         }
-      });
+        if (mounted) setState(() {});
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-  final prov = Provider.of<QuizProvider>(context);
-  final classes = prov.classes;
-  final quizzes = prov.quizzes;
-  // if selected class changed, ensure quizzes are loaded for that class
-  void ensureQuizzesForClass(String? classId) {
-    if (classId != null) {
-      prov.loadQuizzes(classId: classId);
-    } else {
-      prov.loadQuizzes();
+    final prov = Provider.of<QuizProvider>(context);
+    final classes = prov.classes;
+    final quizzes = prov.quizzes;
+    // if selected class changed, ensure quizzes are loaded for that class
+    void ensureQuizzesForClass(String? classId) async {
+      if (classId != null) {
+        await prov.loadQuizzes(classId: classId);
+      } else {
+        await prov.loadQuizzes();
+      }
+      // after reload, maintain selected quiz if still present else pick first
+      if (prov.quizzes.isNotEmpty) {
+        if (selectedQuizId == null || !prov.quizzes.any((q) => (q['id_quiz']?.toString() ?? q['id']?.toString()) == selectedQuizId)) {
+          selectedQuizId = prov.quizzes.first['id_quiz']?.toString() ?? prov.quizzes.first['id']?.toString();
+        }
+        await prov.loadMaterials(quizId: selectedQuizId);
+        if (mounted) setState(() {});
+      }
     }
-  }
 
     return SingleChildScrollView(
       child: Padding(
@@ -106,21 +120,47 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-              child: Text(
-                "Quiz Material",
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                ),
+            // Quiz selector (optional) + heading
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      "Quiz Material",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  if (quizzes.isNotEmpty)
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: selectedQuizId,
+                        hint: const Text('Select Quiz'),
+                        items: quizzes.map((q) {
+                          final id = q['id_quiz']?.toString() ?? q['id']?.toString() ?? '';
+                          return DropdownMenuItem(
+                            value: id,
+                            child: Text(q['title']?.toString() ?? 'Untitled'),
+                          );
+                        }).toList(),
+                        onChanged: (val) async {
+                          if (val == null) return;
+                          setState(() => selectedQuizId = val);
+                          await prov.loadMaterials(quizId: selectedQuizId);
+                          if (mounted) setState(() {});
+                        },
+                      ),
+                    ),
+                ],
               ),
             ),
             // Show materials related to selected quiz or class if available
-            CardMaterialList(materials: prov.materials.map((m) {
-              // map backend material JSON to MaterialPdf model
-              return MaterialPdfJson.fromJson(m);
-            }).toList()),
+            CardMaterialList(
+              materials: prov.materials.map((m) => MaterialPdfJson.fromJson(m)).toList(),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               child: SizedBox(
@@ -140,11 +180,11 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                     final navigator = Navigator.of(context);
                     final res = await showDialog<bool?>(
                       context: navigator.context,
-                      builder: (context) => const WindowAddMaterial(),
+                      builder: (context) => WindowAddMaterial(fkIdQuiz: selectedQuizId),
                     );
                     if (res == true) {
-                      // refresh provider materials
-                      await qProv.loadMaterials();
+                      // refresh provider materials for current quiz if selected
+                      await qProv.loadMaterials(quizId: selectedQuizId);
                       if (!mounted) return;
                       setState(() {});
                     }
@@ -185,7 +225,11 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
               onViewResult: (quiz) {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const PageMenuQuizResultTeacher(),
+                    builder: (_) => PageMenuQuizResultTeacher(
+                      quizId: quiz.idQuiz,
+                      title: quiz.title,
+                      classId: selectedClassId,
+                    ),
                   ),
                 );
               },

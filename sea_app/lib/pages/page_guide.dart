@@ -53,23 +53,36 @@ class _PageGuideState extends State<PageGuide> {
               fontSize: 16,
               )),
             const SizedBox(height: 8),
-            Card( child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child:
-            DropdownButton<String>(
-              value: _role,
-              isExpanded: true, 
-              items: const [
-                DropdownMenuItem(value: 'student', child: Text('Student')),
-                DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
-              ],
-              onChanged: (v) {
-                if (v == null) return;
-                setState(() => _role = v);
-              },
-            ),
-            ),
-            ),
+         Card(
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  child: Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    child: Theme(
+      data: Theme.of(context).copyWith(
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        focusColor: Colors.transparent,
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _role,
+          isExpanded: true,
+          dropdownColor: Colors.white, // warna background menu
+          style: const TextStyle(color: Colors.black),
+          items: const [
+            DropdownMenuItem(value: 'student', child: Text('Student')),
+            DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
+          ],
+          onChanged: (v) {
+            if (v == null) return;
+            setState(() => _role = v);
+          },
+        ),
+      ),
+    ),
+  ),
+),
+
             const SizedBox(height: 16),
             const Text('Guide', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),

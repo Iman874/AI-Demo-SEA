@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
@@ -116,21 +117,20 @@ class GeminiController extends Controller
             $aiText = $response->json()['candidates'][0]['content']['parts'][0]['text'];
 
             // save AI reply if chatroom available
-            try {
-                if ($chatroomId) {
-                    \App\Models\DiscussionMessage::create([
-                        'fk_id_chatroomai' => $chatroomId,
-                        'fk_id_user' => null,
-                        'role' => 'ai',
-                        'content' => $aiText,
-                        'content_type' => 'text',
-                        'status' => 'sent',
-                        'response_meta' => json_encode(['model' => env('GEMINI_API_KEY') ? 'gemini' : 'unknown']),
-                    ]);
+                try {
+                    if ($chatroomId) {
+                        \App\Models\AIMessage::create([
+                            'fk_id_chatroomai' => $chatroomId,
+                            'role' => 'ai',
+                            'content' => $aiText,
+                            'content_type' => 'text',
+                            'status' => 'ok',
+                            'response_meta' => json_encode(['model' => env('GEMINI_API_KEY') ? 'gemini' : 'unknown']),
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    // ignore persistence errors
                 }
-            } catch (\Throwable $e) {
-                // ignore persistence errors
-            }
 
             return response()->json([
                 'answer' => $aiText
@@ -145,8 +145,28 @@ class GeminiController extends Controller
 
     public function check_understanding(Request $request)
     {
-        $materials = $request->input('materials', []);
-        $summary = $request->input('summary', '');
+        $req = isset($request) ? $request : request();
+        $materials = $req->input('materials', []);
+        $summary = $req->input('summary', '');
+        $chatroomId = $req->input('chatroom_id');
+        $summaryId = $req->input('summary_id');
+
+        // If materials not provided but chatroom is, try loading materials for that chatroom
+        if (empty($materials) && $chatroomId) {
+            try {
+                if (Schema::hasTable('material_quiz') && Schema::hasColumn('material_quiz', 'fk_id_discussionroom')) {
+                    $rows = \App\Models\MaterialQuiz::where('fk_id_discussionroom', $chatroomId)->get();
+                    foreach ($rows as $m) {
+                        $materials[] = [
+                            'title' => $m->title ?? '',
+                            'content' => $m->content ?? '',
+                        ];
+                    }
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
 
         // Gabungkan semua data untuk prompt
         $referenceText = '';
@@ -183,16 +203,33 @@ class GeminiController extends Controller
         ];
 
         $normalized = trim($answer);
-        if (in_array($normalized, $validAnswers)) {
-            return response()->json(['result' => $normalized]);
-        } else {
-            return response()->json(['result' => $answer]);
+        $final = in_array($normalized, $validAnswers) ? $normalized : $answer;
+
+        // Optionally persist if a summary_id is provided (id in summary_discussions)
+        if (!empty($summaryId)) {
+            try {
+                $ru = \App\Models\ResultUnderstanding::where('fk_id_summarydiscussion', $summaryId)->first();
+                if ($ru) {
+                    $ru->type = $final;
+                    $ru->save();
+                } else {
+                    \App\Models\ResultUnderstanding::create([
+                        'fk_id_summarydiscussion' => $summaryId,
+                        'type' => $final,
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                // ignore persistence errors
+            }
         }
+
+        return response()->json(['result' => $final]);
     }
 
     public function generateQuestions(Request $request)
     {
-        $materials = $request->input('materials', []);
+        $req = isset($request) ? $request : request();
+        $materials = $req->input('materials', []);
 
         // Build reference text from materials
         $referenceText = '';
@@ -232,10 +269,11 @@ class GeminiController extends Controller
 
     public function generateGroups(Request $request)
     {
-        $classId = $request->input('class_id');
-        $groupCount = $request->input('group_count');
-        $perGroup = $request->input('per_group');
-        $quizId = $request->input('quiz_id');
+        $req = isset($request) ? $request : request();
+        $classId = $req->input('class_id');
+        $groupCount = $req->input('group_count');
+        $perGroup = $req->input('per_group');
+        $quizId = $req->input('quiz_id');
 
         // build student list from class if class_id provided
         $students = [];
@@ -253,7 +291,7 @@ class GeminiController extends Controller
         }
 
         // if no students found, allow passing students list directly
-        $inputStudents = $request->input('students', []);
+    $inputStudents = $req->input('students', []);
         if (empty($students) && is_array($inputStudents) && count($inputStudents) > 0) {
             foreach ($inputStudents as $s) {
                 $students[] = ['id' => $s['id'] ?? $s['fk_id_user'] ?? null, 'name' => $s['name'] ?? ''];
@@ -426,12 +464,14 @@ class GeminiController extends Controller
 
     public function deleteAllDiscussionMessages(Request $request)
     {
-        $chatroomId = $request->input('chatroom_id');
+        $req = isset($request) ? $request : request();
+        $chatroomId = $req->input('chatroom_id');
         if (!$chatroomId) {
             return response()->json(['message' => 'chatroom_id required'], 422);
         }
         try {
             \App\Models\DiscussionMessage::where('fk_id_chatroomai', $chatroomId)->delete();
+                \App\Models\AIMessage::where('fk_id_chatroomai', $chatroomId)->delete();
             return response()->json(['message' => 'deleted'], 200);
         } catch (\Throwable $e) {
             return response()->json(['message' => 'error deleting'], 500);
@@ -444,17 +484,60 @@ class GeminiController extends Controller
      */
     public function getDiscussionMessages(Request $request)
     {
-        $chatroomId = $request->query('chatroom_id');
+        $req = isset($request) ? $request : request();
+        $chatroomId = $req->query('chatroom_id');
         if (!$chatroomId) {
             return response()->json(['message' => 'chatroom_id required'], 422);
         }
 
         try {
-            $msgs = \App\Models\DiscussionMessage::where('fk_id_chatroomai', $chatroomId)
+            // Human messages from discussion_messages
+            $human = \App\Models\DiscussionMessage::where('fk_id_chatroomai', $chatroomId)
                 ->orderBy('created_at', 'asc')
-                ->get();
+                ->get()
+                ->map(function ($m) {
+                    return [
+                        'id_message' => $m->id_message,
+                        'fk_id_chatroomai' => $m->fk_id_chatroomai,
+                        'fk_id_user' => $m->fk_id_user,
+                        'role' => $m->role,
+                        'content' => $m->content,
+                        'content_type' => $m->content_type,
+                        'status' => $m->status,
+                        'response_meta' => $m->response_meta,
+                        'created_at' => $m->created_at,
+                        'updated_at' => $m->updated_at,
+                    ];
+                })->toArray();
 
-            return response()->json(['data' => $msgs], 200);
+            // AI messages from ai_messages, mapped to same shape
+            $ai = \App\Models\AIMessage::where('fk_id_chatroomai', $chatroomId)
+                ->orderBy('created_at', 'asc')
+                ->get()
+                ->map(function ($m) {
+                    return [
+                        'id_message' => $m->id_aimessage, // normalize key for client
+                        'fk_id_chatroomai' => $m->fk_id_chatroomai,
+                        'fk_id_user' => null,
+                        'role' => $m->role ?? 'ai',
+                        'content' => $m->content,
+                        'content_type' => $m->content_type,
+                        'status' => $m->status,
+                        'response_meta' => $m->response_meta,
+                        'created_at' => $m->created_at,
+                        'updated_at' => $m->updated_at,
+                    ];
+                })->toArray();
+
+            $all = array_merge($human, $ai);
+            usort($all, function ($a, $b) {
+                $ta = !empty($a['created_at']) ? strtotime((string) $a['created_at']) : 0;
+                $tb = !empty($b['created_at']) ? strtotime((string) $b['created_at']) : 0;
+                if ($ta === $tb) return 0;
+                return $ta <=> $tb;
+            });
+
+            return response()->json(['data' => $all], 200);
         } catch (\Throwable $e) {
             return response()->json(['message' => 'error fetching messages', 'error' => $e->getMessage()], 500);
         }
@@ -466,7 +549,8 @@ class GeminiController extends Controller
      */
     public function getDiscussionSummaries(Request $request)
     {
-        $chatroomId = $request->query('chatroom_id');
+        $req = isset($request) ? $request : request();
+        $chatroomId = $req->query('chatroom_id');
         if (!$chatroomId) {
             return response()->json(['message' => 'chatroom_id required'], 422);
         }
@@ -476,29 +560,101 @@ class GeminiController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get();
 
+            // Auto-compute and persist understanding for summaries missing a result
+            // Load discussion materials once
+            $materials = [];
+            try {
+                if (Schema::hasTable('material_quiz') && Schema::hasColumn('material_quiz', 'fk_id_discussionroom')) {
+                    $rows = \App\Models\MaterialQuiz::where('fk_id_discussionroom', $chatroomId)->get();
+                    foreach ($rows as $m) {
+                        $materials[] = [
+                            'title' => $m->title ?? '',
+                            'content' => $m->content ?? '',
+                        ];
+                    }
+                }
+            } catch (\Throwable $e) {
+                // ignore materials errors
+            }
+
+            $referenceText = '';
+            foreach ($materials as $mat) {
+                $referenceText .= "[Material Title]: " . ($mat['title'] ?? '') . "\n";
+                $referenceText .= "[Material Content]: " . ($mat['content'] ?? '') . "\n\n";
+            }
+
+            foreach ($summaries as $s) {
+                try {
+                    $existing = \App\Models\ResultUnderstanding::where('fk_id_summarydiscussion', $s->id_summarydiscussion)->first();
+                    if (!$existing) {
+                        // compute
+                        $prompt = "You are an evaluator for student understanding. Your main reference is the provided materials, even if the material is wrong, always trust the material first. Now, compare the following summary with the materials. Only reply with one of these exactly: Understanding, Not Fully Understanding, Not Understanding. If you can't decide, reply with your own answer.\n\nMaterials:\n" . $referenceText . "Summary:\n" . ($s->content ?? '') . "\n";
+                        try {
+                            $resp = Http::withHeaders([
+                                'Content-Type' => 'application/json',
+                                'X-goog-api-key' => env('GEMINI_API_KEY'),
+                            ])->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', [
+                                'contents' => [
+                                    [
+                                        'parts' => [
+                                            ['text' => $prompt]
+                                        ]
+                                    ]
+                                ]
+                            ]);
+                            if ($resp->successful()) {
+                                $rawAnswer = $resp->json()['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                                $normalized = trim($rawAnswer);
+                                $valid = ['Understanding', 'Not Fully Understanding', 'Not Understanding'];
+                                $aiResult = in_array($normalized, $valid) ? $normalized : $rawAnswer;
+                                \App\Models\ResultUnderstanding::create([
+                                    'fk_id_summarydiscussion' => $s->id_summarydiscussion,
+                                    'type' => $aiResult,
+                                ]);
+                            }
+                        } catch (\Throwable $e) {
+                            // ignore AI error per summary
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // ignore persistence error per item
+                }
+            }
+
             return response()->json(['data' => $summaries], 200);
         } catch (\Throwable $e) {
             return response()->json(['message' => 'error fetching summaries', 'error' => $e->getMessage()], 500);
         }
     }
-
     public function submitDiscussionSummary(Request $request)
     {
-        $chatroomId = $request->input('chatroom_id');
-        $userId = $request->input('user_id');
-        $content = $request->input('content');
+        // Work around static analyzer complaints by using local $req variable
+        $req = isset($request) ? $request : request();
+        $chatroomId = $req->input('chatroom_id');
+        $userId = $req->input('user_id');
+        $content = $req->input('content');
 
         if (!$chatroomId || !$userId || !$content) {
             return response()->json(['message' => 'chatroom_id, user_id and content required'], 422);
         }
 
         try {
-            // create summary
-            $summary = \App\Models\SummaryDiscussion::create([
-                'fk_id_chatroomai' => $chatroomId,
-                'fk_id_user' => $userId,
-                'content' => $content,
-            ]);
+            // Upsert summary (update if exists for user+chatroom)
+            $summary = \App\Models\SummaryDiscussion::where('fk_id_chatroomai', $chatroomId)
+                ->where('fk_id_user', $userId)
+                ->first();
+            $isUpdate = false;
+            if ($summary) {
+                $summary->content = $content;
+                $summary->save();
+                $isUpdate = true;
+            } else {
+                $summary = \App\Models\SummaryDiscussion::create([
+                    'fk_id_chatroomai' => $chatroomId,
+                    'fk_id_user' => $userId,
+                    'content' => $content,
+                ]);
+            }
 
             // mark discussion_students row as completed (if table exists)
             if (Schema::hasTable('discussion_students')) {
@@ -508,10 +664,79 @@ class GeminiController extends Controller
                 );
             }
 
-            return response()->json(['message' => 'ok', 'summary' => $summary], 200);
+            // Gather materials for this discussion (if linked) to build prompt
+            $materials = [];
+            try {
+                if (Schema::hasTable('material_quiz') && Schema::hasColumn('material_quiz', 'fk_id_discussionroom')) {
+                    $rows = \App\Models\MaterialQuiz::where('fk_id_discussionroom', $chatroomId)->get();
+                    foreach ($rows as $m) {
+                        $materials[] = [
+                            'title' => $m->title ?? '',
+                            'content' => $m->content ?? '',
+                        ];
+                    }
+                }
+            } catch (\Throwable $e) {
+                // ignore materials errors
+            }
+
+            // Build understanding evaluation prompt
+            $referenceText = '';
+            foreach ($materials as $mat) {
+                $referenceText .= "[Material Title]: " . ($mat['title'] ?? '') . "\n";
+                $referenceText .= "[Material Content]: " . ($mat['content'] ?? '') . "\n\n";
+            }
+            $prompt = "You are an evaluator for student understanding. Your main reference is the provided materials, even if the material is wrong, always trust the material first. Now, compare the following summary with the materials. Only reply with one of these exactly: Understanding, Not Fully Understanding, Not Understanding. If you can't decide, reply with your own answer.\n\nMaterials:\n" . $referenceText . "Summary:\n" . ($summary->content ?? '') . "\n";
+
+            $aiResult = null;
+            try {
+                $resp = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                    'X-goog-api-key' => env('GEMINI_API_KEY'),
+                ])->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt]
+                            ]
+                        ]
+                    ]
+                ]);
+                if ($resp->successful()) {
+                    $rawAnswer = $resp->json()['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                    $normalized = trim($rawAnswer);
+                    $valid = ['Understanding', 'Not Fully Understanding', 'Not Understanding'];
+                    $aiResult = in_array($normalized, $valid) ? $normalized : $rawAnswer;
+                }
+            } catch (\Throwable $e) {
+                // ignore AI failure
+            }
+
+            if ($aiResult !== null) {
+                try {
+                    $ru = \App\Models\ResultUnderstanding::where('fk_id_summarydiscussion', $summary->id_summarydiscussion)->first();
+                    if ($ru) {
+                        $ru->type = $aiResult;
+                        $ru->save();
+                    } else {
+                        \App\Models\ResultUnderstanding::create([
+                            'fk_id_summarydiscussion' => $summary->id_summarydiscussion,
+                            'type' => $aiResult,
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    // ignore persistence errors
+                }
+            }
+
+            return response()->json([
+                'message' => 'ok',
+                'summary' => $summary,
+                'updated' => $isUpdate,
+                'understanding' => $aiResult,
+            ], 200);
         } catch (\Throwable $e) {
             return response()->json(['message' => 'error saving summary', 'error' => $e->getMessage()], 500);
         }
     }
-
 }

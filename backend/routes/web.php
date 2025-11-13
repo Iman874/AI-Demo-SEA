@@ -10,6 +10,8 @@ Route::get('/', function () {
 
 Route::post('/api/ask', [GeminiController::class, 'askGemini'])->withoutMiddleware([VerifyCsrfToken::class]);
 Route::post('/api/echo', [GeminiController::class, 'echoRequest'])->withoutMiddleware([VerifyCsrfToken::class]);
+// Added GET /api/echo so frontend can use either method for health check
+Route::get('/api/echo', [GeminiController::class, 'echoRequest'])->withoutMiddleware([VerifyCsrfToken::class]);
 
 // AUTH
 use App\Http\Controllers\AuthController;

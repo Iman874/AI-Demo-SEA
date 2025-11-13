@@ -6,6 +6,8 @@ import '../../models/material.dart';
 import '../../models/class.dart';
 import '../../services/api_service.dart';
 import '../student/page_menu_discussion_chatroom_student.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class DiscussionDetailStudentPage extends StatefulWidget {
   final DiscussionRoom discussion;
@@ -34,7 +36,12 @@ class _DiscussionDetailStudentPageState extends State<DiscussionDetailStudentPag
   Future<void> _loadMembers() async {
     setState(() => _loadingMembers = true);
     try {
-      final resp = await ApiService.getDiscussionMembers(discussionId: widget.discussion.idDiscussionRoom);
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final userId = auth.user?.id;
+      final resp = await ApiService.getDiscussionMembers(
+        discussionId: widget.discussion.idDiscussionRoom,
+        userId: userId,
+      );
       if (resp.statusCode == 200) {
         final decoded = resp.body.isNotEmpty ? jsonDecode(resp.body) as Map<String, dynamic> : <String, dynamic>{};
         final list = (decoded['data'] as List<dynamic>?) ?? [];

@@ -1,66 +1,81 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Flow App — Backend (Laravel 11)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is the Laravel API backend for the Flow App (ai-demo-SEA). It powers auth, classes, materials, quizzes, discussions, and AI helpers. SQLite is used by default for easy local setup.
 
-## About Laravel
+## Requirements
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.2+
+- Composer
+- SQLite (bundled with PHP) or another DB if you reconfigure `config/database.php`
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Environment
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1) Copy `.env.example` to `.env`
+2) Set the following:
+	- `APP_KEY` (run `php artisan key:generate` to create it)
+	- `DB_CONNECTION=sqlite`
+	- Ensure `database/database.sqlite` exists (create an empty file)
+	- `GEMINI_API_KEY=` (required for AI routes; leave empty to skip AI features)
 
-## Learning Laravel
+## Install, migrate, seed, run
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+From this `backend/` directory:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+1) Install dependencies with Composer
+2) Run migrations and seeders
+3) Serve the app on port 8000
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Seeder contents include:
+- Quiz1 with 2 materials and 30 MCQs (4 choices each), with simulated results for all students
+- Discussion room "Diskusi1" with 10 groups (3 students + 1 teacher), linked materials, and AI chat rooms
+ - DiscussionResultSeeder adds: 30 summaries (16 Understanding, 4 Not Fully Understanding, 10 Not Understanding), minimal chat history (1 student + 1 AI message per student), and marks related chat rooms inactive.
 
-## Laravel Sponsors
+## API routes (stable contracts)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- AI core: `POST /api/ask`, `POST /api/echo`
+- Student AI: `POST /api/student/chat` → `{ answer }`; `POST /api/student/check_understanding` → `{ result }`
+- AI helpers: `POST /api/generate-questions`, `POST /api/generate-groups`
+- Discussions: `GET /api/discussion/messages?chatroom_id=...`, `GET /api/discussion/summaries?chatroom_id=...`, `POST /api/discussion/submit_summary`, `POST /api/discussion/delete_all_messages`
+- Auth: `POST /api/register`, `POST /api/login`, `GET /api/user`
+- Classes: `GET/POST /api/classes`, user-class: `POST /api/join-class`, `GET /api/my-classes`, `GET /api/user-class-ids`, `GET /api/class-members?class_id=...`
+- Materials: `GET/POST /api/materials`
+- Quizzes: `GET/POST /api/quizzes`, `POST /api/quizzes/save`, `GET /api/quiz-questions`, `POST/GET /api/result-quiz`
 
-### Premium Partners
+All API routes skip CSRF (see `routes/web.php` → `withoutMiddleware(VerifyCsrfToken::class)`).
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Data shape highlights:
+- Chat request: `{ history: [{role, content}], materials: [{title, content, type}], chatroom_id?, sender_id? }` → response `{ answer }`
+- Understanding check: `{ materials: [...], summary: string }` → `{ result }` where result ∈ {"Understanding","Not Fully Understanding","Not Understanding"}
+- Generate groups: `{ class_id?, group_count, per_group?, quiz_id?, students?: [{id,name}] }` → newline text groups
 
-## Contributing
+## Testing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- PHPUnit: `vendor/bin/phpunit`
 
-## Code of Conduct
+## Notes
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- Keep endpoints and response shapes stable for Flutter/web clients.
+- Prefer idempotent seeders (`firstOrCreate`) and migrations for schema changes.
+- Never commit secrets; use `.env` for `GEMINI_API_KEY`.
 
-## Security Vulnerabilities
+## Attribution
+## Running only a specific seeder
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+To run only the discussion result seeder (without re-running everything):
 
-## License
+```
+php artisan db:seed --class=DiscussionResultSeeder
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+If you need a full reset including that seeder:
+
+```
+php artisan migrate:fresh --seed
+```
+
+The `DiscussionResultSeeder` is idempotent: re-running will not duplicate summaries or messages; it will adjust understanding distribution to match 16/4/10 if changed.
+
+
+- Flow App — ai-demo-SEA
+- Developed by: Rosul Iman
+- Advisor: Prof. Dr. Muhammad Anwar, S.Pd., M.T.

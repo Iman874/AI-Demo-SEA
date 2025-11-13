@@ -1,15 +1,15 @@
+// DEPRECATED: controller_message_ai.dart logic migrated to ApiService.
+// Use ApiService.studentChat and ApiService.checkUnderstandingAI instead.
+// This file retained temporarily for reference.
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../../models/all_message.dart';
-// user model removed; caller should provide senderId
 import '../../models/chat_room_ai.dart';
 import '../../models/material.dart';
-
-// API config
-import '../config/api.dart';
+import '../services/api_service.dart';
 
 Future<void> sendMessage({
   required TextEditingController controller,
@@ -39,26 +39,16 @@ Future<void> sendMessage({
   setState();
 
   try {
-    // kirim request ke API
-    final response = await http.post(
-      Uri.parse(apiStudentChat),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "history": messages
-            .take(50) // ambil max 50 pesan terakhir
-            .map((m) => {
-                  "role": m.role,
-                  "content": m.content,
-                })
-            .toList(),
-        "materials": materials
-            .map((mat) => {
-                  "title": mat.title,
-                  "content": mat.content,
-                  "type": mat.type,
-                })
-            .toList(),
-      }),
+    final response = await ApiService.studentChat(
+      history: messages
+          .take(50)
+          .map((m) => {"role": m.role, "content": m.content})
+          .toList(),
+      materials: materials
+          .map((mat) => {"title": mat.title, "content": mat.content, "type": mat.type})
+          .toList(),
+      chatroomId: chatRoom.id,
+      senderId: senderId,
     );
 
     if (response.statusCode == 200) {
@@ -108,22 +98,17 @@ Future<String> checkUnderstanding({
   required List<MessageModel> messages,
   required List<MaterialPdf> materials,
   required String summary,
+  String? chatroomId,
+  String? summaryId,
 }) async {
   try {
-    final response = await http.post(
-      Uri.parse(apiCheckUnderstanding),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "materials": materials
-            .map((mat) => {
-                  "title": mat.title,
-                  "content": mat.content,
-                  "type": mat.type,
-                })
-            .toList(),
-        // summary dikirim ke API
-        "summary": summary,
-      }),
+    final response = await ApiService.checkUnderstandingAI(
+      materials: materials
+          .map((mat) => {"title": mat.title, "content": mat.content, "type": mat.type})
+          .toList(),
+      summary: summary,
+      chatroomId: chatroomId,
+      summaryId: summaryId,
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

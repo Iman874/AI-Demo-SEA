@@ -1,103 +1,65 @@
-## Repo snapshot
+## Repo snapshot (big picture)
 
-This workspace is a multi-part demo app containing three main components:
+Multi-part demo app with three components:
+- backend/ — Laravel 11 API and Gemini proxy
+- frontend/ — React + Vite starter
+- sea_app/ — Flutter client (mobile/desktop) that calls the backend
 
-- backend/ — Laravel 11 PHP app (API endpoints and Gemini proxy)
-- frontend/ — React + Vite web UI (minimal starter app)
-- sea_app/ — Flutter mobile/desktop app that talks to the backend
+Keep HTTP contracts stable: endpoints in `backend/routes/web.php` are consumed by Flutter (`sea_app/lib/utils/send_message.dart` and `sea_app/lib/config/api.dart`) and may be reused by the web UI.
 
-When editing, prefer changes that keep cross-platform interfaces stable: HTTP API contracts under `backend/routes/web.php` are consumed by the Flutter app (`sea_app/lib/utils/send_message.dart`) and may be used by the web UI.
+## Routes map (stable API contracts)
 
-## What to know first (big picture)
+- AI core: `POST /api/ask`, `POST /api/echo`
+- Student AI: `POST /api/student/chat` => `{ answer }`; `POST /api/student/check_understanding` => `{ result }`
+- AI helpers: `POST /api/generate-questions`, `POST /api/generate-groups`
+- Discussions: `GET /api/discussion/messages?chatroom_id=...`, `GET /api/discussion/summaries?chatroom_id=...`, `POST /api/discussion/submit_summary`, `POST /api/discussion/delete_all_messages`
+- Auth: `POST /api/register`, `POST /api/login`, `GET /api/user`
+- Classes: `GET/POST /api/classes`, user-class: `POST /api/join-class`, `GET /api/my-classes`, `GET /api/user-class-ids`, `GET /api/class-members?class_id=...`
+- Materials: `GET/POST /api/materials`
+- Quizzes: `GET/POST /api/quizzes`, `POST /api/quizzes/save`, `GET /api/quiz-questions`, `POST/GET /api/result-quiz`
 
-- The Laravel backend exposes simple POST endpoints used as an API gateway to Google Gemini. Important routes:
-  - `POST /api/ask` — generic prompt -> Gemini (see `backend/app/Http/Controllers/GeminiController.php`)
-  - `POST /api/echo` — returns the request payload (used for debugging)
-  - `POST /api/student/chat` — chat endpoint that expects { history: [...], materials: [...] } and returns `{ answer }`
-  - `POST /api/student/check_understanding` — expects { materials: [...], summary } and returns `{ result }`
+All API routes skip CSRF (see `withoutMiddleware(VerifyCsrfToken::class)` in `web.php`).
 
-- The backend reads the Gemini API key from the environment variable `GEMINI_API_KEY`. Example local env template: `backend/.env.example`.
+## Env, build, and run
 
-- The Flutter client uses hard-coded API host/port (127.0.0.1:8000) in `sea_app/lib/config/api.dart` and `sea_app/lib/utils/send_message.dart` — adjust those when running backend elsewhere or when adding CI.
+- Env: Backend requires `GEMINI_API_KEY` in `backend/.env` (added to `.env.example`). Default DB is SQLite. Create `database/database.sqlite`, then migrate/seed as needed.
+- Backend (from `backend/`):
+  - Composer install, then run: `php artisan migrate`; dev server: `php artisan serve --port=8000`
+  - Frontend assets via Vite: `npm run dev` or `npm run build`
+  - Tests: `vendor/bin/phpunit`
+- Flutter (from `sea_app/`): `flutter pub get`; run: `flutter run -d windows` (default API base `http://127.0.0.1:8000`)
+- Frontend (from `frontend/`): `npm install`; `npm run dev`
 
-## Developer workflows (how to run, build, and test)
+## Data shapes and client conventions
 
-- Backend (Laravel / PHP):
-  - Install PHP deps: use Composer in `backend/` (composer v2+). The project expects PHP 8.2+.
-  - Create a `.env` from `.env.example` and set `GEMINI_API_KEY` before exercising Gemini calls.
-  - Typical dev server (Laravel): `php artisan serve --port=8000` (runs PHP server bound to port 8000, matching Flutter default)
-  - Frontend assets for Laravel use Vite; there is a `backend/package.json` with `dev` and `build` scripts.
-  - Tests: `vendor/bin/phpunit` (phpunit config is at `backend/phpunit.xml`)
+- Chat request: `{ history: [{role, content}], materials: [{title, content, type}], chatroom_id?, sender_id? }` → response `{ answer }`
+- Understanding check: `{ materials: [...], summary: string }` → `{ result }` where result ∈ {"Understanding","Not Fully Understanding","Not Understanding"} (or model text)
+- Generate groups: `{ class_id?, group_count, per_group?, quiz_id?, students?: [{id,name}] }` → newline text: `1, (123, John Doe), (124, Jane Doe)` …; server validates coverage and may fallback to deterministic grouping
+- Discussion messages: `GET` returns `{ data: [...] }`; submit summary requires `{ chatroom_id, user_id, content }`
+- Flutter API base is duplicated in `sea_app/lib/config/api.dart` and `sea_app/lib/utils/send_message.dart` (constants). If you change host/port, update both or centralize.
 
-- Frontend (React + Vite):
-  - From `frontend/`, use `npm install` then `npm run dev` to start Vite dev server. The current `src` is a minimal starter app — expand carefully.
+## Key files to read/change
 
-- Flutter app (`sea_app/`):
-  - Standard Flutter project (see `pubspec.yaml`). It uses `http`, `file_picker` and Syncfusion PDF packages.
-  - The app calls the backend at `http://127.0.0.1:8000` by default. When developing locally, run the backend and then `flutter run` (or use `flutter run -d windows` on Windows).
+- `backend/app/Http/Controllers/GeminiController.php` — Gemini calls, chat/check-understanding, group generation
+- `backend/routes/web.php` — API surface map above
+- `backend/.env.example` — includes `GEMINI_API_KEY=` placeholder and SQLite defaults
+- Flutter networking: `sea_app/lib/utils/send_message.dart`, base URLs in `sea_app/lib/config/api.dart`
+- Models and shapes: `sea_app/lib/models/*`
 
-## Project-specific conventions and patterns
+## Guardrails for AI agents
 
-- API contract: the Flutter app sends JSON with simple shapes:
-  - chat: { history: [{role, content}], materials: [{title, content, type}] }
-  - check_understanding: { materials: [...], summary: string }
-  Backend returns JSON with `answer` (string) or `result` (one of: "Understanding", "Not Fully Understanding", "Not Understanding"). See `GeminiController.php` for exact behavior.
+- Preserve API contracts. When changing an endpoint, update: controller + `routes/web.php` + Flutter constants, and add/adjust tests in `backend/tests/Feature/`.
+- Never commit secrets. Read `GEMINI_API_KEY` from env; for CI, mock Gemini or use secret store.
+- Keep diffs small and idempotent (prefer `firstOrCreate`, migrations for schema). Document randomness (e.g., seeders, group shuffling).
+- Maintain a todo using the provided workflow before non-trivial edits; run quick sanity checks (PHP unit/analyzer, Flutter analyzer) post-change.
 
-- Environment variables: Gemini key must be placed in `backend/.env` as `GEMINI_API_KEY`. The backend uses `env('GEMINI_API_KEY')` directly.
+## Examples
 
-- No client-side authentication is implemented. Keep changes minimal if adding auth — update all three components.
+- Chat
+  `{ "history":[{"role":"student","content":"What is photosynthesis?"}], "materials":[{"title":"Bio 101","content":"...","type":"pdf"}] }`
+- Check understanding
+  `{ "materials":[{"title":"Bio 101","content":"..."}], "summary":"..." }`
+- Generate groups (class-driven)
+  `{ "class_id": 1, "group_count": 4, "quiz_id": 2 }`
 
-## Integration points & external dependencies
-
-- Google Gemini generative API: backend posts to `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent` with the API key in header `X-goog-api-key`.
-- Flutter packages of note: `http`, `file_picker`, `syncfusion_flutter_pdf` (see `sea_app/pubspec.yaml`).
-- Laravel dev tooling: `laravel/pint` (pint formatter) and `phpunit` for tests.
-
-## Files to inspect when making changes
-
-- `backend/app/Http/Controllers/GeminiController.php` — main server logic for AI calls and request/response shape
-- `backend/routes/web.php` — route definitions
-- `backend/.env.example` — template for local environment variables
-- `sea_app/lib/utils/send_message.dart` and `sea_app/lib/config/api.dart` — Flutter client network code and host/port
-- `sea_app/lib/models/*` — data models used in Flutter request shape
-- `frontend/src/` — simple React UI; minimal usage but a good place to add a web client later
-
-## Actionable guidance for AI agents
-
-- When changing API behavior, update the controller, routes, and Flutter client examples together. Add tests in `backend/tests/Feature/` if changing responses.
-- Do not commit real API keys. If adding CI or integration tests that need Gemini, mock responses or read the key from a secure secret store.
-- Prefer small, focused diffs: this repo is a multi-language monorepo. Mention which component you modified in the PR title (e.g., "backend: improve Gemini error handling").
-
-## Required for automated assistants
-
-The following rules are mandatory for any automated assistant (or Copilot-style agent) working on this repository. These are in addition to the project's normal contributor guidance.
-
-- Read the entire repository (or at least the relevant component folders) before making edits. Open and inspect `backend/`, `sea_app/`, and `frontend/` files that may be affected. Use code search and file reads to trace symbols and HTTP contracts.
-- Before any non-trivial change, update the repository todo list using the `manage_todo_list` workflow: write the full todo list, mark one item `in-progress`, complete it when done. This ensures visibility and traceability of automated edits.
-- When a change affects cross-cutting behavior (API contract, data models, client-server formats, seeding, or environment variables), update this `copilot-instructions.md` file with a brief note describing the change and any developer actions required (env vars, migrations, ports, etc.).
-- Run quick sanity checks after edits: syntax check (PHP lint), Dart/Flutter analyzer or `flutter pub get` as appropriate, and run unit tests if available. If checks fail and cannot be fixed quickly, leave clear notes in this file about the failure and next steps.
-- Never add or commit secrets (API keys, service account credentials). If a secret is required for testing, mock it or document how to provide it in `backend/.env.example` (do not add real values).
-- Keep diffs minimal and prefer idempotent operations (use `firstOrCreate` and migrations where applicable). If randomness is used in seeding, document the behavior so maintainers know repeated seeds will vary.
-
-Follow these rules every time before creating PRs or committing changes. They help keep the monorepo stable and make automated work auditable.
-
-## Examples (copyable snippets)
-
-- Example POST payload (student chat):
-
-  {
-    "history": [{"role":"student","content":"What is photosynthesis?"}],
-    "materials": [{"title":"Biology 101","content":"Photosynthesis is...","type":"pdf"}]
-  }
-
-- Example successful response:
-
-  { "answer": "Photosynthesis is the process by which..." }
-
-## Quick TODOs for contributors
-
-- If you add new backend routes, add them to `backend/routes/web.php` and update Flutter `api.dart` if the client needs them.
-- Add PHP unit tests for backend behavior in `backend/tests/Feature`.
-
----
-If anything here is unclear or missing (e.g., preferred local ports, CI hooks, or test credentials), tell me which component you'd like more detail about and I will iterate.
+If anything here is unclear (ports, data shapes, or expected outputs), say which component you’re touching and we’ll iterate.

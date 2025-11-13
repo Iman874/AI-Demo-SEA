@@ -21,10 +21,22 @@ class DiscussionController extends Controller
             $query->where('fk_id_class', $classId);
         }
 
-        $rooms = $query->orderBy('created_at', 'desc')->get();
+    $rooms = $query->orderBy('created_at', 'desc')->get();
 
         // Normalize to a simple array for frontend
         $data = $rooms->map(function ($r) {
+            // Determine chatroom activity: mark true if ANY related chat_room_ai is active
+            $chatActive = false;
+            $firstChat = null;
+            try {
+                if (\Illuminate\Support\Facades\DB::getSchemaBuilder()->hasTable('chat_room_ai')) {
+                    $chats = \App\Models\ChatRoomAI::where('fk_id_discussionroom', $r->id_discussionroom)->orderBy('id_chatroomai', 'asc')->get();
+                    if ($chats && $chats->count() > 0) {
+                        $firstChat = $chats->first();
+                        $chatActive = $chats->contains(function ($c) { return ($c->status ?? '') === 'active'; });
+                    }
+                }
+            } catch (\Throwable $_) {}
             // If explicit columns are absent (null) try to compute from discussion_groups relation
             $numGroups = $r->num_groups ?? null;
             $studentsPerGroup = $r->students_per_group ?? null;
@@ -55,6 +67,10 @@ class DiscussionController extends Controller
                 'fkIdClass' => (string) $r->fk_id_class,
                 'createdAt' => $r->created_at ? $r->created_at->toDateTimeString() : null,
                 'updatedAt' => $r->updated_at ? $r->updated_at->toDateTimeString() : null,
+                // extra fields for Flutter client to decide visibility
+                'chatroom_active' => $chatActive,
+                // include minimal chat data (first related chatroom) for convenience
+                'chatroom' => $firstChat,
             ];
         });
 
