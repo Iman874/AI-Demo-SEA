@@ -552,9 +552,18 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                 const SizedBox(width: 8),
                 _buildSortChip(
                   context,
-                  label: "Abjad A-Z",
+                  label: "A-Z",
                   isSelected: _classSortType == 'abjad',
                   onTap: () => setState(() => _classSortType = 'abjad'),
+                  isDark: isDark,
+                  accentColor: AppColors.studentAccent,
+                ),
+                const SizedBox(width: 8),
+                _buildSortChip(
+                  context,
+                  label: "Z-A",
+                  isSelected: _classSortType == 'z-a',
+                  onTap: () => setState(() => _classSortType = 'z-a'),
                   isDark: isDark,
                   accentColor: AppColors.studentAccent,
                 ),
@@ -573,6 +582,8 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                   final sortedClasses = List<ClassModel>.from(classes);
                   if (_classSortType == 'abjad') {
                     sortedClasses.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+                  } else if (_classSortType == 'z-a') {
+                    sortedClasses.sort((a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()));
                   } else {
                     sortedClasses.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
                   }
@@ -772,9 +783,18 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                 const SizedBox(width: 8),
                 _buildSortChip(
                   context,
-                  label: "Abjad A-Z",
+                  label: "A-Z",
                   isSelected: _discussionSortType == 'abjad',
                   onTap: () => setState(() => _discussionSortType = 'abjad'),
+                  isDark: isDark,
+                  accentColor: AppColors.studentAccent,
+                ),
+                const SizedBox(width: 8),
+                _buildSortChip(
+                  context,
+                  label: "Z-A",
+                  isSelected: _discussionSortType == 'z-a',
+                  onTap: () => setState(() => _discussionSortType = 'z-a'),
                   isDark: isDark,
                   accentColor: AppColors.studentAccent,
                 ),
@@ -788,6 +808,8 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
             final sortedDiscussions = List<DiscussionRoom>.from(_discussions);
             if (_discussionSortType == 'abjad') {
               sortedDiscussions.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+            } else if (_discussionSortType == 'z-a') {
+              sortedDiscussions.sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
             } else {
               sortedDiscussions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
             }
