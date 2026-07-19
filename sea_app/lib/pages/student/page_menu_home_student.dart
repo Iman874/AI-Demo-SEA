@@ -442,14 +442,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                               ),
                             ),
                           ),
-                          Text(
-                            "${classes.length} kelas • ${quizzes.length} kuis aktif",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          const SizedBox.shrink(),
                         ],
                       ),
                     ),

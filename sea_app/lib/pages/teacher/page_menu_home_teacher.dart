@@ -333,14 +333,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                               ),
                             ),
                           ),
-                          Text(
-                            "${_classes.length} kelas • ${active.length} diskusi aktif",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          const SizedBox.shrink(),
                         ],
                       ),
                     ),
