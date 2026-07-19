@@ -1,13 +1,18 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 import '../../models/discussion_room.dart';
 import '../../models/material.dart';
 import '../../models/class.dart';
 import '../../services/api_service.dart';
-import '../student/page_menu_discussion_chatroom_student.dart';
+import 'page_menu_discussion_chatroom_student.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_decorations.dart';
+import '../../theme/app_spacing.dart';
 
 class DiscussionDetailStudentPage extends StatefulWidget {
   final DiscussionRoom discussion;
@@ -93,92 +98,307 @@ class _DiscussionDetailStudentPageState extends State<DiscussionDetailStudentPag
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Student Discussion Room')),
+      appBar: AppBar(
+        flexibleSpace: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: AppColors.studentGradient))),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(PhosphorIconsRegular.chatsCircle, size: 22),
+            SizedBox(width: 10),
+            Text('Detail Diskusi'),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.allLg,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Discussion Room Info', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            _buildInfoCard(context, isDark),
+            AppSpacing.hLg,
+            _buildMembersSection(context, isDark),
+            AppSpacing.hLg,
+            _buildMaterialsSection(context, isDark),
+            AppSpacing.hXl,
+            _buildAiButton(context, isDark),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(BuildContext context, bool isDark) {
+    return Container(
+      decoration: AppDecorations.elevatedCard(context),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(PhosphorIconsFill.chatsCircle, size: 20, color: AppColors.primary),
+              ),
+              const SizedBox(width: 12),
+              Text('Info Ruang Diskusi', style: AppTextStyles.titleMedium),
+            ],
+          ),
+          const Divider(height: 24),
+          _infoRow('Kelas', PhosphorIconsRegular.graduationCap, _className ?? widget.discussion.fkIdClass, isDark, _loadingClass),
+          AppSpacing.hMd,
+          _infoRow('Nama Diskusi', PhosphorIconsRegular.chatsCircle, widget.discussion.title, isDark, false),
+          AppSpacing.hMd,
+          _infoRow('ID Diskusi', PhosphorIconsRegular.identificationCard, widget.discussion.idDiscussionRoom, isDark, false),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(String label, IconData icon, String value, bool isDark, bool loading) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 14, color: isDark ? Colors.white54 : Colors.grey.shade500),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? Colors.white54 : Colors.grey.shade500)),
+          ],
+        ),
+        AppSpacing.hXs,
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Expanded(child: Text(value, style: AppTextStyles.bodyMedium)),
+              if (loading) const SizedBox(width: 8),
+              if (loading) const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMembersSection(BuildContext context, bool isDark) {
+    return Container(
+      decoration: AppDecorations.elevatedCard(context),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(PhosphorIconsRegular.users, size: 18, color: AppColors.primary),
+              ),
+              const SizedBox(width: 10),
+              Text('Anggota Diskusi', style: AppTextStyles.titleMedium),
+              const Spacer(),
+              Text('${_members.length}', style: TextStyle(fontSize: 12, color: isDark ? Colors.white54 : Colors.grey.shade500)),
+            ],
+          ),
+          const Divider(height: 20),
+          if (_loadingMembers)
+            const Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator())),
+          if (!_loadingMembers && _members.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Discussion Room Class'),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
-                      child: Row(
-                        children: [
-                          Expanded(child: Text('Class Name: ${_className ?? widget.discussion.fkIdClass}')),
-                          if (_loadingClass) const SizedBox(width: 12),
-                          if (_loadingClass) const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text('Discussion Room Name'),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(widget.discussion.title),
-                          const SizedBox(height: 6),
-                          Text('Discussion ID: ${widget.discussion.idDiscussionRoom}', style: TextStyle(fontSize: 12, color: Colors.black54)),
-                        ],
-                      ),
-                    ),
+                    Icon(PhosphorIconsRegular.userMinus, size: 16, color: isDark ? Colors.white38 : Colors.grey.shade400),
+                    const SizedBox(width: 8),
+                    Text('Belum ada anggota', style: TextStyle(color: isDark ? Colors.white38 : Colors.grey.shade400, fontSize: 13)),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Text('Discussion Members', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Card(
-              child: Column(
-                children: [
-                  if (_loadingMembers) const Padding(padding: EdgeInsets.all(12), child: Center(child: CircularProgressIndicator())),
-                  if (!_loadingMembers && _members.isEmpty)
-                    const ListTile(title: Text('No members found')),
-                  ..._members.map((m) => ListTile(
-                        title: Text(m['name'] ?? 'Unknown'),
-                        subtitle: Text(m['email'] ?? ''),
-                        trailing: TextButton(onPressed: () {}, child: const Text('View Details')),
-                      )),
-                ],
-              ),
+          if (!_loadingMembers && _members.isNotEmpty)
+            ..._members.map((m) => _buildMemberTile(m, isDark)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMemberTile(Map<String, dynamic> member, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            const SizedBox(height: 12),
-            Text('Discussion Materials', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            if (_loading) const Center(child: CircularProgressIndicator()),
-            if (!_loading)
-              Card(
-                child: Column(
-                  children: materials.map((m) => ListTile(leading: const Icon(Icons.picture_as_pdf), title: Text(m.title), trailing: TextButton(onPressed: () {}, child: const Text('View Material')))).toList(),
+            child: Center(
+              child: Text(
+                (member['name']?.toString() ?? '?')[0].toUpperCase(),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: AppColors.primary,
                 ),
               ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Navigate to chatroom (AI) when user taps Ask About Discussion Material
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiscussionPageChatRoomStudent(discussion: widget.discussion)));
-                },
-                child: const Text('Ask About Discussion Material [AI]'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(member['name'] ?? 'Unknown', style: AppTextStyles.bodyMedium),
+                if (member['email'] != null)
+                  Text(member['email'], style: TextStyle(fontSize: 11, color: isDark ? Colors.white38 : Colors.grey.shade500)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMaterialsSection(BuildContext context, bool isDark) {
+    return Container(
+      decoration: AppDecorations.elevatedCard(context),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(PhosphorIconsRegular.fileText, size: 18, color: AppColors.primary),
+              ),
+              const SizedBox(width: 10),
+              Text('Materi Diskusi', style: AppTextStyles.titleMedium),
+              const Spacer(),
+              Text('${materials.length}', style: TextStyle(fontSize: 12, color: isDark ? Colors.white54 : Colors.grey.shade500)),
+            ],
+          ),
+          const Divider(height: 20),
+          if (_loading)
+            const Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator())),
+          if (!_loading && materials.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(PhosphorIconsRegular.fileX, size: 16, color: isDark ? Colors.white38 : Colors.grey.shade400),
+                    const SizedBox(width: 8),
+                    Text('Belum ada materi', style: TextStyle(color: isDark ? Colors.white38 : Colors.grey.shade400, fontSize: 13)),
+                  ],
+                ),
               ),
             ),
-          ],
+          if (!_loading && materials.isNotEmpty)
+            ...materials.map((m) => _buildMaterialTile(m, isDark)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMaterialTile(MaterialPdf material, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {},
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(PhosphorIconsRegular.filePdf, size: 16, color: AppColors.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(material.title, style: AppTextStyles.bodyMedium),
+                ),
+                Icon(PhosphorIconsRegular.eye, size: 16, color: AppColors.primary),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAiButton(BuildContext context, bool isDark) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiscussionPageChatRoomStudent(discussion: widget.discussion)));
+        },
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: AppColors.studentGradient,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(PhosphorIconsRegular.sparkle, size: 20, color: Colors.white),
+              const SizedBox(width: 10),
+              Text(
+                'Tanya AI tentang Materi',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(PhosphorIconsRegular.arrowRight, size: 18, color: Colors.white70),
+            ],
+          ),
         ),
       ),
     );

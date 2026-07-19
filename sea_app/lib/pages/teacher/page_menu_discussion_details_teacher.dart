@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../services/api_service.dart';
 import 'dart:convert';
 import '../../models/discussion_room.dart';
@@ -8,6 +9,10 @@ import '../../models/result_understanding.dart';
 import '../../component/card/card_answer_question_student.dart';
 import '../../component/card/card_conclusion_student.dart';
 import '../../component/card/card_percentage_understanding.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_decorations.dart';
+import '../../theme/app_spacing.dart';
 
 class PageMenuDiscussionDetailsTeacher extends StatefulWidget {
   final String discussionId;
@@ -44,32 +49,18 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
     });
     try {
       final dResp = await ApiService.getDiscussion(widget.discussionId);
-      // DEBUG: print raw discussion response so backend payload can be inspected
-      try {
-        // print raw body
-        print('[DEBUG] getDiscussion status=${dResp.statusCode} body=${dResp.body}');
-      } catch (_) {}
 
-      String? _resolvedChatId;
+      String? resolvedChatId;
       if (dResp.statusCode == 200) {
         final body = jsonDecode(dResp.body);
         final disc = body['data']?['discussion'];
-        // DEBUG: print the extracted discussion map
-        try {
-          print('[DEBUG] discussion payload=' + (disc != null ? disc.toString() : 'null'));
-        } catch (_) {}
 
         if (disc != null) {
-          // keep parsed model for fields the model knows about
           _discussion = DiscussionRoomJson.fromJson(disc as Map<String, dynamic>);
 
-          // DEBUG: print specific group-related fields we expect from backend
           try {
             final numGVal = disc['numGroups'] ?? disc['num_groups'];
             final perGVal = disc['studentsPerGroup'] ?? disc['students_per_group'];
-            final tag = (disc['tag'] ?? '').toString();
-            print('[DEBUG] discussion.numGroups=${numGVal?.toString() ?? 'null'} studentsPerGroup=${perGVal?.toString() ?? 'null'} tag=$tag');
-            // prefer server-provided numeric values if present
             if (numGVal != null) {
               try {
                 _groupCount = int.tryParse(numGVal.toString());
@@ -82,7 +73,6 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
             }
           } catch (_) {}
 
-          // if still not available, try to parse group info from tag
           if (_groupCount == null || _perGroup == null) {
             try {
               final tag = (_discussion?.tag ?? '').toString();
@@ -94,14 +84,13 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
             } catch (_) {}
           }
 
-          // resolve chatroom id if provided in response (some endpoints return chatroomId)
           try {
-            _resolvedChatId = (disc['chatroomId']?.toString()) ?? ((disc['chatroom'] != null) ? (disc['chatroom']['id_chatroomai']?.toString() ?? disc['chatroom']['id']?.toString()) : null);
+            resolvedChatId = (disc['chatroomId']?.toString()) ?? ((disc['chatroom'] != null) ? (disc['chatroom']['id_chatroomai']?.toString() ?? disc['chatroom']['id']?.toString()) : null);
           } catch (_) {}
         }
       }
 
-      final chatId = _resolvedChatId ?? _discussion?.chatroomId;
+      final chatId = resolvedChatId ?? _discussion?.chatroomId;
       if (chatId != null) {
         final qResp = await ApiService.getDiscussionQuestions(chatroomId: chatId);
         if (qResp.statusCode == 200) {
@@ -118,7 +107,6 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
         }
       }
 
-      // Fetch understanding results aggregated for the whole discussion (across all chatrooms)
       final uResp = await ApiService.getDiscussionUnderstandings(discussionId: widget.discussionId);
       if (uResp.statusCode == 200) {
         final ub = jsonDecode(uResp.body);
@@ -127,7 +115,6 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
         _computeUnderstandingStats();
       }
 
-      // try resolve class name from classes endpoint if fkIdClass available
       if (_discussion != null && _discussion!.fkIdClass.isNotEmpty) {
         try {
           final cResp = await ApiService.getClasses();
@@ -145,7 +132,6 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
         } catch (_) {}
       }
 
-      // compute understanding percentages from fetched understandings
       _computeUnderstandingStats();
     } catch (e) {
       _error = e.toString();
@@ -182,45 +168,110 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) return Center(child: Text('Error: $_error'));
-    if (_discussion == null) return const Center(child: Text('Discussion not found'));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_loading) {
+      return Scaffold(
+        appBar: AppBar(
+          flexibleSpace: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: AppColors.teacherGradient))),
+          title: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(PhosphorIconsRegular.chatsCircle, size: 22),
+              SizedBox(width: 10),
+              Text('Detail Diskusi'),
+            ],
+          ),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(
+          flexibleSpace: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: AppColors.teacherGradient))),
+          title: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(PhosphorIconsRegular.chatsCircle, size: 22),
+              SizedBox(width: 10),
+              Text('Detail Diskusi'),
+            ],
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: AppSpacing.allLg,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(PhosphorIconsRegular.warningCircle, size: 64, color: isDark ? Colors.white38 : Colors.grey.shade400),
+                const SizedBox(height: 16),
+                Text('Error: $_error', textAlign: TextAlign.center, style: TextStyle(color: isDark ? Colors.white60 : Colors.grey.shade600)),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_discussion == null) {
+      return Scaffold(
+        appBar: AppBar(
+          flexibleSpace: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: AppColors.teacherGradient))),
+          title: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(PhosphorIconsRegular.chatsCircle, size: 22),
+              SizedBox(width: 10),
+              Text('Detail Diskusi'),
+            ],
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(PhosphorIconsRegular.chatsTeardrop, size: 64, color: isDark ? Colors.white38 : Colors.grey.shade400),
+              const SizedBox(height: 16),
+              Text('Diskusi tidak ditemukan', style: TextStyle(color: isDark ? Colors.white60 : Colors.grey.shade600)),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Discussion Room Details')),
+      appBar: AppBar(
+        flexibleSpace: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: AppColors.teacherGradient))),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(PhosphorIconsRegular.chatsCircle, size: 22),
+            SizedBox(width: 10),
+            Text('Detail Diskusi'),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.allLg,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ====== Section: Discussion Room Info ======
-              _DiscussionInfoCard(
-                discussion: _discussion!,
-                className: _className,
-                pUnderstood: _pUnderstood,
-                pNotFully: _pNotFully,
-                pNot: _pNot,
-                groupCount: _groupCount,
-                perGroup: _perGroup,
-              ),
-              const SizedBox(height: 24),
-
-              // ====== Section: Questions / Answers ======
-              const _SectionHeading(title: 'Questions / Answers'),
-              const SizedBox(height: 8),
+              _buildInfoCard(context, isDark),
+              AppSpacing.hXxl,
+              _sectionHeader(context, 'Pertanyaan & Jawaban', PhosphorIconsRegular.question, isDark),
+              AppSpacing.hSm,
               CardAnswerQuestionStudent(questions: _questions),
-              const SizedBox(height: 24),
-
-              // ====== Section: Student Conclusions ======
-              const _SectionHeading(title: 'Student Conclusions'),
-              const SizedBox(height: 8),
+              AppSpacing.hXxl,
+              _sectionHeader(context, 'Kesimpulan Siswa', PhosphorIconsRegular.pencilLine, isDark),
+              AppSpacing.hSm,
               CardConclusionStudent(summaries: _summaries),
-              const SizedBox(height: 24),
-
-              // ====== Section: Understanding Results ======
-              const _SectionHeading(title: 'Understanding Results'),
-              const SizedBox(height: 8),
+              AppSpacing.hXxl,
+              _sectionHeader(context, 'Hasil Pemahaman', PhosphorIconsRegular.chartBar, isDark),
+              AppSpacing.hSm,
               CardPercentageUnderstanding(items: _understandings),
             ],
           ),
@@ -228,170 +279,139 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
       ),
     );
   }
-}
 
-/// reusable heading widget biar konsisten antar section
-class _SectionHeading extends StatelessWidget {
-  final String title;
-  const _SectionHeading({required this.title});
+  Widget _sectionHeader(BuildContext context, String title, IconData icon, bool isDark) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 16, color: AppColors.primary),
+        ),
+        const SizedBox(width: 10),
+        Text(title, style: AppTextStyles.titleMedium),
+      ],
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 16,
+  Widget _buildInfoCard(BuildContext context, bool isDark) {
+    final classLabel = _className ?? (_discussion!.fkIdClass.isNotEmpty ? 'Kelas ${_discussion!.fkIdClass}' : 'Tidak ada data');
+    final name = _discussion!.title.isNotEmpty ? _discussion!.title : 'Diskusi';
+    final groupCountStr = _groupCount != null ? '$_groupCount' : '—';
+    final perGroupStr = _perGroup != null ? '$_perGroup' : '—';
+
+    return Container(
+      decoration: AppDecorations.elevatedCard(context),
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(PhosphorIconsFill.chatsCircle, size: 20, color: AppColors.primary),
+              ),
+              const SizedBox(width: 12),
+              Text('Info Ruang Diskusi', style: AppTextStyles.titleMedium),
+            ],
+          ),
+          const Divider(height: 24),
+          _infoRow('Kelas', PhosphorIconsRegular.graduationCap, classLabel, isDark),
+          AppSpacing.hMd,
+          _infoRow('Nama Diskusi', PhosphorIconsRegular.chatsCircle, name, isDark),
+          AppSpacing.hMd,
+          _infoRow('Kelompok', PhosphorIconsRegular.users, '$groupCountStr grup · $perGroupStr per grup', isDark),
+          AppSpacing.hLg,
+          Text('Tingkat Pemahaman', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.white60 : Colors.grey.shade600)),
+          AppSpacing.hSm,
+          _buildUnderstandingBar(isDark),
+        ],
       ),
     );
   }
-}
 
-class _DiscussionInfoCard extends StatelessWidget {
-  final DiscussionRoom discussion;
-  final String? className;
-  final int pUnderstood;
-  final int pNotFully;
-  final int pNot;
-  final int? groupCount;
-  final int? perGroup;
-
-  const _DiscussionInfoCard({required this.discussion, this.className, this.pUnderstood = 0, this.pNotFully = 0, this.pNot = 0, this.groupCount, this.perGroup});
-
-  @override
-  Widget build(BuildContext context) {
-  final classLabel = className ?? (discussion.fkIdClass.isNotEmpty ? 'Class ${discussion.fkIdClass}' : 'No data');
-    final name = discussion.title.isNotEmpty ? discussion.title : 'Discussion';
-  // use provided group/properties if available
-  final groupCount = this.groupCount != null ? '${this.groupCount} Groups' : 'No data';
-  final perGroup = this.perGroup != null ? '${this.perGroup} Per-Groups' : 'No data';
-
+  Widget _infoRow(String label, IconData icon, String value, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-
       children: [
-        const _SectionHeading(title: 'Discussion Room Info'),
-        const SizedBox(height: 8),
-        Card(
-          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        Row(
+          children: [
+            Icon(icon, size: 14, color: isDark ? Colors.white54 : Colors.grey.shade500),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? Colors.white54 : Colors.grey.shade500)),
+          ],
+        ),
+        AppSpacing.hXs,
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(10),
           ),
-          elevation: 4,
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Discussion Room Class', style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(classLabel),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('Discussion Room Name',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(name),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('Number of Discussion Groups',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(groupCount),
-                            ),
-                            const SizedBox(width: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(perGroup),
-                            ),
-                          ],
-                        ),
-                  const SizedBox(height: 12),
-                  const Text('Percentage of Material Understanding',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      children: [
-                        // show percent labels above the bar when we have data
-                        if (pUnderstood + pNotFully + pNot > 0) ...[
-                          Row(
-                            children: [
-                              Expanded(child: Center(child: Text('$pUnderstood%'))),
-                              Expanded(child: Center(child: Text('$pNotFully%'))),
-                              Expanded(child: Center(child: Text('$pNot%'))),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                        ] else ...[
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8.0),
-                            child: Center(child: Text('No data')),
-                          ),
-                        ],
+          child: Text(value, style: AppTextStyles.bodyMedium),
+        ),
+      ],
+    );
+  }
 
-                        Row(
-                          children: [
-                            if (pUnderstood + pNotFully + pNot == 0)
-                              Expanded(child: Container(height: 10, color: Colors.grey.shade300))
-                            else ...[
-                              Expanded(flex: pUnderstood, child: Container(height: 10, color: Colors.green)),
-                              Expanded(flex: pNotFully, child: Container(height: 10, color: Colors.yellow.shade700)),
-                              Expanded(flex: pNot, child: Container(height: 10, color: Colors.red)),
-                            ],
-                          ],
-                        ),
-
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(pUnderstood > 0 ? 'Understood' : 'No data', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 10)),
-                            Text(pNotFully > 0 ? 'Not Fully Understood' : 'No data', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 10)),
-                            Text(pNot > 0 ? 'Not Understood' : 'No data', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 10)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+  Widget _buildUnderstandingBar(bool isDark) {
+    final total = _pUnderstood + _pNotFully + _pNot;
+    if (total == 0) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(PhosphorIconsRegular.chartBar, size: 16, color: isDark ? Colors.white38 : Colors.grey.shade400),
+              const SizedBox(width: 8),
+              Text('Belum ada data pemahaman', style: TextStyle(color: isDark ? Colors.white38 : Colors.grey.shade400, fontSize: 12)),
+            ],
           ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: Center(child: Text('$_pUnderstood%', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Colors.green.shade600)))),
+            Expanded(child: Center(child: Text('$_pNotFully%', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Colors.orange.shade700)))),
+            Expanded(child: Center(child: Text('$_pNot%', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Colors.red.shade600)))),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(flex: _pUnderstood, child: Container(height: 10, decoration: BoxDecoration(color: Colors.green.shade400, borderRadius: const BorderRadius.horizontal(left: Radius.circular(6)),),)),
+            if (_pNotFully > 0) Expanded(flex: _pNotFully, child: Container(height: 10, color: Colors.orange.shade400)),
+            if (_pNot > 0) Expanded(flex: _pNot, child: Container(height: 10, decoration: BoxDecoration(color: Colors.red.shade400, borderRadius: const BorderRadius.horizontal(right: Radius.circular(6)),),)),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Paham', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 10, color: Colors.green.shade600)),
+            Text('Sebagian', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 10, color: Colors.orange.shade700)),
+            Text('Tidak Paham', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 10, color: Colors.red.shade600)),
+          ],
         ),
       ],
     );
   }
 }
-
