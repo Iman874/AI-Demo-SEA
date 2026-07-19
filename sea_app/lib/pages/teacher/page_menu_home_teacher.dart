@@ -321,7 +321,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.today_rounded, color: Colors.white, size: 14),
+                          const Icon(Icons.format_quote_rounded, color: Colors.white, size: 14),
                           const SizedBox(width: 6),
                           Expanded(
                             child: AnimatedQuote(

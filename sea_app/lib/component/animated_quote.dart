@@ -39,24 +39,30 @@ class _AnimatedQuoteState extends State<AnimatedQuote> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
-      transitionBuilder: (child, animation) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, -0.35),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-          )),
-          child: FadeTransition(opacity: animation, child: child),
-        );
-      },
-      child: Text(
-        widget.quotes[_index],
-        key: ValueKey(_index),
-        style: widget.style,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        transitionBuilder: (child, animation) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, -0.35),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: FadeTransition(opacity: animation, child: child),
+          );
+        },
+        child: Text(
+          widget.quotes[_index],
+          key: ValueKey(_index),
+          style: widget.style,
+          textAlign: TextAlign.start,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
