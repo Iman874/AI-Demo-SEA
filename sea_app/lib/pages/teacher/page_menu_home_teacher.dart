@@ -340,7 +340,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
               ),
               // Row Statistik berupa Kartu Putih Horizontal Melayang — HIERARCHY (angka besar)
               Positioned(
-                bottom: -40,
+                bottom: -56,
                 left: 20,
                 right: 20,
                 child: Row(
@@ -371,7 +371,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
               ),
             ],
           ),
-          const SizedBox(height: 48), // Jarak aman setelah Stack melayang
+          const SizedBox(height: 72), // Jarak aman setelah Stack melayang
 
           // ── KELAS TERDAFTAR (DI LUAR HEADER BIRU) ──
           Padding(
