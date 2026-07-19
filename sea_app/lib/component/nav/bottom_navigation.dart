@@ -76,9 +76,9 @@ class _BottomNavigationState extends State<BottomNavigation>
     with SingleTickerProviderStateMixin {
   // ── Tab definitions ────────────────────────────────────────────────────────
   static const List<_NavItem> _kTabs = [
-    _NavItem(PhosphorIconsRegular.house, PhosphorIconsFill.house, 'Home'),
     _NavItem(PhosphorIconsRegular.chatsCircle, PhosphorIconsFill.chatsCircle, 'Diskusi'),
     _NavItem(PhosphorIconsRegular.notePencil, PhosphorIconsFill.notePencil, 'Quiz'),
+    _NavItem(PhosphorIconsRegular.house, PhosphorIconsFill.house, 'Home'),
     _NavItem(PhosphorIconsRegular.bookOpenText, PhosphorIconsFill.bookOpenText, 'Panduan'),
     _NavItem(PhosphorIconsRegular.gearSix, PhosphorIconsFill.gearSix, 'Setelan'),
   ];

@@ -13,6 +13,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_decorations.dart';
 import '../../theme/app_spacing.dart';
+import '../../component/state/skeleton_loading.dart';
 
 class PageMenuDiscussionDetailsTeacher extends StatefulWidget {
   final String discussionId;
@@ -183,7 +184,7 @@ class _PageMenuDiscussionDetailsTeacherState extends State<PageMenuDiscussionDet
             ],
           ),
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const SkeletonDiscussionDetailContent(),
       );
     }
 

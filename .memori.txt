@@ -1,5 +1,160 @@
 ==================================================
 Tanggal : 2026-07-19
+Waktu   : 22:36
+Kategori: Refactor
+
+Judul:
+Modernisasi Komponen WindowMessage Dialog
+
+Detail:
+- Merombak total tampilan `WindowMessage` (`window_message.dart`) menjadi bergaya modern, seragam dengan `WindowConfirmation` dan dialog modern lainnya.
+- Fitur: Ikon info bulat teraksen, judul dialog, teks pesan terpusat yang rapi, tombol AppButton.primary untuk aksi 'Mengerti', serta tombol silang (x) di pojok kanan atas.
+- Fleksibilitas: Menambahkan parameter opsional `title`, `buttonText`, `icon`, dan `iconColor` tanpa mematahkan kode lama (*backward compatible*).
+- File: window_message.dart
+- Verifikasi: flutter analyze 0 error
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:34
+Kategori: Feature
+
+Judul:
+Fitur Mode Pengembang & Showcase Pop-up UI di Halaman Pengaturan
+
+Detail:
+- Mengubah `PageSettings` menjadi `StatefulWidget` dan menambahkan toggle switch 'Mode Pengembang'.
+- Saat diaktifkan, menampilkan alat pengembang (Developer Tools):
+  1. Uji Notifikasi (Toast / Floating SnackBar): Pemicu notifikasi sukses dan error (`AppNotification.show`).
+  2. Showcase Pop-up & Dialog UI: Pemicu untuk menguji dan melihat tampilan visual seluruh dialog pop-up aplikasi tanpa perlu navigasi kompleks (WindowAddClass, WindowJoinClass, WindowAddMaterial, WindowAddQuestion, WindowEditQuestion, WindowAddSummary, WindowConfirmation, WindowMessage).
+- File: page_settings.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Memudahkan pengujian UI, evaluasi desain, dan demonstrasi komponen pop-up & notifikasi oleh pengembang.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:21
+Kategori: Design
+
+Judul:
+SafeArea bottom: false di Halaman Utama Menu (Siswa & Guru)
+
+Detail:
+- Mengubah Scaffold body SafeArea agar menyertakan parameter bottom: false di page_menu_home_student.dart dan page_menu_home_teacher.dart.
+- Hal ini memastikan konten halaman memanjang ke bagian paling bawah layar di bawah floating bottom navigation bar, menghilangkan batasan area kosong (seakan double card) di bagian bawah.
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Navigasi bawah melayang terlihat menyatu bersih dengan latar belakang konten halaman yang mengalir di bawahnya.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:19
+Kategori: Refactor
+
+Judul:
+Penyempurnaan Halaman Panduan (Hapus Header Ganda & Bahasa Indonesia Konsisten)
+
+Detail:
+- Menghapus judul 'Panduan Penggunaan' dan deskripsi intro di dalam body page_guide.dart untuk mencegah tampilan double header (karena tab wrapper sudah memiliki TopHeader).
+- Mengubah label segmented control role selector dari 'Siswa (Student)' & 'Guru (Teacher)' menjadi 'Siswa' & 'Guru' secara konsisten dalam Bahasa Indonesia.
+- Menghapus import app_text_styles.dart yang tidak digunakan di page_guide.dart.
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Tampilan Halaman Panduan terlihat bersih tanpa redundansi teks dan bahasanya sepenuhnya konsisten.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:17
+Kategori: Bug
+
+Judul:
+Fix Bug Header UI Flicker saat Transisi PageView
+
+Detail:
+- Akar masalah: TopHeader sebelumnya diletakkan di luar PageView secara kondisional di dalam Column utama menu (if (_currentIndex != 2)), sehingga TopHeader langsung muncul/hilang secara instan sebelum transisi swipe/page selesai, membuat tinggi layout melompat (flicker/jepretan UI).
+- Solusi: Memasukkan TopHeader ke dalam wrapper tab masing-masing di dalam PageView melalui helper _buildTabWrapper(index, child).
+- Dampak: TopHeader kini bertransisi secara seamless bersama dengan konten halaman tab (Diskusi, Quiz, Panduan, Setelan) tanpa ada flicker atau lompatan layout.
+- File: page_menu_home_student.dart, page_menu_home_teacher.dart
+- Verifikasi: flutter analyze 0 error
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:13
+Kategori: Refactor
+
+Judul:
+Home Tab dipindahkan ke Tengah (Indeks 2) & Default Active Index
+
+Detail:
+- Memindahkan tab Home ke indeks ke-2 (tengah) di list _kTabs (bottom_navigation.dart)
+- Mengubah urutan halaman menu di page_menu_home_student.dart dan page_menu_home_teacher.dart agar Home berada di indeks 2
+- Mengubah default _currentIndex = 2 agar aplikasi default terbuka di tab Home (tengah)
+- Mengubah pengecekan TopHeader agar tidak muncul saat _currentIndex == 2 (Home)
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Navigasi bawah terlihat simetris dan lebih intuitif karena Beranda berada di tengah dan langsung aktif saat startup
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:09
+Kategori: Feature
+
+Judul:
+Animated Profile Avatar & Glow Ring di TopHeader
+
+Detail:
+- Membuat widget AnimatedAvatar di top.dart
+- Menampilkan sapaan inisial dengan background gradient (AppColors.studentGradient/teacherGradient) & border putih tebal (width 2) agar persis sama dengan dashboard
+- Menambahkan efek pulse glow ring melingkar di belakang avatar dengan AnimationController (milliseconds: 2500, repeat)
+- Menambahkan indikator status online berwarna hijau di pojok kanan bawah avatar
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Halaman TopHeader terlihat sangat premium dengan animasi avatar personalisasi yang serasi dengan dashboard
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:01
+Kategori: Refactor
+
+Judul:
+Floating TopHeader Premium (Margin 16px)
+
+Detail:
+- Mengubah TopHeader di top.dart dari edge-to-edge menjadi floating container
+- Margin: EdgeInsets.fromLTRB(16, 12, 16, 8)
+- Border radius: 20px (circular)
+- BoxShadow disempurnakan dengan offset(0, 6) & blurRadius 12
+- Menghapus import yang tidak digunakan (app_decorations.dart & app_spacing.dart)
+- Menonaktifkan status bar padding internal (top: false pada SafeArea)
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Layout header non-home terlihat melayang sangat modern dan simetris dengan bottom navigation
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 21:57
+Kategori: Feature
+
+Judul:
+Skeleton Loading Shimmer di Detail Diskusi (Siswa & Guru)
+
+Detail:
+- Membuat preset SkeletonDiscussionDetailContent di skeleton_loading.dart
+- Mengganti CircularProgressIndicator dengan SkeletonDiscussionDetailContent pada page_menu_discussion_detail_student.dart saat load data (_loading || _loadingClass || _loadingMembers)
+- Mengganti CircularProgressIndicator pada page_menu_discussion_details_teacher.dart dengan SkeletonDiscussionDetailContent
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Tampilan loading pada halaman detail diskusi kini beranimasi shimmer skeleton yang modern dan konsisten baik mode terang maupun gelap
+==================================================
+==================================================
+Tanggal : 2026-07-19
 Waktu   : 19:57
 Kategori: Feature
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../theme/app_text_styles.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_colors.dart';
 
@@ -87,23 +86,6 @@ class _PageGuideState extends State<PageGuide> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 10),
-              Text(
-                'Panduan Penggunaan',
-                style: AppTextStyles.titleLg(context).copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 22,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Pelajari cara maksimal menggunakan Smart Education Assistant.',
-                style: AppTextStyles.bodySm(context).copyWith(
-                  color: isDark ? Colors.white38 : const Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 20),
-
               // Segmented Control (Role Selector)
               Container(
                 padding: const EdgeInsets.all(4),
@@ -135,7 +117,7 @@ class _PageGuideState extends State<PageGuide> {
                           ),
                           child: Center(
                             child: Text(
-                              'Siswa (Student)',
+                              'Siswa',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
@@ -170,7 +152,7 @@ class _PageGuideState extends State<PageGuide> {
                           ),
                           child: Center(
                             child: Text(
-                              'Guru (Teacher)',
+                              'Guru',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,

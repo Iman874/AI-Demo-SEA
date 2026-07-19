@@ -9,8 +9,27 @@ import '../theme/app_colors.dart';
 import 'connection_config_page.dart';
 import 'page_choice_user.dart';
 
-class PageSettings extends StatelessWidget {
+import '../component/window/window_add_class.dart';
+import '../component/window/window_join_class.dart';
+import '../component/window/window_add_material.dart';
+import '../component/window/window_confirmation.dart';
+import '../component/window/window_message.dart';
+import '../component/window/window_add_summary.dart';
+import '../component/window/window_add_question.dart';
+import '../component/window/window_edit_question.dart';
+import '../utils/app_notification.dart';
+import '../models/question.dart';
+import '../models/answer_question.dart';
+
+class PageSettings extends StatefulWidget {
   const PageSettings({super.key});
+
+  @override
+  State<PageSettings> createState() => _PageSettingsState();
+}
+
+class _PageSettingsState extends State<PageSettings> {
+  bool _isDeveloperMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +76,207 @@ class PageSettings extends StatelessWidget {
                 ),
               ],
             ),
+
+            AppSpacing.hXxl,
+
+            // ── Section: Mode Pengembang ──
+            _SectionTitle(title: 'Pengembang'),
+            AppSpacing.hSm,
+            _SettingsCard(
+              children: [
+                _SwitchTile(
+                  icon: PhosphorIconsRegular.code,
+                  title: 'Mode Pengembang',
+                  subtitle: 'Aktifkan pemicu notifikasi & showcase UI pop-up',
+                  value: _isDeveloperMode,
+                  onChanged: (val) {
+                    setState(() => _isDeveloperMode = val);
+                  },
+                ),
+              ],
+            ),
+
+            if (_isDeveloperMode) ...[
+              AppSpacing.hXxl,
+              _SectionTitle(title: 'Uji Notifikasi (Toast / SnackBar)'),
+              AppSpacing.hSm,
+              _SettingsCard(
+                children: [
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.checkCircle,
+                    iconColor: const Color(0xFF10B981),
+                    title: 'Notifikasi Sukses',
+                    subtitle: 'Uji floating snackbar pesan sukses',
+                    onTap: () {
+                      AppNotification.show(
+                        context,
+                        'Berhasil! Ini adalah contoh pesan notifikasi sukses.',
+                        isError: false,
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.warningCircle,
+                    iconColor: const Color(0xFFEF4444),
+                    title: 'Notifikasi Gagal / Error',
+                    subtitle: 'Uji floating snackbar pesan error',
+                    onTap: () {
+                      AppNotification.show(
+                        context,
+                        'Gagal! Terjadi kesalahan sistem pada sampel demo.',
+                        isError: true,
+                      );
+                    },
+                  ),
+                ],
+              ),
+
+              AppSpacing.hXxl,
+              _SectionTitle(title: 'Showcase Pop-up & Dialog UI'),
+              AppSpacing.hSm,
+              _SettingsCard(
+                children: [
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.plusCircle,
+                    title: 'Window Add Class',
+                    subtitle: 'Uji dialog buat kelas baru',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => WindowAddClass(onAdd: (c) {}),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.userPlus,
+                    title: 'Window Join Class',
+                    subtitle: 'Uji dialog gabung kelas dengan kode',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => WindowJoinClass(onJoin: (code) {}),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.filePdf,
+                    title: 'Window Add Material',
+                    subtitle: 'Uji dialog tambah/upload materi PDF & teks',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const WindowAddMaterial(saveImmediately: false),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.question,
+                    title: 'Window Add Question',
+                    subtitle: 'Uji dialog tambah butir soal kuis',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => WindowAddQuestion(
+                          nextNumber: 1,
+                          fkIdQuiz: 'demo',
+                          onAdd: (q) {},
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.pencilLine,
+                    title: 'Window Edit Question',
+                    subtitle: 'Uji dialog edit butir soal kuis',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => WindowEditQuestion(
+                          question: Question(
+                            idQuestion: 'demo',
+                            number: 1,
+                            question: 'Berapakah hasil dari 2 + 2?',
+                            poin: 10,
+                            fkIdQuiz: 'demo',
+                            createAt: DateTime.now(),
+                            updateAt: DateTime.now(),
+                            answerChoices: [
+                              AnswerQuestion(
+                                idAnswerChoice: '1',
+                                content: '4',
+                                isCorrect: true,
+                                createAt: DateTime.now(),
+                                updateAt: DateTime.now(),
+                              ),
+                              AnswerQuestion(
+                                idAnswerChoice: '2',
+                                content: '5',
+                                isCorrect: false,
+                                createAt: DateTime.now(),
+                                updateAt: DateTime.now(),
+                              ),
+                            ],
+                          ),
+                          onSave: (q) {},
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.sparkle,
+                    title: 'Window Add Summary',
+                    subtitle: 'Uji dialog simpan ringkasan AI',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const WindowAddSummary(
+                          summaries: [],
+                          chatRoomId: 'demo',
+                          userId: 'demo',
+                          initialContent: 'Ringkasan pembelajaran demo AI.',
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.warning,
+                    title: 'Window Confirmation',
+                    subtitle: 'Uji dialog konfirmasi tindakan',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => WindowConfirmation(
+                          message: 'Apakah kamu yakin ingin melanjutkan tindakan demo ini?',
+                          onConfirm: () => Navigator.pop(context),
+                          onCancel: () => Navigator.pop(context),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.info,
+                    title: 'Window Message',
+                    subtitle: 'Uji dialog pesan informasi umum',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => WindowMessage(
+                          message: 'Ini adalah contoh pesan dialog informasi.',
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
 
             AppSpacing.hXxl,
 
@@ -425,3 +645,69 @@ class _SectionTitle extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────
+// Widget: Switch Tile
+// ─────────────────────────────────────────
+
+class _SwitchTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _SwitchTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final defaultIconColor = Theme.of(context).colorScheme.primary;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: defaultIconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: defaultIconColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.labelMd(context),
+                ),
+                const SizedBox(height: 2),
+                Text(subtitle, style: AppTextStyles.bodySm(context)),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: value,
+            activeColor: defaultIconColor,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+

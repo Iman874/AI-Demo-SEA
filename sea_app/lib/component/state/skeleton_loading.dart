@@ -355,3 +355,138 @@ class SkeletonListContent extends StatelessWidget {
     );
   }
 }
+
+/// Preset Skeleton untuk Halaman Detail Diskusi (Siswa & Guru)
+class SkeletonDiscussionDetailContent extends StatelessWidget {
+  const SkeletonDiscussionDetailContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ShimmerLoading(
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Info Card
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      SkeletonCircle(size: 32),
+                      SizedBox(width: 12),
+                      SkeletonLine(width: 140, height: 16),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ...List.generate(3, (index) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (index > 0) const SizedBox(height: 12),
+                      const Row(
+                        children: [
+                          SkeletonCircle(size: 14),
+                          SizedBox(width: 6),
+                          SkeletonLine(width: 60, height: 10),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      const SkeletonBox(height: 38, borderRadius: 10),
+                    ],
+                  )),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // 2. Second Card (Members or QA)
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      SkeletonCircle(size: 32),
+                      SizedBox(width: 12),
+                      SkeletonLine(width: 120, height: 16),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ...List.generate(3, (index) => const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        SkeletonCircle(size: 36),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SkeletonLine(width: 120, height: 12),
+                              SizedBox(height: 6),
+                              SkeletonLine(width: 180, height: 10),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // 3. Third Card (Materials or Understandings)
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      SkeletonCircle(size: 32),
+                      SizedBox(width: 12),
+                      SkeletonLine(width: 120, height: 16),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ...List.generate(2, (index) => const Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        SkeletonBox(width: 28, height: 28, borderRadius: 8),
+                        SizedBox(width: 12),
+                        Expanded(child: SkeletonLine(width: 150, height: 12)),
+                        SkeletonCircle(size: 16),
+                      ],
+                    ),
+                  )),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

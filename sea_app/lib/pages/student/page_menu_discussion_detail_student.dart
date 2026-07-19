@@ -13,6 +13,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_decorations.dart';
 import '../../theme/app_spacing.dart';
+import '../../component/state/skeleton_loading.dart';
 
 class DiscussionDetailStudentPage extends StatefulWidget {
   final DiscussionRoom discussion;
@@ -99,6 +100,7 @@ class _DiscussionDetailStudentPageState extends State<DiscussionDetailStudentPag
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isInitialLoading = _loading || _loadingClass || _loadingMembers;
 
     return Scaffold(
       appBar: AppBar(
@@ -112,21 +114,23 @@ class _DiscussionDetailStudentPageState extends State<DiscussionDetailStudentPag
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        padding: AppSpacing.allLg,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildInfoCard(context, isDark),
-            AppSpacing.hLg,
-            _buildMembersSection(context, isDark),
-            AppSpacing.hLg,
-            _buildMaterialsSection(context, isDark),
-            AppSpacing.hXl,
-            _buildAiButton(context, isDark),
-          ],
-        ),
-      ),
+      body: isInitialLoading
+          ? const SkeletonDiscussionDetailContent()
+          : SingleChildScrollView(
+              padding: AppSpacing.allLg,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildInfoCard(context, isDark),
+                  AppSpacing.hLg,
+                  _buildMembersSection(context, isDark),
+                  AppSpacing.hLg,
+                  _buildMaterialsSection(context, isDark),
+                  AppSpacing.hXl,
+                  _buildAiButton(context, isDark),
+                ],
+              ),
+            ),
     );
   }
 

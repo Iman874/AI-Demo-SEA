@@ -36,30 +36,22 @@ class MenuHomeStudent extends StatefulWidget {
 }
 
 class _MenuHomeStudentState extends State<MenuHomeStudent> {
-  int _currentIndex = 0;
+  int _currentIndex = 2;
 
   static const List<String> _titles = [
-    "Home",
     "Discussion Room",
     "Quiz",
+    "Home",
     "Panduan",
     "Setelan",
   ];
 
   static const List<String> _subtitles = [
-    "Kelola kelas & diskusi",
     "Ruang diskusi kelas",
     "Kerjakan & evaluasi kuis",
+    "Kelola kelas & diskusi",
     "Cara menggunakan aplikasi",
     "Preferensi & konfigurasi",
-  ];
-
-  final List<Widget> _pages = [
-    _HomeStudentContent(),
-    PageMenuDiscussionStudent(),
-    PageMenuQuizStudent(),
-    const PageGuide(),
-    const PageSettings(),
   ];
 
   late final PageController _pageController;
@@ -82,29 +74,37 @@ class _MenuHomeStudentState extends State<MenuHomeStudent> {
     _pageController.jumpToPage(index);
   }
 
+  Widget _buildTabWrapper(int index, Widget child) {
+    return Column(
+      children: [
+        TopHeader(
+          title: _titles[index],
+          subtitle: _subtitles[index],
+          accentColor: AppColors.studentAccent,
+        ),
+        Expanded(child: child),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
       body: SafeArea(
-        child: Column(
+        bottom: false,
+        child: PageView(
+          controller: _pageController,
+          physics: const BouncingScrollPhysics(),
+          onPageChanged: (index) {
+            setState(() => _currentIndex = index);
+          },
           children: [
-            if (_currentIndex != 0)
-              TopHeader(
-                title: _titles[_currentIndex],
-                subtitle: _subtitles[_currentIndex],
-                accentColor: AppColors.studentAccent,
-              ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const BouncingScrollPhysics(),
-                onPageChanged: (index) {
-                  setState(() => _currentIndex = index);
-                },
-                children: _pages,
-              ),
-            ),
+            _buildTabWrapper(0, PageMenuDiscussionStudent()),
+            _buildTabWrapper(1, PageMenuQuizStudent()),
+            _HomeStudentContent(),
+            _buildTabWrapper(3, const PageGuide()),
+            _buildTabWrapper(4, const PageSettings()),
           ],
         ),
       ),

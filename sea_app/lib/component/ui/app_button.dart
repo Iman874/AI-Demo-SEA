@@ -4,6 +4,10 @@ import '../../theme/app_decorations.dart';
 import '../../theme/app_text_styles.dart';
 
 /// Sistem Button Modern Aplikasi SEA App
+///
+/// Bahasa desain disamakan dengan BottomNavigation dan TopHeader: flat
+/// surface, shadow lembut dua-layer (netral + accent-tint tipis), warna
+/// accent dipakai sebagai fill/tint — bukan gradient/glow penuh.
 class AppButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -26,7 +30,11 @@ class AppButton extends StatelessWidget {
     this.textColor,
   });
 
-  /// Primary Gradient Button (Modern Look)
+  /// Primary Button — flat solid fill (Modern Look).
+  ///
+  /// Default-nya sekarang flat, bukan gradient. Kalau [gradientColors]
+  /// diisi eksplisit (2+ warna), gradient tetap dipakai — supaya tempat
+  /// lain di app yang sudah pasang gradient custom tidak ikut berubah.
   factory AppButton.primary({
     Key? key,
     required String label,
@@ -92,11 +100,11 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final defaultGradient = gradientColors ??
-        [
-          Theme.of(context).primaryColor,
-          Theme.of(context).primaryColor.withValues(alpha: 0.85),
-        ];
+    // Only treat gradientColors as an explicit request when the caller
+    // actually passed 2+ colors — otherwise fall back to a flat solid
+    // fill using the theme's primary color.
+    final bool hasExplicitGradient = gradientColors != null && gradientColors!.length > 1;
+    final Color solidColor = gradientColors?.first ?? Theme.of(context).primaryColor;
 
     final isPill = !isFullWidth && backgroundColor != null;
 
@@ -135,24 +143,38 @@ class AppButton extends StatelessWidget {
       ],
     );
 
-    if (gradientColors != null || backgroundColor == null) {
+    if (backgroundColor == null) {
+      // ── Primary — flat solid fill, soft two-layer shadow ──────────
+      // Same shadow recipe as the active-tab circle in BottomNavigation:
+      // one neutral shadow for elevation + one faint accent-tinted
+      // shadow for warmth, instead of a single colored "glow" blur.
       return Container(
         width: isFullWidth ? double.infinity : null,
         decoration: BoxDecoration(
-          gradient: onPressed != null
+          gradient: (onPressed != null && hasExplicitGradient)
               ? LinearGradient(
-                  colors: defaultGradient,
+                  colors: gradientColors!,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: onPressed == null ? Colors.grey.shade400 : null,
+          color: onPressed == null
+              ? Colors.grey.shade400
+              : (hasExplicitGradient ? null : solidColor),
           borderRadius: AppDecorations.borderRadiusMd,
           boxShadow: onPressed != null
-              ? AppDecorations.shadowGlow(
-                  color: defaultGradient.first,
-                  opacity: 0.25,
-                )
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.10),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: solidColor.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
               : null,
         ),
         child: Material(
