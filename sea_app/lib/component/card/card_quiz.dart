@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../models/quiz.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -93,7 +94,7 @@ class _QuizItemCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
-              Icons.assignment_turned_in_rounded,
+              PhosphorIconsRegular.checkCircle,
               color: primaryColor,
               size: 24,
             ),
@@ -117,7 +118,7 @@ class _QuizItemCard extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      Icons.help_outline_rounded,
+                      PhosphorIconsRegular.question,
                       size: 13,
                       color: isDark
                           ? const Color(0xFF94A3B8)
@@ -151,7 +152,7 @@ class _QuizItemCard extends StatelessWidget {
                   height: 38,
                   alignment: Alignment.center,
                   child: Icon(
-                    Icons.chevron_right_rounded,
+                    PhosphorIconsRegular.caretRight,
                     size: 20,
                     color: primaryColor,
                   ),

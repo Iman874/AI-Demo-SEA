@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../models/class.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -87,7 +88,7 @@ class _ClassItemCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
-              Icons.menu_book_rounded,
+              PhosphorIconsRegular.bookOpenText,
               color: primaryColor,
               size: 24,
             ),
@@ -135,7 +136,7 @@ class _ClassItemCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.calendar_today_rounded,
+                            PhosphorIconsRegular.calendar,
                             size: 11,
                             color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8),
                           ),
@@ -154,7 +155,7 @@ class _ClassItemCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.schedule_rounded,
+                          PhosphorIconsRegular.clock,
                           size: 11,
                           color: isDark ? Colors.white30 : Colors.grey.shade500,
                         ),
@@ -188,7 +189,7 @@ class _ClassItemCard extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Icon(Icons.circle, size: 6, color: Color(0xFF10B981)),
+                Icon(PhosphorIconsRegular.circle, size: 6, color: Color(0xFF10B981)),
                 SizedBox(width: 5),
                 Text(
                   "Aktif",

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../models/material.dart';
 import '../../theme/app_colors.dart';
 
@@ -82,7 +83,7 @@ class CardMaterialList extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              isPdf ? Icons.picture_as_pdf_rounded : Icons.description_rounded,
+                              isPdf ? PhosphorIconsRegular.filePdf : PhosphorIconsRegular.fileText,
                               color: isPdf ? Colors.red.shade400 : Colors.blue.shade400,
                               size: 20,
                             ),
@@ -104,7 +105,7 @@ class CardMaterialList extends StatelessWidget {
                           // Tombol Baca / Lihat
                           IconButton(
                             icon: Icon(
-                              Icons.visibility_outlined,
+                              PhosphorIconsRegular.eye,
                               color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
                               size: 20,
                             ),

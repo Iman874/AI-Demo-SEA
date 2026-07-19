@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../models/discussion_room.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -119,7 +120,7 @@ class _DiscussionItemCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
-                  Icons.forum_rounded,
+                  PhosphorIconsFill.chatsCircle,
                   color: isOpen ? primaryColor : Colors.grey,
                   size: 24,
                 ),
@@ -192,7 +193,7 @@ class _DiscussionItemCard extends StatelessWidget {
                   height: 38,
                   alignment: Alignment.center,
                   child: Icon(
-                    isOpen ? Icons.edit_rounded : Icons.info_outline_rounded,
+                    isOpen ? PhosphorIconsRegular.pencil : PhosphorIconsRegular.info,
                     size: 18,
                     color: isOpen ? primaryColor : Colors.grey.shade600,
                   ),

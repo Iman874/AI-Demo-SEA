@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../theme/app_colors.dart';
 import '../../component/nav/bottom_navigation.dart';
 import '../../component/header/top.dart';
@@ -321,7 +322,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.format_quote_rounded, color: Colors.white, size: 14),
+                          const Icon(PhosphorIconsRegular.quotes, color: Colors.white, size: 14),
                           const SizedBox(width: 6),
                           Expanded(
                             child: AnimatedQuote(
@@ -350,7 +351,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                     // Card 1: Kelas Diajar
                     Expanded(
                       child: _StatCard(
-                        icon: Icons.school_rounded,
+                        icon: PhosphorIconsRegular.graduationCap,
                         iconColor: const Color(0xFF2563EB),
                         value: "${_classes.length}",
                         label: "Kelas Diajar",
@@ -361,7 +362,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                     // Card 2: Diskusi Aktif
                     Expanded(
                       child: _StatCard(
-                        icon: Icons.forum_rounded,
+                        icon: PhosphorIconsFill.chatsCircle,
                         iconColor: const Color(0xFF8B5CF6),
                         value: "${active.length}",
                         label: "Diskusi Aktif",
@@ -401,7 +402,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                         ),
                       ),
                       SizedBox(width: 4),
-                      Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFF2563EB)),
+                      Icon(PhosphorIconsRegular.caretRight, size: 16, color: Color(0xFF2563EB)),
                     ],
                   ),
                 ),
@@ -485,7 +486,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                             color: Colors.white.withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: const Icon(Icons.forum_rounded, color: Colors.white, size: 26),
+                          child: const Icon(PhosphorIconsFill.chatsCircle, color: Colors.white, size: 26),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -513,7 +514,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                             ],
                           ),
                         ),
-                        const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 22),
+                        const Icon(PhosphorIconsRegular.arrowRight, color: Colors.white, size: 22),
                       ],
                     ),
                   ),
@@ -563,7 +564,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
-                  Icons.menu_book_rounded,
+                  PhosphorIconsRegular.bookOpenText,
                   color: AppColors.primary,
                   size: 16,
                 ),
@@ -604,7 +605,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
               Row(
                 children: [
                   Icon(
-                    Icons.calendar_today_rounded,
+                    PhosphorIconsRegular.calendar,
                     size: 10,
                     color: isDark ? AppColors.textSecondaryDark : const Color(0xFF94A3B8),
                   ),
@@ -675,7 +676,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.add_rounded,
+                  PhosphorIconsRegular.plus,
                   color: Color(0xFF2563EB),
                   size: 24,
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../component/nav/bottom_navigation.dart';
 import '../../component/header/top.dart';
 import '../../component/card/card_quiz.dart';
@@ -430,7 +431,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.format_quote_rounded, color: Colors.white, size: 14),
+                          const Icon(PhosphorIconsRegular.quotes, color: Colors.white, size: 14),
                           const SizedBox(width: 6),
                           Expanded(
                             child: AnimatedQuote(
@@ -462,7 +463,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                     // Card 1: Kelas Diikuti
                     Expanded(
                       child: _StatCard(
-                        icon: Icons.school_rounded,
+                        icon: PhosphorIconsRegular.graduationCap,
                         iconColor: const Color(0xFF2563EB),
                         value: "${classes.length}",
                         label: "Kelas Diikuti",
@@ -473,7 +474,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                     // Card 2: Kuis Selesai
                     Expanded(
                       child: _StatCard(
-                        icon: Icons.assignment_turned_in_rounded,
+                        icon: PhosphorIconsRegular.checkCircle,
                         iconColor: const Color(0xFFF97316),
                         value: "${recentQuizzes.length}",
                         label: "Kuis Selesai",
@@ -513,7 +514,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                         ),
                       ),
                       SizedBox(width: 4),
-                      Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFF2563EB)),
+                      Icon(PhosphorIconsRegular.caretRight, size: 16, color: Color(0xFF2563EB)),
                     ],
                   ),
                 ),
@@ -684,7 +685,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
-                  Icons.menu_book_rounded,
+                  PhosphorIconsRegular.bookOpenText,
                   color: AppColors.secondary,
                   size: 16,
                 ),
@@ -724,7 +725,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
               Row(
                 children: [
                   Icon(
-                    Icons.calendar_today_rounded,
+                    PhosphorIconsRegular.calendar,
                     size: 10,
                     color: isDark ? AppColors.textSecondaryDark : const Color(0xFF94A3B8),
                   ),
@@ -785,7 +786,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.add_rounded,
+                  PhosphorIconsRegular.plus,
                   color: Color(0xFF2563EB),
                   size: 24,
                 ),
@@ -953,7 +954,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
     if (total == 0) {
       return Row(
         children: [
-          const Icon(Icons.flag_outlined, color: Colors.white70, size: 13),
+          const Icon(PhosphorIconsRegular.flag, color: Colors.white70, size: 13),
           const SizedBox(width: 6),
           Expanded(
             child: Text(

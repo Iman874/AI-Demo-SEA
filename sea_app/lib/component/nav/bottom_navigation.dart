@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../theme/app_colors.dart';
 
 class BottomNavigation extends StatelessWidget {
@@ -48,8 +49,8 @@ class BottomNavigation extends StatelessWidget {
             children: [
               Expanded(
                 child: _NavItem(
-                  icon: Icons.home_outlined,
-                  activeIcon: Icons.home_rounded,
+                  icon: PhosphorIconsRegular.house,
+                  activeIcon: PhosphorIconsFill.house,
                   label: 'Home',
                   index: 0,
                   currentIndex: currentIndex,
@@ -60,8 +61,8 @@ class BottomNavigation extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.forum_outlined,
-                  activeIcon: Icons.forum_rounded,
+                  icon: PhosphorIconsRegular.chatsCircle,
+                  activeIcon: PhosphorIconsFill.chatsCircle,
                   label: 'Diskusi',
                   index: 1,
                   currentIndex: currentIndex,
@@ -72,8 +73,8 @@ class BottomNavigation extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.edit_note_outlined,
-                  activeIcon: Icons.edit_note_rounded,
+                  icon: PhosphorIconsRegular.notePencil,
+                  activeIcon: PhosphorIconsFill.notePencil,
                   label: 'Quiz',
                   index: 2,
                   currentIndex: currentIndex,
@@ -84,8 +85,8 @@ class BottomNavigation extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.menu_book_outlined,
-                  activeIcon: Icons.menu_book_rounded,
+                  icon: PhosphorIconsRegular.bookOpenText,
+                  activeIcon: PhosphorIconsFill.bookOpenText,
                   label: 'Panduan',
                   index: 3,
                   currentIndex: currentIndex,
@@ -96,8 +97,8 @@ class BottomNavigation extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.settings_outlined,
-                  activeIcon: Icons.settings_rounded,
+                  icon: PhosphorIconsRegular.gearSix,
+                  activeIcon: PhosphorIconsFill.gearSix,
                   label: 'Setelan',
                   index: 4,
                   currentIndex: currentIndex,
