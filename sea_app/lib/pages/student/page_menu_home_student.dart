@@ -452,7 +452,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
               ),
               // Row Statistik berupa Kartu Putih Horizontal Melayang — HIERARCHY (angka besar)
               Positioned(
-                bottom: -28,
+                bottom: -40,
                 left: 20,
                 right: 20,
                 child: Row(

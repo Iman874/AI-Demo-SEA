@@ -36,6 +36,26 @@ Dampak:
 ==================================================
 ==================================================
 Tanggal : 2026-07-19
+Waktu   : 18:42
+Kategori: Bug
+
+Judul:
+Hotfix v1.2.3 — Fix 2 Stat Card Overlap Gradient Header (Positioned bottom:-28 → -40)
+
+Detail:
+- Dua kartu statistik (kelas + kuis/diskusi) diposisikan via Positioned(bottom: -28) di dalam Stack header
+- Dengan tinggi kartu ~110px, cards overlap gradient header ~26px (menutupi gradient content)
+- Fix: bottom: -28 → bottom: -40, mendorong cards 12px lebih ke bawah
+- Cards sekarang hanya overlap ~14px (area padding kosong), tidak menutupi konten header
+- SizedBox(height: 48) tetap, gap ke sections berikutnya: 8px
+- Verifikasi: `flutter analyze` 0 error, 20 issues (baseline sama)
+
+Dampak:
+- File: page_menu_home_student.dart, page_menu_home_teacher.dart (Positioned bottom:-28→-40)
+- Tidak ada perubahan lain; floating effect tetap terjaga
+==================================================
+==================================================
+Tanggal : 2026-07-19
 Waktu   : 18:03
 Kategori: Feature
 
