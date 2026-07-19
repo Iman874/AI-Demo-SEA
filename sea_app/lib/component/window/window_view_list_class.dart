@@ -231,11 +231,15 @@ class _WindowViewListClassState extends State<WindowViewListClass> {
                                                   color: isDark ? Colors.white38 : const Color(0xFF64748B),
                                                 ),
                                                 const SizedBox(width: 4),
-                                                Text(
-                                                  c.semester.isEmpty ? "Semester 1" : "Semester ${c.semester}",
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                                                Flexible(
+                                                  child: Text(
+                                                    c.semester.isEmpty ? "Semester 1" : "Semester ${c.semester}",
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ],
@@ -249,11 +253,15 @@ class _WindowViewListClassState extends State<WindowViewListClass> {
                                                   color: isDark ? Colors.white38 : const Color(0xFF64748B),
                                                 ),
                                                 const SizedBox(width: 4),
-                                                Text(
-                                                  "Aktif $relTime",
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                                                Flexible(
+                                                  child: Text(
+                                                    "Aktif $relTime",
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ),
                                               ],
