@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'page_login_user.dart' as login;
+import '../theme/app_colors.dart';
 
-// Tambahkan ini di atas _ChoiceCard agar enum UserType selalu tersedia
 typedef UserType = login.UserType;
 
 class ChoiceUserPage extends StatefulWidget {
@@ -12,8 +12,6 @@ class ChoiceUserPage extends StatefulWidget {
 }
 
 class _ChoiceUserPageState extends State<ChoiceUserPage> {
-  int selected = 1; // 0: teacher, 1: student
-
   void _navigateToLogin(UserType userType) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -24,35 +22,80 @@ class _ChoiceUserPageState extends State<ChoiceUserPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: Center(
-          child: Row(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Teacher
-              _ChoiceCard(
-                label: "Choose Teacher",
-                isSelected: selected == 0,
-                icon: _buildTeacherIcon(),
-                onTap: () {
-                  setState(() => selected = 0);
-                  _navigateToLogin(login.UserType.teacher);
-                },
-                color: Theme.of(context).primaryColor,
+              const Spacer(),
+              // Header Aplikasi Logo PNG Asli
+              Image.asset(
+                'assets/logo.png',
+                height: 110,
+                fit: BoxFit.contain,
               ),
-              const SizedBox(width: 24),
-              // Student
-              _ChoiceCard(
-                label: "Choose Student",
-                isSelected: selected == 1,
-                icon: _buildStudentIcon(),
-                onTap: () {
-                  setState(() => selected = 1);
-                  _navigateToLogin(login.UserType.student);
-                },
-                color: Theme.of(context).colorScheme.secondary,
+              const SizedBox(height: 24),
+              Text(
+                "Selamat Datang di SEA App",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  letterSpacing: -0.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  "Sistem pembelajaran cerdas berbasis AI untuk mengoptimalkan proses belajar mengajar.",
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 48),
+
+              // Pilihan Role Siswa
+              _buildRoleCard(
+                title: "Saya Sebagai Siswa",
+                description: "Masuk ke portal pembelajaran interaktif, berdiskusi dengan AI, dan kerjakan kuis mandiri.",
+                gradient: AppColors.studentGradient,
+                iconData: Icons.school_rounded,
+                onTap: () => _navigateToLogin(login.UserType.student),
+                isDark: isDark,
+              ),
+              const SizedBox(height: 16),
+
+              // Pilihan Role Guru
+              _buildRoleCard(
+                title: "Saya Sebagai Guru",
+                description: "Kelola kelas terdaftar, buat kuis interaktif, unggah materi belajar, dan pantau pemahaman murid.",
+                gradient: AppColors.teacherGradient,
+                iconData: Icons.co_present_rounded,
+                onTap: () => _navigateToLogin(login.UserType.teacher),
+                isDark: isDark,
+              ),
+
+              const Spacer(flex: 2),
+              Text(
+                "Smart Education Assistant • Universitas Negeri Padang",
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white24 : const Color(0xFF94A3B8),
+                ),
               ),
             ],
           ),
@@ -61,95 +104,87 @@ class _ChoiceUserPageState extends State<ChoiceUserPage> {
     );
   }
 
-  Widget _buildTeacherIcon() {
-    // Gunakan icon asset jika tidak ada di library
-    return SizedBox(
-      width: 56,
-      height: 56,
-      child: Image.asset(
-        'assets/icon/teacher.png',
-        fit: BoxFit.contain,
-      ),
-    );
-  }
-
-  Widget _buildStudentIcon() {
-    // Gunakan icon asset jika tidak ada di library
-    return SizedBox(
-      width: 56,
-      height: 56,
-      child: Image.asset(
-        'assets/icon/student.png',
-        fit: BoxFit.contain,
-      ),
-    );
-  }
-}
-
-class _ChoiceCard extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final Widget icon;
-  final VoidCallback onTap;
-  final Color color;
-
-  const _ChoiceCard({
-    required this.label,
-    required this.isSelected,
-    required this.icon,
-    required this.onTap,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(18),
-              border: isSelected
-                  ? Border.all(color: color, width: 3)
-                  : null,
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).shadowColor.withOpacity(0.10),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+  Widget _buildRoleCard({
+    required String title,
+    required String description,
+    required List<Color> gradient,
+    required IconData iconData,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Icon Badge
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: gradient,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                iconData,
+                color: Colors.white,
+                size: 26,
+              ),
             ),
-            child: Center(child: icon),
-          ),
+            const SizedBox(width: 18),
+            // Text Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            // Arrow indicator
+            Icon(
+              Icons.chevron_right_rounded,
+              color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color,
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          ),
-          onPressed: onTap,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodySmall?.color ?? Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

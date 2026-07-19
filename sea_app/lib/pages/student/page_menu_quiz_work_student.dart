@@ -221,7 +221,7 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                color: const Color(0xFFDD6A2B),
+                color: const Color(0xFFD97B43),
                 child: Center(
                   child: Text('Student Quiz', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white)),
                 ),
@@ -327,7 +327,7 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF9DBED0),
+                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 6, offset: const Offset(0, 4))],
                                 ),
@@ -351,7 +351,7 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF8A8A8A),
+                                  backgroundColor: Theme.of(context).disabledColor,
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
@@ -363,7 +363,7 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                             Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF3E6D8F),
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_decorations.dart';
 
 class WindowMessage extends StatelessWidget {
   final String message;
@@ -8,51 +11,39 @@ class WindowMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Dialog(
-      insetPadding: const EdgeInsets.all(24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)), // lebih membulat
+      insetPadding: EdgeInsets.all(AppSpacing.xxl),
+      shape: RoundedRectangleBorder(borderRadius: AppDecorations.borderRadiusLg),
       child: Stack(
         children: [
           Container(
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: AppDecorations.borderRadiusLg,
             ),
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(AppSpacing.xxl),
             child: ConstrainedBox(
               constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 8),
+                    AppSpacing.hSm,
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        message,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
+                      child: Text(message, style: AppTextStyles.bodyLg(context)),
                     ),
-                    const SizedBox(height: 24),
+                    AppSpacing.hXxl,
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF437057),
-                          foregroundColor: Colors.white,
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
                         onPressed: onOk ?? () {
                           if (Navigator.of(context).canPop()) {
                             Navigator.of(context).pop();
                           }
                         },
-                        child: const Text(
-                          "OK",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
+                        child: Text("OK", style: AppTextStyles.labelLg(context)),
                       ),
                     ),
                   ],
@@ -71,11 +62,11 @@ class WindowMessage extends StatelessWidget {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.12),
+                  color: cs.error.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 padding: const EdgeInsets.all(6),
-                child: Icon(Icons.close, color: Colors.red, size: 22),
+                child: Icon(Icons.close, color: cs.error, size: 22),
               ),
             ),
           ),

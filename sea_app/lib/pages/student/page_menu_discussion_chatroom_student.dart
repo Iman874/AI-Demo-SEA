@@ -319,14 +319,14 @@ class _DiscussionPageChatRoomStudentState
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: Theme.of(context).colorScheme.surfaceVariant,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: messages.isEmpty
                               ? Center(
                                   child: Text(
                                     'No messages yet. Start the discussion by asking a question.',
-                                    style: TextStyle(color: Colors.grey.shade600),
+                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
                                     textAlign: TextAlign.center,
                                   ),
                                 )
@@ -395,7 +395,7 @@ class _DiscussionPageChatRoomStudentState
     if (isCompletedForUser) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         child: Center(
           child: ElevatedButton(
             onPressed: () {
@@ -448,7 +448,7 @@ class _DiscussionPageChatRoomStudentState
               decoration: InputDecoration(
                 hintText: 'Type your question',
                 filled: true,
-                fillColor: const Color(0xFFF5F5F5),
+                fillColor: Theme.of(context).colorScheme.surfaceVariant,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
@@ -518,7 +518,7 @@ class ChatBubble extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         constraints: const BoxConstraints(maxWidth: 250),
         decoration: BoxDecoration(
-          color: isUser ? Colors.green.shade100 : Colors.grey.shade300,
+          color: isUser ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15) : Theme.of(context).colorScheme.surfaceVariant,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(text),

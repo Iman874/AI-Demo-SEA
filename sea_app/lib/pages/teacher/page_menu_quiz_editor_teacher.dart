@@ -6,11 +6,11 @@ import '../../component/window/window_message.dart';
 import '../../providers/quiz_provider.dart';
 import '../../component/window/window_add_material.dart';
 import '../../component/card/card_material.dart';
-import '../../component/card/card_question.dart';
-import '../../component/window/window_add_question.dart';
-import '../../component/window/window_confirmation.dart';
-import '../../component/window/window_edit_question.dart';
+import '../../pages/teacher/page_quiz_questions_teacher.dart';
 import '../../utils/app_logger.dart';
+import '../../theme/app_colors.dart';
+import '../../component/ui/app_button.dart';
+import '../../utils/app_notification.dart';
 import '../../models/material.dart';
 import '../../models/question.dart';
 import '../../models/answer_question.dart';
@@ -41,82 +41,6 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
   bool _saving = false;
   String? _selectedClassId;
 
-  void _openAddQuestionDialog({Question? editQuestion}) async {
-    if (editQuestion != null) {
-  // pass combined materials to the edit dialog
-  final prov = Provider.of<QuizProvider>(context, listen: false);
-  final persistedMaterials = prov.materials.map((m) => MaterialPdfJson.fromJson(m)).toList();
-  // map local materials preserving tmp_id as id so dropdown values match
-  final localMaterialsDisplay = _localMaterials.map((m) => MaterialPdf(
-    id: m['tmp_id']?.toString() ?? m['id']?.toString() ?? '',
-    title: m['title']?.toString() ?? '',
-    content: m['content']?.toString() ?? '',
-    type: m['type']?.toString() ?? 'text',
-    createdAt: DateTime.tryParse(m['createdAt']?.toString() ?? '') ?? DateTime.now(),
-    updatedAt: DateTime.tryParse(m['updatedAt']?.toString() ?? '') ?? DateTime.now(),
-      )).toList();
-  final combinedMaterials = [...persistedMaterials, ...localMaterialsDisplay];
-
-      await showDialog(
-        context: context,
-        builder: (context) => WindowEditQuestion(
-          question: editQuestion,
-          onSave: (Question q) {
-            setState(() {
-              final idx = _questions.indexWhere((qq) => qq.idQuestion == editQuestion.idQuestion);
-              if (idx != -1) _questions[idx] = q;
-            });
-            AppLogger.i('Question edited: #${q.number}');
-          },
-          existingQuestions: _questions.where((qq) => qq.idQuestion != editQuestion.idQuestion).toList(),
-          materials: combinedMaterials,
-        ),
-      );
-    } else {
-  final prov = Provider.of<QuizProvider>(context, listen: false);
-  final persistedMaterials = prov.materials.map((m) => MaterialPdfJson.fromJson(m)).toList();
-  final localMaterialsDisplay = _localMaterials.map((m) => MaterialPdf(
-    id: m['tmp_id']?.toString() ?? m['id']?.toString() ?? '',
-    title: m['title']?.toString() ?? '',
-    content: m['content']?.toString() ?? '',
-    type: m['type']?.toString() ?? 'text',
-    createdAt: DateTime.tryParse(m['createdAt']?.toString() ?? '') ?? DateTime.now(),
-    updatedAt: DateTime.tryParse(m['updatedAt']?.toString() ?? '') ?? DateTime.now(),
-      )).toList();
-  final combinedMaterials = [...persistedMaterials, ...localMaterialsDisplay];
-      await showDialog(
-        context: context,
-        builder: (context) => WindowAddQuestion(
-          nextNumber: _questions.length + 1,
-          fkIdQuiz: _quizId?.toString() ?? "new_quiz",
-          onAdd: (Question q) {
-            setState(() {
-              _questions.add(q);
-            });
-            AppLogger.i('Question added: #${q.number}');
-          },
-          existingQuestions: _questions,
-          materials: combinedMaterials,
-        ),
-      );
-    }
-  }
-
-  void _confirmDeleteQuestion(Question q, {String? message}) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => WindowConfirmation(
-        message: message,
-        onConfirm: () => Navigator.of(context).pop(true),
-        onCancel: () => Navigator.of(context).pop(false),
-      ),
-    );
-    if (result == true) {
-      setState(() {
-        _questions.removeWhere((qq) => qq.idQuestion == q.idQuestion);
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +59,8 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
   }).toList();
   final relatedMaterials = [...persistedMaterials, ...localMaterialsDisplay];
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -142,23 +68,55 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
           children: [
             Column(
               children: [
+                // Header App Bar Gradient Modern Melengkung
                 Container(
                   width: double.infinity,
-                  color: Theme.of(context).appBarTheme.backgroundColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: AppColors.teacherGradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 20, 24, 24),
                   child: Row(
                     children: [
                       IconButton(
-                        icon: Icon(Icons.arrow_back, color: Theme.of(context).appBarTheme.foregroundColor),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        "Quiz Editor",
-                        style: TextStyle(
-                          color: Theme.of(context).appBarTheme.foregroundColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _quizId != null ? "Ubah Detail Kuis" : "Buat Kuis Baru",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 20,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            const Text(
+                              "Sesuaikan materi, durasi, dan bank soal",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -167,273 +125,488 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
                 Expanded(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Quiz Title",
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                          ),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: _titleController,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              hint: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal:0),
-                                child: const Text('Quiz Title'),
+                          // Card Judul Kuis
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
                               ),
-                              fillColor: Theme.of(context).cardColor,
-                              filled: true,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Judul Kuis",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextField(
+                                  controller: _titleController,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                    fontSize: 14,
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: "Contoh: Kuis Harian Pemrograman Dasar",
+                                    hintStyle: TextStyle(
+                                      color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                                      fontSize: 14,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                    filled: true,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: Icon(
+                                      Icons.quiz_rounded,
+                                      color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Card Kelas Target
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Kelas Target",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButtonFormField<String>(
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                        border: InputBorder.none,
+                                        prefixIcon: Icon(
+                                          Icons.school_rounded,
+                                          color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                      style: TextStyle(
+                                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      value: _selectedClassId,
+                                      items: prov.classes.isEmpty
+                                          ? [const DropdownMenuItem(value: null, child: Text('Tidak ada kelas tersedia'))]
+                                          : prov.classes.map((c) => DropdownMenuItem(value: c['id_class'].toString(), child: Text(c['name'].toString()))).toList(),
+                                      onChanged: (val) {
+                                        setState(() => _selectedClassId = val);
+                                      },
+                                      hint: const Text('Pilih kelas sasaran'),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Card Durasi
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Durasi Kerja",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButtonFormField<String>(
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                        border: InputBorder.none,
+                                        prefixIcon: Icon(
+                                          Icons.timer_rounded,
+                                          color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                      style: TextStyle(
+                                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      value: _selectedDuration,
+                                      items: _durations.map((d) {
+                                        return DropdownMenuItem(
+                                          value: d,
+                                          child: Text(d),
+                                        );
+                                      }).toList(),
+                                      onChanged: (val) {
+                                        if (val != null) setState(() => _selectedDuration = val);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Card Dokumen Materi
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Materi Pendukung",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 14,
+                                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.add_circle_outline_rounded,
+                                        color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
+                                      ),
+                                      onPressed: () async {
+                                        final res = await showDialog<Map<String, dynamic>?>(
+                                          context: context,
+                                          builder: (context) => WindowAddMaterial(fkIdQuiz: _quizId?.toString(), saveImmediately: false),
+                                        );
+                                        if (res != null) {
+                                          final tmpId = DateTime.now().millisecondsSinceEpoch.toString();
+                                          final mat = Map<String, dynamic>.from(res);
+                                          mat['tmp_id'] = tmpId;
+                                          _localMaterials.add(mat);
+                                          setState(() {});
+                                        } else {
+                                          if (_quizId != null) await prov.loadMaterials(quizId: _quizId.toString());
+                                          setState(() {});
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                relatedMaterials.isEmpty
+                                    ? Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        child: const Center(
+                                          child: Text(
+                                            "Belum ada materi pelajaran yang dilampirkan.",
+                                            style: TextStyle(fontSize: 13, color: Colors.grey),
+                                          ),
+                                        ),
+                                      )
+                                    : CardMaterialList(
+                                        materials: relatedMaterials,
+                                        onViewMaterial: (m) {},
+                                      ),
+                              ],
+                            ),
+                          ),
+
+                          // Card Soal Kuis
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Daftar Soal Kuis",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 14,
+                                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${_questions.length} soal tersimpan',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Badge jumlah soal
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: isDark
+                                            ? Colors.blue.shade900.withValues(alpha: 0.4)
+                                            : const Color(0xFFEFF6FF),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        '${_questions.length}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w900,
+                                          color: isDark ? Colors.blue.shade300 : const Color(0xFF2563EB),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      final currentMaterials = [...persistedMaterials, ...localMaterialsDisplay];
+                                      final result = await Navigator.of(context).push<List<Question>>(
+                                        MaterialPageRoute(
+                                          builder: (_) => PageQuizQuestionsTeacher(
+                                            questions: List.from(_questions),
+                                            materials: currentMaterials,
+                                            quizTitle: _titleController.text.isEmpty
+                                                ? 'Kuis Tanpa Judul'
+                                                : _titleController.text,
+                                          ),
+                                        ),
+                                      );
+                                      if (result != null) {
+                                        setState(() {
+                                          _questions
+                                            ..clear()
+                                            ..addAll(result);
+                                        });
+                                      }
+                                    },
+                                    icon: const Icon(Icons.list_alt_rounded, size: 18),
+                                    label: Text(
+                                      _questions.isEmpty
+                                          ? 'Buka Editor Soal'
+                                          : 'Kelola ${_questions.length} Soal',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: isDark ? const Color(0xFF1D4ED8) : const Color(0xFF2563EB),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            "Class",
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Theme.of(context).primaryColor, width: 1),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                value: _selectedClassId,
-                                isExpanded: true,
-                                items: prov.classes.isEmpty
-                                    ? [const DropdownMenuItem(value: null, child: Text('No classes'))]
-                                    : prov.classes.map((c) => DropdownMenuItem(value: c['id_class'].toString(), child: Text(c['name'].toString()))).toList(),
-                                onChanged: (val) {
-                                  setState(() => _selectedClassId = val);
-                                },
-                                hint: const Text('Select class'),
-                                 
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            "Quiz Duration",
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Theme.of(context).primaryColor, width: 2),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                value: _selectedDuration,
-                                isExpanded: true,
-                                borderRadius: BorderRadius.circular(8),
-                                items: _durations.map((d) {
-                                  return DropdownMenuItem(
-                                    value: d,
-                                    child: Text(d),
-                                  );
-                                }).toList(),
-                                onChanged: (val) {
-                                  if (val != null) setState(() => _selectedDuration = val);
-                                },
-                                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black, fontSize: 14),
-                                icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).primaryColor),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          const Text(
-                            "Quiz Material",
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                          ),
-                          const SizedBox(height: 6),
-                          relatedMaterials.isEmpty
-                              ? Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 8),
-                                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 0),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).cardColor,
-                                    borderRadius: BorderRadius.circular(18),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.07),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
+
+                          // AI Generator Action Card
+                          if (_localMaterials.isNotEmpty) ...[
+                            Container(
+                              padding: const EdgeInsets.all(18),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
-                                  child: const Center(
-                                    child: Text(
-                                      "No material added yet.",
-                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Aksi AI (Gemini Assistant)",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 14,
+                                      color: isDark ? Colors.white : const Color(0xFF0F172A),
                                     ),
                                   ),
-                                )
-                              : CardMaterialList(
-                                  materials: relatedMaterials,
-                                  onViewMaterial: (m) {
-                                    // TODO: View material
-                                  },
-                                ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4B6A85),
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              onPressed: () async {
-                                final res = await showDialog<Map<String, dynamic>?>(
-                                  context: context,
-                                  builder: (context) => WindowAddMaterial(fkIdQuiz: _quizId?.toString(), saveImmediately: false),
-                                );
-                                if (res != null) {
-                                  final tmpId = DateTime.now().millisecondsSinceEpoch.toString();
-                                  final mat = Map<String, dynamic>.from(res);
-                                  mat['tmp_id'] = tmpId;
-                                  _localMaterials.add(mat);
-                                  setState(() {});
-                                } else {
-                                  // Dialog returned null (user cancelled or material was saved directly on the server);
-                                  // reload persisted materials if editing an existing quiz.
-                                  if (_quizId != null) await prov.loadMaterials(quizId: _quizId.toString());
-                                  setState(() {});
-                                }
-                              },
-                              child: const Text(
-                                "Add Material",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          const Text(
-                            "Quiz Questions",
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                          ),
-                          const SizedBox(height: 6),
-                          CardQuestionList(
-                            questions: _questions,
-                            onViewDetails: (q) {
-                              // TODO: View question details
-                            },
-                            onEdit: (q) {
-                              _openAddQuestionDialog(editQuestion: q);
-                            },
-                            onDelete: (q) {
-                              _confirmDeleteQuestion(q, message: "Hapus soal ini?");
-                            },
-                            materials: relatedMaterials,
-                          ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF3B5F4B),
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              onPressed: _openAddQuestionDialog,
-                              child: const Text(
-                                "Add Questions",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF50B4B4),
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              onPressed: () async {
-                                // Generate questions from local materials via Gemini
-                                final navigator = Navigator.of(context);
-                                if (_localMaterials.isEmpty) {
-                                  AppLogger.w('Generate Questions pressed but no local materials');
-                                  if (!mounted) return;
-                                  await showDialog(context: navigator.context, builder: (_) => WindowMessage(message: 'No local materials available to generate questions'));
-                                  return;
-                                }
-
-                                final payload = {'materials': _localMaterials};
-                                try {
-                                  AppLogger.i('Requesting generated questions from AI for ${_localMaterials.length} materials');
-                                  final resp = await ApiService.generateQuestions(payload);
-                                    AppLogger.d('generateQuestions status=${resp.statusCode} body=${resp.body}');
-                                    if (resp.statusCode == 200) {
-                                      final data = jsonDecode(resp.body);
-                                      final text = data['result'] ?? data.toString();
-                                      // show raw result for confirmation
-                                      if (!mounted) return;
-                                      await showDialog(context: navigator.context, builder: (_) => WindowMessage(message: text));
-                                      // parse result into questions (simple heuristic)
-                                      final parsed = _parseQuestionsFromText(text);
-                                      if (parsed.isNotEmpty) {
-                                        if (mounted) {
-                                          setState(() {
-                                            _questions.addAll(parsed);
-                                          });
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 14),
+                                        side: BorderSide(
+                                          color: isDark ? Colors.blue.shade800 : const Color(0xFF4B6A85),
+                                          width: 1.5,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(14),
+                                        ),
+                                      ),
+                                      icon: const Icon(Icons.auto_awesome_rounded),
+                                      label: const Text(
+                                        "Generate Soal dari Materi [AI]",
+                                        style: TextStyle(fontWeight: FontWeight.w700),
+                                      ),
+                                      onPressed: () async {
+                                        final navigator = Navigator.of(context);
+                                        final payload = {'materials': _localMaterials};
+                                        try {
+                                          AppLogger.i('Requesting generated questions from AI');
+                                          final resp = await ApiService.generateQuestions(payload);
+                                          if (resp.statusCode == 200) {
+                                            final data = jsonDecode(resp.body);
+                                            final text = data['result'] ?? data.toString();
+                                            if (!mounted) return;
+                                            await showDialog(context: navigator.context, builder: (_) => WindowMessage(message: text));
+                                            final parsed = _parseQuestionsFromText(text);
+                                            if (parsed.isNotEmpty) {
+                                              if (mounted) {
+                                                setState(() {
+                                                  _questions.addAll(parsed);
+                                                });
+                                                AppNotification.show(context, 'Berhasil membuat ${parsed.length} soal lewat AI!');
+                                              }
+                                            } else {
+                                              if (!mounted) return;
+                                              await showDialog(context: navigator.context, builder: (_) => const WindowMessage(message: 'AI mengembalikan teks tetapi tidak dapat diuraikan menjadi soal format kuis'));
+                                            }
+                                          } else {
+                                            if (!mounted) return;
+                                            await showDialog(context: navigator.context, builder: (_) => WindowMessage(message: 'Gagal membuat soal AI: ${resp.statusCode}'));
+                                          }
+                                        } catch (e) {
+                                          if (!mounted) return;
+                                          await showDialog(context: navigator.context, builder: (_) => WindowMessage(message: 'Gagal memproses AI: $e'));
                                         }
-                                        AppLogger.i('Parsed ${parsed.length} questions from AI result');
-                                      } else {
-                                        AppLogger.w('No questions parsed from AI response');
-                                        if (!mounted) return;
-                                        await showDialog(context: navigator.context, builder: (_) => WindowMessage(message: 'AI returned text but no questions could be parsed'));
-                                      }
-                                    } else {
-                                      AppLogger.e('AI generateQuestions failed: ${resp.statusCode}', resp.body);
-                                      if (!mounted) return;
-                                      await showDialog(context: navigator.context, builder: (_) => WindowMessage(message: 'Failed to generate questions: ${resp.statusCode}\n${resp.body}'));
-                                    }
-                                } catch (e, st) {
-                                  AppLogger.e('Exception when calling generateQuestions', e, st);
-                                  if (!mounted) return;
-                                  await showDialog(context: navigator.context, builder: (_) => WindowMessage(message: 'Failed to generate questions: $e'));
-                                }
-                              },
-                              child: const Text(
-                                "Generate Questions from Quiz Material [AI]",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                ),
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 80), // Spacer for bottom button
+                          ],
+                          const SizedBox(height: 90), // Spacer bottom
                         ],
                       ),
                     ),
@@ -441,33 +614,20 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
                 ),
               ],
             ),
-            // Tombol Save selalu di bawah layar
+            // Tombol Simpan melayang di bawah layar
             Align(
               alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+              child: Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                padding: const EdgeInsets.all(18),
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6972DF),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
+                  child: AppButton.primary(
+                    label: _saving ? "Menyimpan..." : "Simpan Perubahan Kuis",
+                    gradientColors: AppColors.teacherGradient,
                     onPressed: _saving ? null : () async {
                       await _saveQuiz();
                     },
-                    child: const Text(
-                      "Save",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
                   ),
                 ),
               ),

@@ -44,7 +44,7 @@ class _PageMenuQuizResultStudentState extends State<PageMenuQuizResultStudent> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 18),
-              color: const Color(0xFFDD6A2B),
+              color: const Color(0xFFD97B43),
               child: Center(child: Text('Result Quiz', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white))),
             ),
             Expanded(
@@ -59,7 +59,7 @@ class _PageMenuQuizResultStudentState extends State<PageMenuQuizResultStudent> {
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6)]),
+                        decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(10), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6)]),
                         child: Text('$score/100 points', style: const TextStyle(fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(height: 16),
@@ -109,7 +109,7 @@ class _PageMenuQuizResultStudentState extends State<PageMenuQuizResultStudent> {
                             const SizedBox(height: 8),
                             Container(
                               width: double.infinity,
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4)]),
+                              decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4)]),
                               padding: const EdgeInsets.all(16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,7 +126,7 @@ class _PageMenuQuizResultStudentState extends State<PageMenuQuizResultStudent> {
                                       if (serverInfo != null) {
                                         correctId = (serverInfo['correct_choice_id'] ?? serverInfo['correct_choice_id']?.toString())?.toString();
                                       }
-                                      Color textColor = Colors.black;
+                                      Color textColor = Theme.of(context).colorScheme.onSurface;
                                       if (serverInfo != null) {
                                         final selId = (answers[qid] ?? '').toString();
                                         final choiceId = c.idAnswerChoice.toString();

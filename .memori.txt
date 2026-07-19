@@ -1,0 +1,271 @@
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 17:39
+Kategori: Bug
+
+Judul:
+Hotfix v1.1.6 — Fix Blocker Compile, Overflow & Tidak Bisa Back pada Modal Tambah Materi
+
+Detail:
+- Memperbaiki error compile blocker `Colors.white20` (getter tidak ada di Flutter) di `page_quiz_questions_teacher.dart:558` → diganti `Colors.white24`
+- Memperbaiki RenderFlex overflowed by 8.3 pixels pada modal tambah materi: membungkus `Text` di `AppButton.Row` anak dengan `Flexible` + `overflow: ellipsis` + `maxLines: 1` agar label tidak melampaui lebar container saat sempit
+- Memperbaiki bug tidak bisa back saat loading di `WindowAddMaterial`: tombol "Batal" & close-X header kini selalu aktif; `CircularProgressIndicator` ditampilkan inline via properti `isLoading` `AppButton` (bukan menggantikan seluruh baris aksi)
+- Menghapus unused import `window_confirmation.dart` di `page_menu_quiz_editor_teacher.dart:9` (sisa refactor v1.1.5)
+- Verifikasi: `flutter analyze` 0 error (turun dari 22 → 20 issues, 2 issue terkait hilang; sisanya pre-existing)
+
+Dampak:
+- File berubah: `page_quiz_questions_teacher.dart`, `app_button.dart`, `window_add_material.dart`, `page_menu_quiz_editor_teacher.dart`, `.memori.txt`
+- App kembali bisa di-build; modal tambah materi tidak overflow; user selalu bisa keluar saat loading; seluruh `AppButton` di app jadi lebih tahan overflow
+- Backend tidak tersentuh
+- Plan: `plan/2026-07-19-fix-quiz-editor-material-modal/`
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 16:05
+Kategori: Feature
+
+Judul:
+UI/UX Redesign v1.1.5 — Halaman Baru Bank Soal Kuis (PageQuizQuestionsTeacher)
+
+Detail:
+- Membuat halaman baru `PageQuizQuestionsTeacher` (`lib/pages/teacher/page_quiz_questions_teacher.dart`, 666 baris) menggantikan modal daftar soal kuis yang sulit dioperasikan
+- Halaman berisi: header gradient guru melengkung, summary bar (total soal & total poin), card soal modern per-item (nomor, poin badge, pilihan jawaban ringkas, highlight jawaban benar), FAB "Tambah Soal", empty state
+- Terintegrasi ke `PageMenuQuizEditorTeacher` via `Navigator.push` (menggantikan modal): tombol "Kelola X Soal"/"Buka Editor Soal" mengirim list soal & materi, menerima `List<Question>` balik ke editor
+- AI berhenti tengah jalan karena limit sebelum sempat fix error compile `Colors.white20` dan update `.memori.txt` — diselesaikan pada v1.1.6
+
+Dampak:
+- File baru: `page_quiz_questions_teacher.dart`
+- File berubah: `page_menu_quiz_editor_teacher.dart` (integrasi Navigator.push, hapus modal soal)
+- Pengelolaan soal kuis guru kini full-page modern, bukan modal sempit
+- Backend tidak tersentuh
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 15:54
+Kategori: Refactor
+
+Judul:
+UI/UX Redesign v1.1.4 — Pemasangan Logo Aplikasi Asli di ChoiceUserPage
+
+Detail:
+- Memasang logo aplikasi resmi `assets/logo.png` dengan tinggi 110px sebagai header di halaman pemilihan role (`ChoiceUserPage`)
+- Menjaga keselarasan vector icons modern untuk tombol pemilihan akun guru & murid
+- Verifikasi: `flutter analyze` 100% bersih tanpa error compile
+
+Dampak:
+- File berubah: `page_choice_user.dart`, `.memori.txt`
+- Halaman pilihan role kini menyajikan logo resmi asli SEA App secara estetik dan berkualitas tinggi
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 15:48
+Kategori: Refactor
+
+Judul:
+UI/UX Redesign v1.1.3 — Penggunaan Vector Icons Menggantikan Gambar PNG di Halaman Pilihan Role (ChoiceUserPage)
+
+Detail:
+- Menggantikan berkas gambar PNG kaku (`student.png` & `teacher.png`) yang beresolusi rendah dengan Vector Icons dinamis Material Design (`Icons.school_rounded` & `Icons.co_present_rounded`) pada ChoiceUserPage
+- Menyempurnakan logo header aplikasi di ChoiceUserPage menggunakan vector icon `Icons.auto_awesome_rounded` di dalam container lingkaran estetik
+- Verifikasi: `flutter analyze` 100% bersih tanpa error compile
+
+Dampak:
+- File berubah: `page_choice_user.dart`, `.memori.txt`
+- Tampilan pemilihan tipe akun guru & siswa terlihat sangat bersih, tajam, dan modern tanpa bergantung pada aset gambar PNG luar
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 15:42
+Kategori: Refactor
+
+Judul:
+UI/UX Redesign v1.1.2 — Layout Per-Card pada Form Kuis Editor & Diskusi Editor
+
+Detail:
+- Mengubah susunan input form pada `PageMenuQuizEditorTeacher` dan `PageMenuDiscussionEditorTeacher` menjadi berbasis kartu (card-based layout)
+- Setiap bagian form input (Judul Kuis, Kelas Target, Durasi Kerja, Materi Pendukung, Daftar Soal, Nama Diskusi, Jumlah Kelompok AI) dibungkus dengan Container card melayang 20px ber-border tipis dan ber-shadow halus
+- Penyesuaian padding background agar tata letak terlihat sangat estetik dan menyatu dengan dashboard utama guru
+- Verifikasi: `flutter analyze` 100% bersih tanpa error compile
+
+Dampak:
+- File berubah: `page_menu_quiz_editor_teacher.dart`, `page_menu_discussion_editor_teacher.dart`, `.memori.txt`
+- Halaman input editor kuis dan kelompok diskusi memiliki antarmuka premium terstruktur per-card
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 15:38
+Kategori: Refactor
+
+Judul:
+UI/UX Redesign v1.1.1 — Modernisasi Card Material, Pembenahan Overflow & Header Melengkung
+
+Detail:
+- Merombak total `CardMaterialList` (`lib/component/card/card_material.dart`) menjadi container modern membulat 20px berbayang lembut dengan ikon dinamis (PDF warna merah, Teks warna biru) dan tombol baca minimalis
+- Mengatasi RenderFlex overflow di bagian aksi grup AI diskusi editor dengan mengubah susunan Row tombol menjadi Column responsif
+- Mempercantik visual header kuis editor dan diskusi editor dengan melengkungkan sudut bawah (radius 24px) dan memberikan soft shadow melayang (alpha: 0.15, blur: 12) yang sangat premium
+- Verifikasi: `flutter analyze` 100% bersih tanpa error compile
+
+Dampak:
+- File berubah: `card_material.dart`, `page_menu_quiz_editor_teacher.dart`, `page_menu_discussion_editor_teacher.dart`, `.memori.txt`
+- Tampilan list materi pendukung diskusi terlihat sangat estetik dan konsisten dengan visual dashboard, serta bebas dari bug layout overflow
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 15:36
+Kategori: Feature
+
+Judul:
+UI/UX Redesign v1.1.0 — Modernisasi Quiz Editor, Discussion Editor & Dialog Tambah Materi Guru
+
+Detail:
+- Merombak visual dialog `WindowAddMaterial` (`lib/component/window/window_add_material.dart`) agar membulat 24px dengan drop-down kustom modern, input field minimalis ber-icon, dan tombol aksi gradient/outlined estetik
+- Mendesain ulang `PageMenuQuizEditorTeacher` (`lib/pages/teacher/page_menu_quiz_editor_teacher.dart`) dan `PageMenuDiscussionEditorTeacher` (`lib/pages/teacher/page_menu_discussion_editor_teacher.dart`) ke standar visual modern premium
+- Mengganti App Bar bawaan di kedua editor dengan Header Gradient horizontal Guru (`teacherGradient`) lengkap dengan navigasi kembali yang berpadu indah
+- Penataan ulang drop-down setelan, input teks judul/deskripsi menggunakan rounded 14px fill container, soft shadow, dan adaptasi dark/light mode
+- Mengubah seluruh label antarmuka editor dan konfirmasi ke dalam Bahasa Indonesia premium
+- Verifikasi: `flutter analyze` 100% bersih tanpa error compile
+
+Dampak:
+- File berubah: `window_add_material.dart`, `page_menu_quiz_editor_teacher.dart`, `page_menu_discussion_editor_teacher.dart`, `.memori.txt`
+- Halaman pembuatan & pengeditan kuis dan diskusi AI bagi guru kini memiliki UI/UX yang sangat konsisten dengan rancangan premium dashboard
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 15:32
+Kategori: Feature
+
+Judul:
+UI/UX Redesign v1.0.9 — Modernisasi Tampilan Pilihan Role (ChoiceUserPage)
+
+Detail:
+- Merombak total `ChoiceUserPage` (`lib/pages/page_choice_user.dart`) dari layout Row horizontal yang kaku menjadi layout Vertikal Premium
+- Menyertakan header sambutan yang estetik lengkap dengan Logo Universitas Negeri Padang, Judul besar, dan deskripsi tujuan SEA App
+- Mengganti kotak card role dan tombol elevated kecil dengan Card Role modern (`Saya Sebagai Siswa` / `Saya Sebagai Guru`) membulat 24px yang berbayang lembut dan ber-border halus
+- Card pilihan dilengkapi lencana ikon bulat ber-gradient aksen warna representatif (Siswa Oranye / Guru Biru) dan teks penjelasan deskriptif tugas role
+- Verifikasi: `flutter analyze` 100% bersih tanpa error linter
+
+Dampak:
+- File berubah: `page_choice_user.dart`, `.memori.txt`
+- Pengalaman transisi perpindahan dari Splash Screen ke pemilihan tipe pengguna terasa jauh lebih modern dan hidup
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 15:30
+Kategori: Feature
+
+Judul:
+UI/UX Redesign v1.0.8 — Modernisasi Halaman Auth (Login & Registrasi)
+
+Detail:
+- Perombakan visual total pada `LoginUserPage` (`lib/pages/page_login_user.dart`) dan `PageDaftarUser` (`lib/pages/page_daftar_user.dart`)
+- Implementasi Form input minimalis premium dengan Container berbayang lembut dan border halus, dilengkapi ikon input yang serasi (`email_rounded`, `lock_rounded`, `person_rounded`, dll)
+- Mengganti tombol aksi masuk/daftar dengan `AppButton.primary` ber-gradient warna dinamis menyesuaikan role terpilih (Biru Guru / Oranye Siswa)
+- Mengintegrasikan sistem toast/notifikasi melayang baru `AppNotification.show` untuk menggantikan SnackBar bawaan yang kaku
+- Penerjemahan seluruh interface pendaftaran dan login ke dalam Bahasa Indonesia yang bersih dan premium
+- Verifikasi: `flutter analyze` 100% bersih tanpa error compile
+
+Dampak:
+- File berubah: `page_login_user.dart`, `page_daftar_user.dart`, `.memori.txt`
+- First impression pengguna saat memasuki aplikasi kini sangat premium, modern, dan konsisten dengan seluruh tab utama dashboard
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 14:40
+Kategori: Feature
+
+Judul:
+UI/UX Redesign v1.0.3 — Skeleton Loading Shimmer, PageView Swipe, & Modern Card/Button System
+
+Detail:
+- Widget Skeleton Loading Shimmer baru (`lib/component/state/skeleton_loading.dart`) untuk animasi skeleton saat data loading di Home Student & Teacher
+- PageView Swipe horizontal dengan `BouncingScrollPhysics` di Student Home (`page_menu_home_student.dart`) dan Teacher Home (`page_menu_home_teacher.dart`)
+- Redesign total Card Components (`card_class.dart`, `card_quiz.dart`, `card_discussion.dart`) menjadi kartu terpisah modern (rounded 20px, soft shadow, aksen icon container, status pill badge)
+- Button & Decoration system modern (`lib/component/ui/app_button.dart` & `app_decorations.dart` update): `AppButton.primary` (gradient horizontal), `AppButton.pill`, `AppButton.secondary`
+- Version bump `pubspec.yaml` ke 1.0.3+4
+- Verification: `flutter analyze` 0 error & 0 warning
+
+Dampak:
+- File tersentuh: `card_class.dart`, `card_quiz.dart`, `card_discussion.dart`, `app_decorations.dart`, `page_menu_home_student.dart`, `page_menu_home_teacher.dart`, `pubspec.yaml`
+- File baru: `component/state/skeleton_loading.dart`, `component/ui/app_button.dart`
+- Backend tidak tersentuh
+==================================================
+==================================================
+
+Tanggal : 2026-07-19
+Waktu   : 14:12
+Kategori: Feature
+
+Judul:
+UI/UX Refactoring v1.0.2 — ThemeProvider, Nav Bar Glassmorphism, Halaman Settings
+
+Detail:
+- ThemeProvider baru (providers/theme_provider.dart) — 3 mode: light/dark/system, persist ke SharedPreferences
+- main.dart: MultiProvider + Consumer<ThemeProvider> agar themeMode reaktif
+- Palet warna baru di app_colors.dart (revisi 2x):
+  * primary (teacher): #4B6A85 → #2563EB (Electric Blue, Tailwind blue-600)
+  * secondary (student): #D97B43 → #F97316 (Coral Orange, Tailwind orange-500)
+  * backgroundLight: #F0F4F8 → #F4F6FB
+  * backgroundDark: #0F0F18 → #080C14 (deep navy)
+  * surfaceDark: #222238 → #111827 (gray-900)
+  * Tambah gradient stops: teacherGradient, studentGradient, accentBarTeacher, accentBarStudent
+- TopHeader (component/header/top.dart): REFACTOR TOTAL mengikuti MyWallet StickyHeader
+  * Card putih/dark + rounded bottom corners (28px)
+  * Aksen bar vertikal gradient (4px lebar, 34px tinggi) di kiri
+  * Judul bold left-aligned + subtitle opsional
+  * Trailing widget di kanan
+  * Hapus solid backgroundColor — ganti dengan accentColor param
+- home_student & home_teacher: tambah _subtitles array, update param TopHeader
+- bottom_navigation.dart: dark color pakai AppColors.surfaceDark (tidak hardcoded)
+- light_theme.dart & dark_theme.dart: update dengan palet baru
+- pubspec.yaml: version 1.0.2+3
+
+Dampak:
+- Semua file Flutter yang tersentuh: main.dart, app_colors.dart, bottom_navigation.dart, top.dart, splashscreen.dart, page_menu_home_student.dart, page_menu_home_teacher.dart, page_choice_user.dart, pubspec.yaml
+- File baru: providers/theme_provider.dart, pages/page_settings.dart
+- Backend tidak tersentuh
+==================================================
+==================================================
+
+Tanggal : 2026-07-18
+Waktu   : 21:23
+Kategori: Plan
+
+Judul:
+Planning UI/UX Redesign v1.0.1 — Design System & Visual Overhaul
+
+Detail:
+- Membuat AGENTS.md dan .opencode/opencode.json untuk project SEA App
+- Planning version 1.0.1 fokus redesign UI/UX: design token, standarisasi card/button/input, dark mode fix, harmonisasi struktur halaman, state widgets, visual polish
+- Referensi desain dari proyek MyWallet (UangKu): palet warna terbatas, Google Fonts Poppins, card-based layout, spacing system
+- 7 task: (1) Design Token & Theme, (2) Card/Container Standarisasi, (3) Button/Input Standarisasi, (4) Dark Mode Audit, (5) Halaman Struktur Harmoni, (6) State Widgets, (7) Visual Polish & Version
+- File plan: plan/1.0.1-ui-ux-redesign/
+
+Dampak:
+- Semua file Flutter .dart akan tersentuh (styling refactor, bukan logic)
+- pubspec.yaml: version 1.0.1, tambah google_fonts dependency
+- Backend tidak tersentuh
+- Estimasi total: 19-26 jam
+==================================================
+==================================================
+Tanggal : 2026-07-18
+Waktu   : 21:23
+Kategori: Feature
+
+Judul:
+UI/UX Redesign v1.0.1 — Selesai Implementasi
+
+Detail:
+- Task 1: Design Token — app_colors.dart, app_text_styles.dart, app_spacing.dart, app_decorations.dart (BARU)
+- Task 1: Refactor light_theme.dart & dark_theme.dart — ColorScheme, TextTheme, Button/Input/Dialog/Chip theme dari token
+- Task 2: Standarisasi 9 card files — radius/shadow/padding konsisten, FontWeight.w200 dihapus
+- Task 3: Refactor 8 window files + 2 auth pages — hapus semua Color(0xFF...) hardcoded di button/dialog
+- Task 4: Dark mode audit — Colors.grey.shade* -> surfaceVariant, Colors.white -> cardColor, Colors.black -> onSurface
+- Task 5: Refactor TopHeader (AppTextStyles), BottomNavigation (theme colors, hapus hardcoded #1B3C53/#819DB1)
+- Task 6: State widgets — EmptyState, LoadingState, ErrorState (BARU)
+- Task 7: Version 1.0.1+2, google_fonts dependency, flutter analyze 0 error 0 warning
+
+Dampak:
+- flutter analyze: 0 error, 0 warning (8 info pre-existing)
+- pubspec.yaml: version 1.0.1+2, google_fonts ^6.1.0
+- Backend tidak tersentuh
+==================================================

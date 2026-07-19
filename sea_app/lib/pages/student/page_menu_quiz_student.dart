@@ -12,6 +12,7 @@ import 'page_menu_quiz_result_student.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../component/state/skeleton_loading.dart';
 
 class PageMenuQuizStudent extends StatefulWidget {
   const PageMenuQuizStudent({super.key});
@@ -91,7 +92,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return const SkeletonListContent();
     if (_error != null) return Center(child: Text('Error: $_error'));
   // Quizzes loaded from server for the selected class
   final activeQuizzes = _activeQuizzes;
@@ -101,6 +102,8 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
     final dropdownValue = hasClass && studentClasses.any((c) => c.idClass == selectedClassId)
         ? selectedClassId
         : (hasClass ? studentClasses.first.idClass : null);
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -113,10 +116,11 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
                 child: Text(
-                  "Select Class",
+                  "Pilih Kelas",
                   style: TextStyle(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 16,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
               ),
@@ -124,22 +128,37 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor, // gunakan warna dari theme
-                    borderRadius: BorderRadius.circular(14),
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.07),
-                        blurRadius: 8,
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                        blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
+                    child: DropdownButtonFormField<String>(
                       value: dropdownValue,
-                      borderRadius: BorderRadius.circular(14),
-                      isExpanded: true,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        border: InputBorder.none,
+                        prefixIcon: Icon(
+                          Icons.school_rounded,
+                          color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                        ),
+                      ),
+                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                       items: hasClass
                           ? studentClasses.map((c) {
                               return DropdownMenuItem(
@@ -157,26 +176,28 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                               }
                             }
                           : null,
-                      hint: const Text("No class available"),
+                      hint: const Text("Tidak ada kelas tersedia", style: TextStyle(fontSize: 14)),
                     ),
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+
               // Active Quizzes
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 22, vertical: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
                 child: Text(
-                  "Active Quizzes",
+                  "Kuis Aktif Kelas",
                   style: TextStyle(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 16,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
               ),
               CardQuizList(
                 quizzes: activeQuizzes,
                 onViewResult: (quiz) async {
-                  // navigate to quiz work page
                   final navigator = Navigator.of(context);
                   final didFinish = await navigator.push(MaterialPageRoute(builder: (_) => PageMenuQuizWorkStudent(
                     quizId: quiz.idQuiz,
@@ -185,21 +206,23 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                   )));
                   if (didFinish == true) {
                     if (!mounted) return;
-                    // refresh quizzes list
                     await _loadQuizzesForClass(selectedClassId);
                     if (mounted) setState(() {});
                   }
                 },
-                buttonLabel: "Start Quiz",
+                buttonLabel: "Mulai Kuis",
               ),
+              const SizedBox(height: 12),
+
               // Completed Quizzes
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 22, vertical: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
                 child: Text(
-                  "Completed Quizzes",
+                  "Kuis Selesai",
                   style: TextStyle(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 16,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
               ),

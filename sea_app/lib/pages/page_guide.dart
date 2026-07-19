@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../theme/app_text_styles.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_colors.dart';
 
 class PageGuide extends StatefulWidget {
   const PageGuide({super.key});
@@ -24,78 +27,243 @@ class _PageGuideState extends State<PageGuide> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     final entries = {
       'teacher': [
-        'Create classes using the "Create Class" button on Home.',
-        'Create quizzes under the Quiz tab; you can compose questions and save them.',
-        'Create discussion rooms with materials and enable the AI ChatRoom to let students ask questions.',
-        'When editing a discussion, you can toggle the ChatRoom AI on/off.',
+        {
+          'title': 'Buat & Kelola Kelas',
+          'desc': 'Buat kelas baru melalui tombol "+ Buat Kelas" di halaman Beranda untuk mengundang siswa belajar bersama.',
+          'icon': Icons.add_business_rounded,
+        },
+        {
+          'title': 'Rancang Kuis Interaktif',
+          'desc': 'Buat kuis baru di tab Kuis, susun butir-butir pertanyaan pilihan ganda, dan tugaskan ke kelas pilihan Anda.',
+          'icon': Icons.assignment_rounded,
+        },
+        {
+          'title': 'Kelompok & Ruang Diskusi',
+          'desc': 'Sediakan ruang diskusi kelompok lengkap dengan lampiran materi belajar berupa file PDF.',
+          'icon': Icons.forum_rounded,
+        },
+        {
+          'title': 'Integrasikan AI Gemini',
+          'desc': 'Aktifkan AI ChatRoom pada diskusi agar siswa dapat berkonsultasi secara mandiri dengan asisten AI.',
+          'icon': Icons.psychology_rounded,
+        },
       ],
       'student': [
-        'Join classes using a class code from the Home page ("Join with Class Code").',
-        'Open the Quiz tab to see quizzes for your classes. Start a quiz to answer questions.',
-        'Open the Discussion tab to view and join active discussions. If a discussion has an AI ChatRoom, you can ask the AI about materials.',
-        'Materials attached to a discussion can be read before joining the chatroom.',
+        {
+          'title': 'Gabung Kelas Baru',
+          'desc': 'Masuk ke kelas guru Anda dengan memasukkan kode akses unik di halaman utama ("Gabung Kelas").',
+          'icon': Icons.group_add_rounded,
+        },
+        {
+          'title': 'Kerjakan Kuis Terjadwal',
+          'desc': 'Buka tab Kuis untuk melihat daftar kuis aktif kelas Anda. Mulai kuis dan jawab pertanyaan dengan cermat.',
+          'icon': Icons.play_lesson_rounded,
+        },
+        {
+          'title': 'Diskusikan Materi Bersama AI',
+          'desc': 'Masuk ke grup diskusi aktif. Gunakan fitur Tanya AI untuk memahami materi belajar secara interaktif.',
+          'icon': Icons.assistant_rounded,
+        },
+        {
+          'title': 'Ekstraksi & Unduh Materi',
+          'desc': 'Pelajari dokumen PDF yang diunggah guru di dalam ruang diskusi sebelum Anda memulai kuis.',
+          'icon': Icons.picture_as_pdf_rounded,
+        },
       ],
     };
 
     final list = entries[_role] ?? entries['student']!;
 
     return Scaffold(
-      //appBar: AppBar(title: const Text('Application Guide')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Role', style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              )),
-            const SizedBox(height: 8),
-         Card(
-  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-  child: Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    child: Theme(
-      data: Theme.of(context).copyWith(
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        focusColor: Colors.transparent,
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _role,
-          isExpanded: true,
-          dropdownColor: Colors.white, // warna background menu
-          style: const TextStyle(color: Colors.black),
-          items: const [
-            DropdownMenuItem(value: 'student', child: Text('Student')),
-            DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
-          ],
-          onChanged: (v) {
-            if (v == null) return;
-            setState(() => _role = v);
-          },
-        ),
-      ),
-    ),
-  ),
-),
-
-            const SizedBox(height: 16),
-            const Text('Guide', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                itemCount: list.length,
-                itemBuilder: (ctx, i) => ListTile(
-                  leading: CircleAvatar(child: Text('${i + 1}')),
-                  title: Text(list[i]),
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              Text(
+                'Panduan Penggunaan',
+                style: AppTextStyles.titleLg(context).copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                'Pelajari cara maksimal menggunakan Smart Education Assistant.',
+                style: AppTextStyles.bodySm(context).copyWith(
+                  color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Segmented Control (Role Selector)
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFE2E8F0),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _role = 'student'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _role == 'student'
+                                ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: _role == 'student'
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    )
+                                  ]
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Siswa (Student)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: _role == 'student'
+                                    ? (isDark ? Colors.white : const Color(0xFF0F172A))
+                                    : (isDark ? Colors.white38 : const Color(0xFF64748B)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _role = 'teacher'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _role == 'teacher'
+                                ? (isDark ? const Color(0xFF1E293B) : Colors.white)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: _role == 'teacher'
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    )
+                                  ]
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Guru (Teacher)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: _role == 'teacher'
+                                    ? (isDark ? Colors.white : const Color(0xFF0F172A))
+                                    : (isDark ? Colors.white38 : const Color(0xFF64748B)),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Guide Items List
+              Expanded(
+                child: ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: list.length,
+                  itemBuilder: (ctx, i) {
+                    final item = list[i] as Map<String, dynamic>;
+                    final iconData = item['icon'] as IconData;
+                    final titleText = item['title'].toString();
+                    final descText = item['desc'].toString();
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: (_role == 'student' ? AppColors.secondary : AppColors.primary)
+                                  .withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              iconData,
+                              color: _role == 'student' ? AppColors.secondary : AppColors.primary,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  titleText,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  descText,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

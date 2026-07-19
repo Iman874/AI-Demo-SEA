@@ -4,6 +4,9 @@ import 'student/page_menu_home_student.dart';
 import 'teacher/page_menu_home_teacher.dart';
 import 'page_daftar_user.dart';
 import '../providers/auth_provider.dart';
+import '../theme/app_colors.dart';
+import '../component/ui/app_button.dart';
+import '../utils/app_notification.dart';
 
 enum UserType { student, teacher }
 
@@ -22,85 +25,196 @@ class _LoginUserPageState extends State<LoginUserPage> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-  // Use the official UNP logo for all login/register screens
-  String logoAsset = 'assets/logo_unp.png';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isStudent = widget.userType == UserType.student;
+    final accentColors = isStudent ? AppColors.studentGradient : AppColors.teacherGradient;
+    final primaryColor = isStudent ? const Color(0xFFD97B43) : const Color(0xFF4B6A85);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 48),
+                // Logo & Greeting Header
                 Container(
-                  width: 100,
-                  height: 100,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(16),
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                        color: primaryColor.withValues(alpha: 0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Image.asset(logoAsset, fit: BoxFit.contain),
+                  child: Image.asset(
+                    'assets/logo_unp.png',
+                    width: 72,
+                    height: 72,
+                    fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+                Text(
+                  isStudent ? "Portal Belajar Siswa" : "Portal Mengajar Guru",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "Smart Education Assistant (SEA App)",
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 36),
+
+                // Form Fields Container
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 32),
-                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(16),
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 12,
+                        color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+                        blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
                     ],
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextField(
-                        controller: _emailCtrl,
-                        decoration: InputDecoration(
-                          hintText: "Email",
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
+                      Text(
+                        "Alamat Email",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white70 : const Color(0xFF475569),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _emailCtrl,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: "Contoh: budi@gmail.com",
+                          hintStyle: TextStyle(
+                            color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                            fontSize: 14,
+                          ),
+                          filled: true,
+                          fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.email_rounded,
+                            color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                          ),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        "Kata Sandi",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white70 : const Color(0xFF475569),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       TextField(
                         controller: _passCtrl,
                         obscureText: true,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          fontSize: 14,
+                        ),
                         decoration: InputDecoration(
-                          hintText: "Password",
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          hintText: "Masukkan kata sandi Anda",
+                          hintStyle: TextStyle(
+                            color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                            fontSize: 14,
+                          ),
+                          filled: true,
+                          fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.lock_rounded,
+                            color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 28),
+
+                // Submit Button
+                auth.loading
+                    ? const CircularProgressIndicator()
+                    : AppButton.primary(
+                        label: "Masuk Sekarang",
+                        gradientColors: accentColors,
+                        onPressed: () async {
+                          final ok = await auth.login(
+                            email: _emailCtrl.text.trim(),
+                            password: _passCtrl.text.trim(),
+                          );
+                          if (!mounted) return;
+                          if (!ok) {
+                            AppNotification.show(context, 'Login gagal. Silakan periksa email/password.', isError: true);
+                            return;
+                          }
+                          final role = auth.user?.role ?? 'student';
+                          if (role == 'teacher') {
+                            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MenuHomeTeacher()));
+                          } else {
+                            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MenuHomeStudent()));
+                          }
+                        },
+                      ),
                 const SizedBox(height: 18),
+
+                // Register Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Don't have an account?",
-                      style: TextStyle(fontWeight: FontWeight.w500),
+                    Text(
+                      "Belum punya akun?",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
@@ -108,64 +222,17 @@ class _LoginUserPageState extends State<LoginUserPage> {
                           _morphPageRoute(PageDaftarUser(userType: widget.userType))
                         );
                       },
-                      child: const Text(
-                        "Register here",
+                      child: Text(
+                        "Daftar di sini",
                         style: TextStyle(
-                          color: Colors.blueAccent,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: primaryColor,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF5DB7B7),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        elevation: 2,
-                      ),
-                      onPressed: auth.loading
-                          ? null
-                          : () async {
-                              final scaffold = ScaffoldMessenger.of(context);
-                              final navigator = Navigator.of(context);
-                              final ok = await auth.login(
-                                email: _emailCtrl.text.trim(),
-                                password: _passCtrl.text.trim(),
-                              );
-                              if (!mounted) return;
-                              if (!ok) {
-                                scaffold.showSnackBar(const SnackBar(content: Text('Login failed')));
-                                return;
-                              }
-                              final role = auth.user?.role ?? 'student';
-                              if (role == 'teacher') {
-                                navigator.pushReplacement(MaterialPageRoute(builder: (_) => const MenuHomeTeacher()));
-                              } else {
-                                navigator.pushReplacement(MaterialPageRoute(builder: (_) => const MenuHomeStudent()));
-                              }
-                            },
-                      child: auth.loading ? const CircularProgressIndicator() : const Text(
-                        "LOGIN",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
               ],
             ),
           ),

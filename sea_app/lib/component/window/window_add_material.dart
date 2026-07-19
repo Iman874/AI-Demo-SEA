@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../utils/add_pdf.dart';
 import '../../utils/pdf_to_text.dart';
+import '../../theme/app_colors.dart';
+import '../../component/ui/app_button.dart';
+import '../../utils/app_notification.dart';
 
 class WindowAddMaterial extends StatefulWidget {
   final String? fkIdQuiz;
   final String? fkIdDiscussionRoom;
   final String? discussionId;
-  // When false, the dialog will NOT persist to backend and instead return the material data to caller.
   final bool saveImmediately;
   const WindowAddMaterial({super.key, this.fkIdQuiz, this.fkIdDiscussionRoom, this.discussionId, this.saveImmediately = true});
 
@@ -44,10 +46,8 @@ class _WindowAddMaterialState extends State<WindowAddMaterial> {
       'fk_id_discussionroom': widget.discussionId != null ? int.tryParse(widget.discussionId!) : (widget.fkIdDiscussionRoom != null ? int.tryParse(widget.fkIdDiscussionRoom!) : null),
     };
 
-    // If caller requested deferred save, return the material data to the caller instead of persisting now.
     if (!widget.saveImmediately) {
       final Map<String, dynamic> localMaterial = {
-        // caller will assign a tmp_id
         'title': payload['title'],
         'content': payload['content'],
         'type': payload['type'],
@@ -59,72 +59,265 @@ class _WindowAddMaterialState extends State<WindowAddMaterial> {
     try {
       final resp = await ApiService.createMaterial(payload);
       if (resp.statusCode == 201) {
-        // We simply return true to indicate success; parent can refresh materials list.
-        if (mounted) Navigator.of(context).pop(true);
+        if (mounted) {
+          AppNotification.show(context, "Materi '${payload['title']}' berhasil ditambahkan!");
+          Navigator.of(context).pop(true);
+        }
         return;
       }
-    } catch (e) {
-      // ignore
-    }
+    } catch (_) {}
 
     if (mounted) {
       setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save material')));
+      AppNotification.show(context, 'Gagal menyimpan dokumen materi.', isError: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Dialog(
-      insetPadding: const EdgeInsets.all(24),
-      child: SizedBox(
-        width: 560,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: Colors.transparent,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 520),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Add Material', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 12),
-              TextField(controller: _titleController, decoration: const InputDecoration(labelText: 'Title')),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                value: _selectedType,
-                items: const [
-                  DropdownMenuItem(value: 'text', child: Text('Text')),
-                  DropdownMenuItem(value: 'pdf', child: Text('PDF')),
-                ],
-                onChanged: (v) {
-                  if (v != null) setState(() => _selectedType = v);
-                },
-                decoration: const InputDecoration(labelText: 'Type'),
+            Row(
+              children: [
+                Icon(
+                  Icons.note_add_rounded,
+                  color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
+                  size: 24,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "Tambah Materi Baru",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                    size: 20,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Judul
+            Text(
+              "Judul Materi",
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white70 : const Color(0xFF475569),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _titleController,
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                fontSize: 14,
+              ),
+              decoration: InputDecoration(
+                hintText: "Contoh: Pengenalan Flutter & Dart",
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                  fontSize: 14,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                filled: true,
+                fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: Icon(
+                  Icons.title_rounded,
+                  color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Tipe
+            Text(
+              "Tipe Format",
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white70 : const Color(0xFF475569),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButtonFormField<String>(
+                  value: _selectedType,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    border: InputBorder.none,
+                    prefixIcon: Icon(
+                      Icons.format_align_left_rounded,
+                      color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                    ),
+                  ),
+                  dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'text', child: Text('Teks / Artikel')),
+                    DropdownMenuItem(value: 'pdf', child: Text('Dokumen PDF')),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) setState(() => _selectedType = v);
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Konten
+            if (_selectedType == 'text') ...[
+              Text(
+                "Isi Materi / Deskripsi",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white70 : const Color(0xFF475569),
+                ),
               ),
               const SizedBox(height: 8),
-              if (_selectedType == 'text')
-                TextField(controller: _contentController, decoration: const InputDecoration(labelText: 'Content'), maxLines: 4),
-              if (_selectedType == 'pdf') ...[
-                const SizedBox(height: 8),
-                AddPdfWidget(onPdfSelected: (path, bytes, name) {
-                  setState(() {
-                    pdfPath = path;
-                    pdfBytes = bytes;
-                    pdfFileName = name;
-                  });
-                }),
-                if (pdfFileName != null) Padding(padding: const EdgeInsets.only(top: 8.0), child: Text('Selected: $pdfFileName')),
-              ],
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _loading ? null : _save,
-                    child: _loading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Save'),
+              TextField(
+                controller: _contentController,
+                maxLines: 4,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontSize: 14,
+                ),
+                decoration: InputDecoration(
+                  hintText: "Tulis atau tempel materi teks di sini...",
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                    fontSize: 14,
                   ),
-                ],
-              )
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  filled: true,
+                  fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ],
+            if (_selectedType == 'pdf') ...[
+              Text(
+                "Unggah File PDF",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white70 : const Color(0xFF475569),
+                ),
+              ),
+              const SizedBox(height: 8),
+              AddPdfWidget(onPdfSelected: (path, bytes, name) {
+                setState(() {
+                  pdfPath = path;
+                  pdfBytes = bytes;
+                  pdfFileName = name;
+                });
+              }),
+              if (pdfFileName != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Terpilih: $pdfFileName',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
+                    ),
+                  ),
+                ),
+            ],
+            const SizedBox(height: 24),
+
+            // Aksi
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(
+                        color: isDark ? Colors.white10 : Colors.black12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(
+                      "Batal",
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : const Color(0xFF475569),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppButton.primary(
+                    label: "Simpan",
+                    gradientColors: AppColors.teacherGradient,
+                    isLoading: _loading,
+                    onPressed: _loading ? null : _save,
+                  ),
+                ),
+              ],
+            ),
             ],
           ),
         ),

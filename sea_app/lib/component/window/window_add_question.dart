@@ -3,6 +3,9 @@ import '../../utils/app_logger.dart';
 import '../../models/question.dart';
 import '../../models/answer_question.dart';
 import '../../models/material.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_decorations.dart';
 
 class WindowAddQuestion extends StatefulWidget {
   final int nextNumber;
@@ -29,20 +32,15 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
   int _selectedPoin = 10;
   final List<int> _poinOptions = [5, 10, 15, 20];
   final TextEditingController _questionController = TextEditingController();
-
-  // List of controllers and isCorrect for each choice field
   final List<TextEditingController> _choiceControllers = [TextEditingController()];
   final List<bool> _isCorrectList = [false];
-
   String? _selectedMaterialId;
 
   List<MaterialPdf> get materialsList => widget.materials ?? [];
 
   List<int> getAvailableNumbers() {
     final usedNumbers = widget.existingQuestions?.map((q) => q.number).toSet() ?? {};
-    if (usedNumbers.isEmpty) {
-      return [1];
-    }
+    if (usedNumbers.isEmpty) return [1];
     final maxNum = usedNumbers.isEmpty ? 1 : usedNumbers.length + 1;
     final allNums = List.generate(maxNum + 10, (i) => i + 1);
     return allNums.where((n) => !usedNumbers.contains(n)).toList();
@@ -124,14 +122,14 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
   @override
   Widget build(BuildContext context) {
     final availableNumbers = getAvailableNumbers();
-  // materialsList getter provided at class scope
+    final cs = Theme.of(context).colorScheme;
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: AppDecorations.borderRadiusLg),
       child: Container(
-        color: Theme.of(context).cardColor, // background dialog mengikuti theme
+        color: Theme.of(context).cardColor,
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: EdgeInsets.all(AppSpacing.lg),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,7 +141,7 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Question Number", style: TextStyle(fontWeight: FontWeight.w600)),
+                          Text("Question Number", style: AppTextStyles.labelMd(context)),
                           DropdownButton<int>(
                             value: _selectedNumber,
                             isExpanded: true,
@@ -157,12 +155,12 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    AppSpacing.wLg,
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Question Poin", style: TextStyle(fontWeight: FontWeight.w600)),
+                          Text("Question Poin", style: AppTextStyles.labelMd(context)),
                           DropdownButton<int>(
                             value: _selectedPoin,
                             isExpanded: true,
@@ -178,41 +176,25 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                const Text("Related Materials", style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
+                AppSpacing.hMd,
+                Text("Related Materials", style: AppTextStyles.labelMd(context)),
+                AppSpacing.hXs,
                 Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor, // dropdown material mengikuti theme
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.07),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    color: Theme.of(context).cardColor,
+                    borderRadius: AppDecorations.borderRadiusSm,
+                    boxShadow: AppDecorations.shadowSm(Theme.of(context).brightness),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: AppSpacing.horzLg,
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _selectedMaterialId,
                         isExpanded: true,
-                        borderRadius: BorderRadius.circular(10),
-                        hint: const Text(
-                          style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            color: Colors.grey,
-                            fontSize: 12
-                          ),
-                          "Select related material"
-                          ),
+                        borderRadius: AppDecorations.borderRadiusSm,
+                        hint: Text("Select related material", style: AppTextStyles.bodySm(context)),
                         items: materialsList.map((m) {
-                          return DropdownMenuItem(
-                            value: m.id,
-                            child: Text(m.title),
-                          );
+                          return DropdownMenuItem(value: m.id, child: Text(m.title));
                         }).toList(),
                         onChanged: (val) {
                           setState(() => _selectedMaterialId = val);
@@ -221,94 +203,74 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                const Text("Question", style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
+                AppSpacing.hMd,
+                Text("Question", style: AppTextStyles.labelMd(context)),
+                AppSpacing.hXs,
                 TextField(
                   controller: _questionController,
                   maxLines: 4,
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                     hintText: "Type your question here",
                   ),
                 ),
-                const SizedBox(height: 12),
-                const Text("Question Choices", style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
+                AppSpacing.hMd,
+                Text("Question Choices", style: AppTextStyles.labelMd(context)),
+                AppSpacing.hXs,
                 Column(
                   children: List.generate(_choiceControllers.length, (i) {
-                    return Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: TextField(
-                            controller: _choiceControllers[i],
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              hintText: "Choice",
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: TextField(
+                              controller: _choiceControllers[i],
+                              decoration: InputDecoration(
+                                hintText: "Choice",
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text("Correct", style: TextStyle(fontWeight: FontWeight.w600)),
-                              Checkbox(
-                                value: _isCorrectList[i],
-                                onChanged: (val) {
-                                  if (val == true) _setCorrect(i);
-                                },
-                              ),
-                            ],
+                          AppSpacing.wSm,
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Correct", style: AppTextStyles.labelMd(context)),
+                                Checkbox(
+                                  value: _isCorrectList[i],
+                                  onChanged: (val) {
+                                    if (val == true) _setCorrect(i);
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        if (_choiceControllers.length > 1)
-                          IconButton(
-                            icon: const Icon(Icons.close, color: Colors.red, size: 18),
-                            onPressed: () => _removeChoiceField(i),
-                          ),
-                      ],
+                          if (_choiceControllers.length > 1)
+                            IconButton(
+                              icon: Icon(Icons.close, color: cs.error, size: 18),
+                              onPressed: () => _removeChoiceField(i),
+                            ),
+                        ],
+                      ),
                     );
                   }),
                 ),
-                const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF306062),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
+                  child: OutlinedButton.icon(
                     onPressed: _choiceControllers.length < 5 ? _addChoiceField : null,
-                    child: const Icon(Icons.add, color: Colors.white, size: 28),
+                    icon: const Icon(Icons.add, size: 28),
+                    label: const Text("Add Choice"),
                   ),
                 ),
-                const SizedBox(height: 18),
+                AppSpacing.hLg,
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF437057),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
                     onPressed: _submitQuestion,
-                    child: const Text(
-                      "Add Question",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
+                    child: Text("Add Question", style: AppTextStyles.labelLg(context)),
                   ),
                 ),
               ],

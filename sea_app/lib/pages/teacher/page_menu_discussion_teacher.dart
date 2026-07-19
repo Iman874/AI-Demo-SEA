@@ -8,6 +8,9 @@ import '../../services/api_service.dart';
 import 'dart:convert';
 import 'page_menu_discussion_editor_teacher.dart';
 import 'page_menu_discussion_details_teacher.dart';
+import '../../theme/app_colors.dart';
+import '../../component/ui/app_button.dart';
+import '../../component/state/skeleton_loading.dart';
 
 class PageMenuDiscussionTeacher extends StatefulWidget {
   const PageMenuDiscussionTeacher({super.key});
@@ -80,12 +83,13 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return const SkeletonListContent();
     if (_error != null) return Center(child: Text('Error: $_error'));
 
-  final ongoingDiscussions = _discussions.where((d) => d.status == 'open').toList();
-  final completedDiscussions = _discussions.where((d) => d.status == 'closed').toList();
-  final materials = _materials;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ongoingDiscussions = _discussions.where((d) => d.status == 'open').toList();
+    final completedDiscussions = _discussions.where((d) => d.status == 'closed').toList();
+    final materials = _materials;
 
     // Filter out classes with empty id and deduplicate by id to avoid Dropdown issues
     final List<ClassModel> classItems = [];
@@ -109,14 +113,15 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Select Class
+              // Pilih Kelas
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
                 child: Text(
-                  'Select Class',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
+                  'Pilih Kelas',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
                     fontSize: 16,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
               ),
@@ -124,22 +129,37 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor, // gunakan warna dari theme
-                    borderRadius: BorderRadius.circular(14),
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.07),
-                        blurRadius: 8,
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                        blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
+                    child: DropdownButtonFormField<String>(
                       value: dropdownValue,
-                      borderRadius: BorderRadius.circular(14),
-                      isExpanded: true,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        border: InputBorder.none,
+                        prefixIcon: Icon(
+                          Icons.school_rounded,
+                          color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                        ),
+                      ),
+                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                       items: classItems.map((c) {
                         return DropdownMenuItem(
                           value: c.idClass,
@@ -156,90 +176,83 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                   ),
                 ),
               ),
-              // Ongoing Discussion Rooms
+              const SizedBox(height: 12),
+
+              // Ruang Diskusi Aktif
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                child: const Text(
-                  'Ongoing Discussion Rooms',
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+                child: Text(
+                  'Ruang Diskusi Aktif',
                   style: TextStyle(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 16,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                child: CardDiscussionList(
-                  discussions: ongoingDiscussions,
-                  onEdit: (d) {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom)));
-                  },
-                  onDetails: (d) {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom)));
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4B6A85),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const PageMenuDiscussionEditorTeacher(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Add Discussion Room',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // Discussion Materials
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                child: const Text(
-                  'Discussion Materials',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              CardMaterialList(materials: materials),
-              // Completed Discussion Rooms
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                child: const Text(
-                  'Completed Discussion Rooms',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
               ),
               CardDiscussionList(
-                discussions: completedDiscussions,
+                discussions: ongoingDiscussions,
+                onEdit: (d) {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom)));
+                },
                 onDetails: (d) {
-                  // For completed discussions, open the details view (read-only)
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionDetailsTeacher(discussionId: d.idDiscussionRoom)));
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom)));
                 },
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                child: AppButton.primary(
+                  label: 'Buat Ruang Diskusi',
+                  icon: Icons.add_comment_rounded,
+                  gradientColors: AppColors.teacherGradient,
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PageMenuDiscussionEditorTeacher(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Dokumen Materi Diskusi
+              if (materials.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+                  child: Text(
+                    'Dokumen Materi Diskusi',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                  ),
+                ),
+                CardMaterialList(materials: materials),
+                const SizedBox(height: 12),
+              ],
+
+              // Riwayat Diskusi Selesai
+              if (completedDiscussions.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+                  child: Text(
+                    'Riwayat Diskusi Selesai',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                  ),
+                ),
+                CardDiscussionList(
+                  discussions: completedDiscussions,
+                  onDetails: (d) {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionDetailsTeacher(discussionId: d.idDiscussionRoom)));
+                  },
+                ),
+              ],
               const SizedBox(height: 24),
             ],
           ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../component/nav/bottom_navigation.dart';
 import '../../component/header/top.dart';
-import '../../component/card/card_class.dart';
 import '../../component/card/card_quiz.dart';
 import '../../component/card/card_discussion.dart';
 import '../../models/class.dart';
@@ -14,8 +13,12 @@ import '../../providers/auth_provider.dart';
 // removed local user and user_class dummy imports
 import 'page_menu_discussion_student.dart';
 import 'page_menu_quiz_student.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_decorations.dart';
+import '../../theme/app_text_styles.dart';
+import '../../component/state/skeleton_loading.dart';
+import '../page_settings.dart';
 import '../page_guide.dart';
-import '../../theme/dark_theme.dart';
 import '../../component/window/window_join_class.dart';
 import '../../component/window/window_message.dart';
 import 'page_menu_discussion_detail_student.dart';
@@ -37,34 +40,75 @@ class _MenuHomeStudentState extends State<MenuHomeStudent> {
     "Home",
     "Discussion Room",
     "Quiz",
-    "Guide",
+    "Panduan",
+    "Setelan",
   ];
 
-  List<Widget> get _pages => [
-        _HomeStudentContent(),
-        PageMenuDiscussionStudent(),
+  static const List<String> _subtitles = [
+    "Kelola kelas & diskusi",
+    "Ruang diskusi kelas",
+    "Kerjakan & evaluasi kuis",
+    "Cara menggunakan aplikasi",
+    "Preferensi & konfigurasi",
+  ];
+
+  final List<Widget> _pages = [
+    _HomeStudentContent(),
+    PageMenuDiscussionStudent(),
     PageMenuQuizStudent(),
-    // Guide
     const PageGuide(),
-      ];
+    const PageSettings(),
+  ];
+
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onNavItemTapped(int index) {
+    if (index == _currentIndex) return;
+    setState(() => _currentIndex = index);
+    _pageController.jumpToPage(index);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: SafeArea(
         child: Column(
           children: [
-            TopHeader(
-              title: _titles[_currentIndex],
-              backgroundColor: backgroundColorStudent,
+            if (_currentIndex != 0)
+              TopHeader(
+                title: _titles[_currentIndex],
+                subtitle: _subtitles[_currentIndex],
+                accentColor: AppColors.studentAccent,
+              ),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const BouncingScrollPhysics(),
+                onPageChanged: (index) {
+                  setState(() => _currentIndex = index);
+                },
+                children: _pages,
+              ),
             ),
-            Expanded(child: _pages[_currentIndex]),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavigation(
         currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
+        onTap: _onNavItemTapped,
         isStudent: true,
       ),
     );
@@ -225,260 +269,704 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
   }
   @override
   Widget build(BuildContext context) {
-  if (_loading) return const Center(child: CircularProgressIndicator());
-  if (_error != null) return Center(child: Text('Error: $_error'));
-  final auth = Provider.of<AuthProvider>(context, listen: false);
+    if (_loading) return const SkeletonHomeContent();
+    if (_error != null) return Center(child: Text('Error: $_error'));
+    final auth = Provider.of<AuthProvider>(context, listen: false);
 
-  // If logged in, classes contains only user's classes. If not logged in, no classes are shown.
-  final classes = (auth.token != null) ? _classes : <ClassModel>[];
-  // Quizzes loaded from server
-  final quizzes = _activeQuizzes;
-  final recentQuizzes = _completedQuizzes; // treat completed as recent for home display
-  // Only show discussions that are open and have an AI chatroom active
-  final discussions = _discussions.where((d) => d.status == "open" && d.chatroomActive == true).toList();
+    // Filter data
+    final classes = (auth.token != null) ? _classes : <ClassModel>[];
+    final quizzes = _activeQuizzes;
+    final recentQuizzes = _completedQuizzes;
+    final discussions = _discussions.where((d) => d.status == "open" && d.chatroomActive == true).toList();
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final String userName = auth.user?.name ?? "Student";
+
+    // Greeting time based on hour
+    final hour = DateTime.now().hour;
+    String timeGreeting = "Selamat Hari";
+    if (hour >= 5 && hour < 11) {
+      timeGreeting = "Selamat Pagi";
+    } else if (hour >= 11 && hour < 15) {
+      timeGreeting = "Selamat Siang";
+    } else if (hour >= 15 && hour < 18) {
+      timeGreeting = "Selamat Sore";
+    } else {
+      timeGreeting = "Selamat Malam";
+    }
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-              child: Text(
-                "My Class",
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            CardClassList(classes: classes),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-              child: SizedBox(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── RICH DASHBOARD HEADER (STUDENT) ──
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
                 width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 42),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: AppColors.studentGradient,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  onPressed: () async {
-                    final parentContext = context;
-
-                    await showDialog(
-                      context: parentContext,
-                      useRootNavigator: false,
-                      barrierDismissible: false,
-                      builder: (dialogCtx) => WindowJoinClass(
-                        onJoin: (code) async {
-                          String message = '';
-                          bool joined = false;
-
-                          // Capture auth provider and navigator early to avoid using BuildContext after awaits
-                          final authProv = Provider.of<AuthProvider>(parentContext, listen: false);
-                          final navigator = Navigator.of(parentContext);
-
-                          try {
-                            final token = authProv.token;
-                            if (token == null) {
-                              // not logged in — show specific message and require login
-                              final msg = 'You must be logged in to join classes.';
-                              navigator.pop();
-                              await Future.delayed(const Duration(milliseconds: 150));
-                              if (!mounted) return;
-                              await showDialog(
-                                context: navigator.context,
-                                barrierDismissible: false,
-                                useRootNavigator: false,
-                                builder: (ctx2) => WindowMessage(
-                                  message: msg,
-                                  onOk: () => navigator.pop(),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(28),
+                    bottomRight: Radius.circular(28),
+                  ),
+                  boxShadow: AppDecorations.shadowGlow(
+                    color: AppColors.studentAccent,
+                    opacity: 0.15,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top personalized bar
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "$timeGreeting,",
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.75),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                              );
-                              return;
-                            }
-
-                            // Call backend API to join class with Bearer token
-                            final resp = await ApiService.joinClass({'code_class': code}, token: token);
-                            if (resp.statusCode == 201) {
-                              final body = jsonDecode(resp.body);
-                              message = body['message'] ?? 'Joined class';
-                              joined = true;
-                              // notify app that classes changed
-                              authProv.bumpClassesVersion();
-                            } else if (resp.statusCode == 200) {
-                              final body = jsonDecode(resp.body);
-                              message = body['message'] ?? 'Already joined';
-                            } else if (resp.statusCode == 404) {
-                              message = 'Class code not found.';
-                            } else if (resp.statusCode == 401) {
-                              message = 'You must be logged in to join classes.';
-                            } else {
-                              // For any non-success code from API, show the returned message
-                              final body = jsonDecode(resp.body);
-                              message = body['message'] ?? 'Failed to join class.';
-                            }
-                          } catch (err) {
-                            message = 'An error occurred while joining the class: ${err.toString()}';
-                          }
-
-                          // Close WindowJoinClass using captured navigator
-                          navigator.pop();
-
-                          await Future.delayed(const Duration(milliseconds: 150));
-
-                          if (!mounted) return;
-                          await showDialog(
-                            context: navigator.context,
-                            barrierDismissible: false,
-                            useRootNavigator: false,
-                            builder: (ctx2) => WindowMessage(
-                              message: message,
-                              onOk: () async {
-                                navigator.pop();
-                                if (joined && mounted) {
-                                  // Reload data on home to reflect new joined class
-                                  await _loadData();
-                                  if (mounted) setState(() {});
-                                }
-                              },
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                userName.toLowerCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Circular profile pic placeholder
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white24, width: 1.5),
+                          ),
+                          child: Center(
+                            child: Text(
+                              userName.isNotEmpty ? userName[0].toUpperCase() : "S",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                  child: Text(
-                    "Join with Class Code",
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodySmall?.color ?? Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+              // Row Statistik berupa Kartu Putih Horizontal Melayang
+              Positioned(
+                bottom: -24,
+                left: 20,
+                right: 20,
+                child: Row(
+                  children: [
+                    // Card 1: Kelas Diikuti
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                  Icons.school_rounded,
+                                  color: Color(0xFF2563EB),
+                                  size: 20,
+                                ),
+                              ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Kelas Diikuti",
+                                    style: TextStyle(
+                                      color: Color(0xFF64748B),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    "${classes.length}",
+                                    style: const TextStyle(
+                                      color: Color(0xFF2563EB),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Card 2: Kuis Selesai
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF97316).withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.assignment_turned_in_rounded,
+                                color: Color(0xFFF97316),
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Kuis Selesai",
+                                    style: TextStyle(
+                                      color: Color(0xFF64748B),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    "${recentQuizzes.length}",
+                                    style: const TextStyle(
+                                      color: Color(0xFFF97316),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 42), // Jarak aman setelah Stack melayang
+
+          // ── KELAS TERDAFTAR (DI LUAR HEADER BIRU) ──
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Kelas Terdaftar",
+                  style: AppTextStyles.titleMd(context).copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
                   ),
                 ),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-              child: Text(
-                "Active Quizzes",
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            CardQuizList(quizzes: quizzes, onViewResult: (quiz) {}),
-
-            if (recentQuizzes.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-                child: Text(
-                  "Recent Quizzes",
-                  style: Theme.of(context).textTheme.titleMedium,
+                InkWell(
+                  onTap: () {},
+                  child: const Row(
+                    children: [
+                      Text(
+                        "Lihat semua",
+                        style: TextStyle(
+                          color: Color(0xFF2563EB),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFF2563EB)),
+                    ],
+                  ),
                 ),
-              ),
-              CardQuizList(
-                quizzes: recentQuizzes,
-                onViewResult: (quiz) async {
-                  final navigator = Navigator.of(context);
-                  final auth = Provider.of<AuthProvider>(context, listen: false);
-                  final token = auth.token;
-                  try {
-                    final detailResp = await ApiService.getQuizResultDetails(userId: auth.user?.id ?? '', quizId: quiz.idQuiz, token: token);
-                    if (detailResp.statusCode == 200) {
-                      final body = jsonDecode(detailResp.body);
-                      final data = body['data'] ?? {};
-                      final perQ = (data['per_question'] as List<dynamic>?) ?? [];
-                      final summary = data['summary'] ?? data;
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
 
-                      // fetch questions to obtain choices content
-                      final qResp = await ApiService.getQuizQuestions(quizId: quiz.idQuiz);
-                      List<dynamic> qItems = [];
-                      if (qResp.statusCode == 200) {
-                        final qb = jsonDecode(qResp.body);
-                        qItems = (qb['data'] as List<dynamic>?) ?? [];
-                      }
+          // Horizontal list kelas / Empty state border putus-putus
+          classes.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _buildEmptyClassCard(context),
+                )
+              : SizedBox(
+                  height: 110,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: classes.length,
+                    itemBuilder: (context, idx) {
+                      final c = classes[idx];
+                      return _buildClassHorizontalCard(context, c, isDark);
+                    },
+                  ),
+                ),
+          const SizedBox(height: 20),
 
-                      // build Question objects similar to quiz menu page
-                      final questions = qItems.map((e) {
-                        final choices = (e['choices'] as List<dynamic>?)?.map((c) => AnswerQuestion(
-                              idAnswerChoice: (c['id'] ?? '').toString(),
-                              content: (c['content'] ?? '').toString(),
-                              isCorrect: false,
-                              createAt: DateTime.now(),
-                              updateAt: DateTime.now(),
-                            )).toList() ?? [];
-                        return Question(
-                          idQuestion: (e['id_question'] ?? '').toString(),
-                          number: (e['number'] ?? 0) as int,
-                          question: (e['question_text'] ?? '').toString(),
-                          poin: (e['point'] ?? 0) as int,
-                          fkIdQuiz: quiz.idQuiz,
-                          fkIdMaterial: e['fk_id_material']?.toString(),
-                          answerChoices: choices,
-                          createAt: DateTime.now(),
-                          updateAt: DateTime.now(),
-                        );
-                      }).toList();
+          // ── KONTEN BAWAH (QUIZ & DISKUSI) ──
+          // Active Quiz Section
+          _buildContentSectionHeader(context, "Kuis Induvidu", "1", isDark),
+          CardQuizList(quizzes: quizzes, onViewResult: (quiz) {}),
+          const SizedBox(height: 18),
 
-                      final answers = <String, String>{};
-                      for (var pq in perQ) {
-                        final qid = (pq['question_id'] ?? '').toString();
-                        final sel = (pq['selected_choice_id'] ?? '')?.toString() ?? '';
-                        if (qid.isNotEmpty && sel.isNotEmpty) answers[qid] = sel;
-                      }
+          // Recent Quizzes (Completed)
+          if (recentQuizzes.isNotEmpty) ...[
+            _buildContentSectionHeader(context, "Riwayat Kuis", "2", isDark),
+            CardQuizList(
+              quizzes: recentQuizzes,
+              onViewResult: (quiz) async {
+                final navigator = Navigator.of(context);
+                final auth = Provider.of<AuthProvider>(context, listen: false);
+                final token = auth.token;
+                try {
+                  final detailResp = await ApiService.getQuizResultDetails(userId: auth.user?.id ?? '', quizId: quiz.idQuiz, token: token);
+                  if (detailResp.statusCode == 200) {
+                    final body = jsonDecode(detailResp.body);
+                    final data = body['data'] ?? {};
+                    final perQ = (data['per_question'] as List<dynamic>?) ?? [];
+                    final summary = data['summary'] ?? data;
 
-                      final score = (summary['score'] is int) ? summary['score'] as int : int.tryParse((summary['score'] ?? '').toString()) ?? 0;
-
-                      if (!mounted) return;
-                      await navigator.push(MaterialPageRoute(builder: (_) => PageMenuQuizResultStudent(
-                        questions: questions,
-                        answers: answers,
-                        score: score,
-                        perQuestion: perQ,
-                      )));
-                    } else {
-                      if (!mounted) return;
-                      await showDialog(context: navigator.context, builder: (_) => AlertDialog(
-                        title: const Text('Error'),
-                        content: Text('Could not load quiz result (status ${detailResp.statusCode})'),
-                        actions: [TextButton(onPressed: () => Navigator.of(navigator.context).pop(), child: const Text('OK'))],
-                      ));
+                    // fetch questions to obtain choices content
+                    final qResp = await ApiService.getQuizQuestions(quizId: quiz.idQuiz);
+                    List<dynamic> qItems = [];
+                    if (qResp.statusCode == 200) {
+                      final qb = jsonDecode(qResp.body);
+                      qItems = (qb['data'] as List<dynamic>?) ?? [];
                     }
-                  } catch (e) {
+
+                    // build Question objects similar to quiz menu page
+                    final questions = qItems.map((e) {
+                      final choices = (e['choices'] as List<dynamic>?)?.map((c) => AnswerQuestion(
+                            idAnswerChoice: (c['id'] ?? '').toString(),
+                            content: (c['content'] ?? '').toString(),
+                            isCorrect: false,
+                            createAt: DateTime.now(),
+                            updateAt: DateTime.now(),
+                          )).toList() ?? [];
+                      return Question(
+                        idQuestion: (e['id_question'] ?? '').toString(),
+                        number: (e['number'] ?? 0) as int,
+                        question: (e['question_text'] ?? '').toString(),
+                        poin: (e['point'] ?? 0) as int,
+                        fkIdQuiz: quiz.idQuiz,
+                        fkIdMaterial: e['fk_id_material']?.toString(),
+                        answerChoices: choices,
+                        createAt: DateTime.now(),
+                        updateAt: DateTime.now(),
+                      );
+                    }).toList();
+
+                    final answers = <String, String>{};
+                    for (var pq in perQ) {
+                      final qid = (pq['question_id'] ?? '').toString();
+                      final sel = (pq['selected_choice_id'] ?? '')?.toString() ?? '';
+                      if (qid.isNotEmpty && sel.isNotEmpty) answers[qid] = sel;
+                    }
+
+                    final score = (summary['score'] is int) ? summary['score'] as int : int.tryParse((summary['score'] ?? '').toString()) ?? 0;
+
+                    if (!mounted) return;
+                    await navigator.push(MaterialPageRoute(builder: (_) => PageMenuQuizResultStudent(
+                      questions: questions,
+                      answers: answers,
+                      score: score,
+                      perQuestion: perQ,
+                    )));
+                  } else {
                     if (!mounted) return;
                     await showDialog(context: navigator.context, builder: (_) => AlertDialog(
                       title: const Text('Error'),
-                      content: Text(e.toString()),
+                      content: Text('Could not load quiz result (status ${detailResp.statusCode})'),
                       actions: [TextButton(onPressed: () => Navigator.of(navigator.context).pop(), child: const Text('OK'))],
                     ));
                   }
-                },
-                buttonLabel: "View Quiz Results",
+                } catch (e) {
+                  if (!mounted) return;
+                  await showDialog(context: navigator.context, builder: (_) => AlertDialog(
+                    title: const Text('Error'),
+                    content: Text(e.toString()),
+                    actions: [TextButton(onPressed: () => Navigator.of(navigator.context).pop(), child: const Text('OK'))],
+                  ));
+                }
+              },
+              buttonLabel: "Hasil Kuis",
+            ),
+          ],
+
+          _buildContentSectionHeader(context, "Diskusi Aktif", "3", isDark),
+          CardDiscussionList(
+            discussions: discussions,
+            onViewDetails: (discussion) async {
+              await Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiscussionDetailStudentPage(discussion: discussion)));
+            },
+            buttonLabel: "Masuk Diskusi",
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  // ── HELPER WIDGETS FOR RICH DASHBOARD ──
+
+  Widget _buildClassHorizontalCard(BuildContext context, ClassModel c, bool isDark) {
+    return Container(
+      width: 170,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.secondary.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.class_rounded,
+                  color: AppColors.secondary,
+                  size: 16,
+                ),
+              ),
+              Text(
+                c.codeClass,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white38 : Colors.grey.shade400,
+                ),
               ),
             ],
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-              child: Text(
-                "Active Discussions",
-                style: Theme.of(context).textTheme.titleMedium,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                c.name,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            CardDiscussionList(
-              discussions: discussions,
-              onViewDetails: (discussion) async {
-                await Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiscussionDetailStudentPage(discussion: discussion)));
-              },
-              buttonLabel: "Join Discussion",
-            ),
-            const SizedBox(height: 24),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                "Siswa Terdaftar",
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white30 : Colors.grey.shade500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyClassCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: () => _joinClassDialog(context),
+      child: Container(
+        width: double.infinity,
+        height: 140,
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.02) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: CustomPaint(
+          painter: _DottedBorderPainter(
+            color: isDark ? Colors.white24 : const Color(0xFFE2E8F0),
+            radius: 20,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.add_rounded,
+                  color: Color(0xFF2563EB),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                "Gabung Kelas",
+                style: TextStyle(
+                  color: Color(0xFF2563EB),
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "Mulai dengan bergabung kelas baru untuk proses belajarmu",
+                style: TextStyle(
+                  color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _buildContentSectionHeader(BuildContext context, String title, String stepNum, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: -10,
+                top: -12,
+                child: Text(
+                  stepNum,
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.04),
+                    letterSpacing: -1,
+                  ),
+                ),
+              ),
+              Text(
+                title,
+                style: AppTextStyles.titleMd(context).copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _joinClassDialog(BuildContext parentContext) async {
+    await showDialog(
+      context: parentContext,
+      useRootNavigator: false,
+      barrierDismissible: false,
+      builder: (dialogCtx) => WindowJoinClass(
+        onJoin: (code) async {
+          String message = '';
+          bool joined = false;
+
+          final authProv = Provider.of<AuthProvider>(parentContext, listen: false);
+          final navigator = Navigator.of(parentContext);
+
+          try {
+            final token = authProv.token;
+            if (token == null) {
+              final msg = 'Kamu harus masuk terlebih dahulu.';
+              navigator.pop();
+              await Future.delayed(const Duration(milliseconds: 150));
+              if (!mounted) return;
+              await showDialog(
+                context: navigator.context,
+                barrierDismissible: false,
+                useRootNavigator: false,
+                builder: (ctx2) => WindowMessage(
+                  message: msg,
+                  onOk: () => navigator.pop(),
+                ),
+              );
+              return;
+            }
+
+            final resp = await ApiService.joinClass({'code_class': code}, token: token);
+            if (resp.statusCode == 201) {
+              final body = jsonDecode(resp.body);
+              message = body['message'] ?? 'Berhasil bergabung dengan kelas';
+              joined = true;
+              authProv.bumpClassesVersion();
+            } else if (resp.statusCode == 200) {
+              final body = jsonDecode(resp.body);
+              message = body['message'] ?? 'Sudah bergabung';
+            } else if (resp.statusCode == 404) {
+              message = 'Kode kelas tidak ditemukan.';
+            } else {
+              final body = jsonDecode(resp.body);
+              message = body['message'] ?? 'Gagal bergabung dengan kelas.';
+            }
+          } catch (err) {
+            message = 'Terjadi kesalahan: ${err.toString()}';
+          }
+
+          navigator.pop();
+          await Future.delayed(const Duration(milliseconds: 150));
+
+          if (!mounted) return;
+          await showDialog(
+            context: navigator.context,
+            barrierDismissible: false,
+            useRootNavigator: false,
+            builder: (ctx2) => WindowMessage(
+              message: message,
+              onOk: () async {
+                navigator.pop();
+                if (joined && mounted) {
+                  await _loadData();
+                  if (mounted) setState(() {});
+                }
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DottedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashSpace;
+
+  _DottedBorderPainter({
+    required this.color,
+    this.radius = 16,
+    this.strokeWidth = 1.5,
+    this.dashWidth = 6,
+    this.dashSpace = 4,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    final path = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Radius.circular(radius),
+      ));
+
+    final dashPath = Path();
+    var distance = 0.0;
+
+    for (final pathMetric in path.computeMetrics()) {
+      while (distance < pathMetric.length) {
+        dashPath.addPath(
+          pathMetric.extractPath(distance, distance + dashWidth),
+          Offset.zero,
+        );
+        distance += dashWidth + dashSpace;
+      }
+    }
+
+    canvas.drawPath(dashPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

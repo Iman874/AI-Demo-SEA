@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/api_service.dart';
 import 'dart:convert';
 import 'page_menu_discussion_detail_student.dart';
+import '../../component/state/skeleton_loading.dart';
 
 class PageMenuDiscussionStudent extends StatefulWidget {
   const PageMenuDiscussionStudent({super.key});
@@ -107,7 +108,7 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
 
   @override
   Widget build(BuildContext context) {
-  if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_loading) return const SkeletonListContent();
   if (_error != null) return Center(child: Text('Error: $_error'));
 
   // Filter diskusi sesuai kelas yang dipilih
@@ -120,6 +121,8 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
         ? selectedClassId
         : (hasClass ? studentClasses.first.idClass : null);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SafeArea(
       child: SingleChildScrollView(
         child: Padding(
@@ -131,10 +134,11 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
                 child: Text(
-                  "Select Class",
+                  "Pilih Kelas",
                   style: TextStyle(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 16,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
               ),
@@ -142,22 +146,37 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor, // gunakan warna dari theme
-                    borderRadius: BorderRadius.circular(14),
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.07),
-                        blurRadius: 8,
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                        blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
+                    child: DropdownButtonFormField<String>(
                       value: dropdownValue,
-                      borderRadius: BorderRadius.circular(14),
-                      isExpanded: true,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        border: InputBorder.none,
+                        prefixIcon: Icon(
+                          Icons.school_rounded,
+                          color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                        ),
+                      ),
+                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                       items: hasClass
                           ? studentClasses.map((c) {
                               return DropdownMenuItem(
@@ -174,52 +193,57 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
                               }
                             }
                           : null,
-                      hint: const Text("No class available"),
+                      hint: const Text("Tidak ada kelas tersedia", style: TextStyle(fontSize: 14)),
                     ),
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+
               // Active Discussions
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
                 child: Text(
-                  "Active Discussions",
+                  "Diskusi Aktif",
                   style: TextStyle(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     fontSize: 16,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
               ),
               CardDiscussionList(
                 discussions: activeDiscussions,
                 onViewDetails: (d) async {
-                  // navigate to discussion detail page for student; chatroom is accessed from there
                   await Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiscussionDetailStudentPage(discussion: d)));
                   if (!mounted) return;
-                  // reload discussions after return (in case materials/summary changed)
                   await _loadDiscussions();
                 },
-                buttonLabel: "Join Discussion",
+                buttonLabel: "Masuk Diskusi",
               ),
+              const SizedBox(height: 12),
+
               // Completed Discussions
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                child: Text(
-                  "Completed Discussions",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
+              if (completedDiscussions.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+                  child: Text(
+                    "Riwayat Diskusi Selesai",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
                   ),
                 ),
-              ),
-              CardDiscussionList(
-                discussions: completedDiscussions,
-                onViewDetails: (d) {
-                  // View details (open discussion detail page)
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiscussionDetailStudentPage(discussion: d)));
-                },
-                buttonLabel: "View Details",
-              ),
+                CardDiscussionList(
+                  discussions: completedDiscussions,
+                  onViewDetails: (d) {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiscussionDetailStudentPage(discussion: d)));
+                  },
+                  buttonLabel: "Detail Diskusi",
+                ),
+              ],
               const SizedBox(height: 24),
             ],
           ),

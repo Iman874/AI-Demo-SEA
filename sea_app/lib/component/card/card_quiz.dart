@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/quiz.dart';
+import '../../theme/app_text_styles.dart';
+import '../../theme/app_spacing.dart';
+import '../../theme/app_decorations.dart';
+import '../ui/app_button.dart';
 
 class CardQuizList extends StatelessWidget {
   final List<Quiz> quizzes;
@@ -10,92 +14,137 @@ class CardQuizList extends StatelessWidget {
     super.key,
     required this.quizzes,
     this.onViewResult,
-    this.buttonLabel = "View Quiz Results",
+    this.buttonLabel = "Hasil Kuis",
   });
 
   @override
   Widget build(BuildContext context) {
+    if (quizzes.isEmpty) {
+      return Container(
+        margin: EdgeInsets.symmetric(
+          horizontal: AppSpacing.horizontalPadding,
+          vertical: AppSpacing.sm,
+        ),
+        padding: const EdgeInsets.all(24),
+        decoration: AppDecorations.card(context),
+        child: Center(
+          child: Text(
+            "Belum ada kuis tersedia",
+            style: AppTextStyles.bodySm(context),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.horizontalPadding,
+        vertical: AppSpacing.xs,
+      ),
+      child: Column(
+        children: quizzes.map((q) {
+          return _QuizItemCard(
+            quiz: q,
+            onViewResult: onViewResult,
+            buttonLabel: buttonLabel,
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _QuizItemCard extends StatelessWidget {
+  final Quiz quiz;
+  final void Function(Quiz)? onViewResult;
+  final String buttonLabel;
+
+  const _QuizItemCard({
+    required this.quiz,
+    this.onViewResult,
+    required this.buttonLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).shadowColor.withOpacity(0.07),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+        borderRadius: AppDecorations.borderRadiusLg,
+        border: Border.all(
+          color: isDark ? const Color(0xFF1F2D40) : const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+        boxShadow: AppDecorations.shadowSm(Theme.of(context).brightness),
+      ),
+      child: Row(
+        children: [
+          // Icon Quiz Container
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              Icons.assignment_turned_in_rounded,
+              color: primaryColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          // Info Quiz
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  quiz.title,
+                  style: AppTextStyles.titleMd(context).copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.help_outline_rounded,
+                      size: 13,
+                      color: isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${quiz.duration} Menit",
+                      style: AppTextStyles.bodySm(context).copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Action Button Pill
+          AppButton.pill(
+            label: buttonLabel,
+            onPressed: onViewResult != null ? () => onViewResult!(quiz) : null,
+            color: primaryColor,
+            icon: Icons.chevron_right_rounded,
           ),
         ],
-      ),
-      child: SizedBox(
-        height: quizzes.length > 4 ? 220 : null,
-        child: ListView.builder(
-          shrinkWrap: true,
-          physics: quizzes.length > 4
-              ? const ScrollPhysics()
-              : const NeverScrollableScrollPhysics(),
-          itemCount: quizzes.length,
-          itemBuilder: (context, i) {
-            final q = quizzes[i];
-            return Container(
-              margin: const EdgeInsets.symmetric(vertical: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(25),
-                    blurRadius: 2,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    q.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w200,
-                      fontSize: 12,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 36,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(const Color(0xFF6B6B6B)),
-                        elevation: MaterialStateProperty.all(0),
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        padding: MaterialStateProperty.all(
-                          const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                        ),
-                      ),
-                      onPressed: onViewResult != null
-                          ? () => onViewResult!(q)
-                          : null,
-                      child: Text(
-                        buttonLabel,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
       ),
     );
   }
