@@ -567,8 +567,11 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       physics: const BouncingScrollPhysics(),
-                      itemCount: sortedDiscussions.length,
+                      itemCount: sortedDiscussions.length + 1,
                       itemBuilder: (context, idx) {
+                        if (idx == sortedDiscussions.length) {
+                          return _buildAddDiscussionCard(context, isDark, isTeacher: true);
+                        }
                         final d = sortedDiscussions[idx];
                         return StaggeredSlideUp(
                           index: idx,
@@ -578,81 +581,6 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                     ),
                   );
           }(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const PageMenuDiscussionEditorTeacher(),
-                    ),
-                  );
-                },
-                child: Ink(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: AppColors.teacherGradient,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.35),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(PhosphorIconsFill.chatsCircle, color: Colors.white, size: 26),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                'Mulai Diskusi Baru',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                              SizedBox(height: 3),
-                              Text(
-                                'Buat ruang diskusi sekarang',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(PhosphorIconsRegular.arrowRight, color: Colors.white, size: 22),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -835,6 +763,55 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
               "Buat",
               style: TextStyle(
                 color: AppColors.primary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddDiscussionCard(BuildContext context, bool isDark, {required bool isTeacher}) {
+    final accentColor = isTeacher ? AppColors.teacherAccent : AppColors.studentAccent;
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const PageMenuDiscussionEditorTeacher()),
+        );
+      },
+      child: Container(
+        width: 100,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                PhosphorIconsRegular.plus,
+                color: accentColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Buat",
+              style: TextStyle(
+                color: accentColor,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),

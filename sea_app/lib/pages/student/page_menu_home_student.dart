@@ -776,8 +776,11 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       physics: const BouncingScrollPhysics(),
-                      itemCount: sortedDiscussions.length,
+                      itemCount: sortedDiscussions.length + 1,
                       itemBuilder: (context, idx) {
+                        if (idx == sortedDiscussions.length) {
+                          return _buildAddDiscussionCard(context, isDark, isTeacher: false);
+                        }
                         final d = sortedDiscussions[idx];
                         return StaggeredSlideUp(
                           index: idx,
@@ -960,6 +963,66 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
               "Gabung",
               style: TextStyle(
                 color: AppColors.primary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddDiscussionCard(BuildContext context, bool isDark, {required bool isTeacher}) {
+    final accentColor = isTeacher ? AppColors.teacherAccent : AppColors.studentAccent;
+    return GestureDetector(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (_) => WindowViewListDiscussion(
+                discussions: _discussions,
+                isTeacher: false,
+                onTap: (d) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => DiscussionDetailStudentPage(discussion: d),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+      child: Container(
+        width: 100,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                PhosphorIconsRegular.plus,
+                color: accentColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Lihat",
+              style: TextStyle(
+                color: accentColor,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),

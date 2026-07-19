@@ -23,6 +23,7 @@ class WindowViewListClass extends StatefulWidget {
 class _WindowViewListClassState extends State<WindowViewListClass> {
   final TextEditingController _searchController = TextEditingController();
   List<ClassModel> _filteredClasses = [];
+  String _sortType = 'terbaru';
 
   @override
   void initState() {
@@ -50,6 +51,16 @@ class _WindowViewListClassState extends State<WindowViewListClass> {
             .toList();
       }
     });
+  }
+
+  List<ClassModel> get _sortedClasses {
+    final sorted = List<ClassModel>.from(_filteredClasses);
+    if (_sortType == 'abjad') {
+      sorted.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    } else {
+      sorted.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    }
+    return sorted;
   }
 
   String _relativeTime(DateTime dt) {
@@ -157,16 +168,40 @@ class _WindowViewListClassState extends State<WindowViewListClass> {
                 ),
               ),
 
+              // Filter Chips
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                child: Row(
+                  children: [
+                    _sortChip(
+                      label: "Terbaru",
+                      isSelected: _sortType == 'terbaru',
+                      onTap: () => setState(() => _sortType = 'terbaru'),
+                      isDark: isDark,
+                      accentColor: accentColor,
+                    ),
+                    const SizedBox(width: 8),
+                    _sortChip(
+                      label: "Abjad A-Z",
+                      isSelected: _sortType == 'abjad',
+                      onTap: () => setState(() => _sortType = 'abjad'),
+                      isDark: isDark,
+                      accentColor: accentColor,
+                    ),
+                  ],
+                ),
+              ),
+
               // Daftar Kelas
               Expanded(
-                child: _filteredClasses.isEmpty
+                child: _sortedClasses.isEmpty
                     ? _buildEmptyState(isDark)
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                         physics: const BouncingScrollPhysics(),
-                        itemCount: _filteredClasses.length,
+                        itemCount: _sortedClasses.length,
                         itemBuilder: (context, idx) {
-                          final c = _filteredClasses[idx];
+                          final c = _sortedClasses[idx];
                           final relTime = _relativeTime(c.updatedAt);
                           return StaggeredSlideUp(
                             index: idx,
@@ -390,6 +425,40 @@ class _WindowViewListClassState extends State<WindowViewListClass> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _sortChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required Color accentColor,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? accentColor.withValues(alpha: 0.15)
+              : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? accentColor : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            color: isSelected ? accentColor : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+          ),
+        ),
       ),
     );
   }
