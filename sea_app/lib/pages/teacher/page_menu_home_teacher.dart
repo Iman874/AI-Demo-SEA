@@ -15,7 +15,6 @@ import 'page_menu_discussion_editor_teacher.dart';
 import '../../component/window/window_add_class.dart';
 import 'page_menu_discussion_details_teacher.dart';
 import '../../component/state/skeleton_loading.dart';
-import '../../component/ui/app_button.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_decorations.dart';
@@ -199,7 +198,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
             children: [
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 42),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 56),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: AppColors.teacherGradient,
@@ -246,156 +245,125 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                             ],
                           ),
                         ),
-                        // Circular profile pic placeholder
+                        // Avatar Gradient + Border Putih + Indikator Online
                         Container(
-                          width: 42,
-                          height: 42,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white24, width: 1.5),
-                          ),
-                          child: Center(
-                            child: Text(
-                              userName.isNotEmpty ? userName[0].toUpperCase() : "T",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                            ),
+                            ],
+                          ),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: AppColors.teacherGradient,
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 2),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    userName.isNotEmpty ? userName[0].toUpperCase() : "T",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                right: -1,
+                                bottom: -1,
+                                child: Container(
+                                  width: 13,
+                                  height: 13,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
+                    // Info aktivitas hari ini
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.18), width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.today_rounded, color: Colors.white, size: 14),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              "Belajar mengajar hari ini",
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            "${_classes.length} kelas • ${active.length} diskusi aktif",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-              // Row Statistik berupa Kartu Putih Horizontal Melayang
+              // Row Statistik berupa Kartu Putih Horizontal Melayang — HIERARCHY (angka besar)
               Positioned(
-                bottom: -24,
+                bottom: -28,
                 left: 20,
                 right: 20,
                 child: Row(
                   children: [
                     // Card 1: Kelas Diajar
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2563EB).withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.school_rounded,
-                                color: Color(0xFF2563EB),
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "Kelas Diajar",
-                                    style: TextStyle(
-                                      color: Color(0xFF64748B),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    "${_classes.length}",
-                                    style: const TextStyle(
-                                      color: Color(0xFF2563EB),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: _StatCard(
+                        icon: Icons.school_rounded,
+                        iconColor: const Color(0xFF2563EB),
+                        value: "${_classes.length}",
+                        label: "Kelas Diajar",
+                        isDark: isDark,
                       ),
                     ),
                     const SizedBox(width: 12),
                     // Card 2: Diskusi Aktif
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.black.withValues(alpha: 0.05), width: 1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.forum_rounded,
-                                color: Color(0xFF8B5CF6),
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    "Diskusi Aktif",
-                                    style: TextStyle(
-                                      color: Color(0xFF64748B),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    "${active.length}",
-                                    style: const TextStyle(
-                                      color: Color(0xFF8B5CF6),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                      child: _StatCard(
+                        icon: Icons.forum_rounded,
+                        iconColor: const Color(0xFF8B5CF6),
+                        value: "${active.length}",
+                        label: "Diskusi Aktif",
+                        isDark: isDark,
                       ),
                     ),
                   ],
@@ -403,7 +371,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
               ),
             ],
           ),
-          const SizedBox(height: 42), // Jarak aman setelah Stack melayang
+          const SizedBox(height: 48), // Jarak aman setelah Stack melayang
 
           // ── KELAS TERDAFTAR (DI LUAR HEADER BIRU) ──
           Padding(
@@ -459,7 +427,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                     },
                   ),
                 ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 28),
 
           // ── KONTEN BAWAH (DISKUSI & DISCUSSION ACTIONS) ──
           _buildContentSectionHeader(context, "Ruang Diskusi Saat Ini", "1", isDark),
@@ -477,18 +445,78 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
             },
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-            child: AppButton.primary(
-              label: 'Mulai Diskusi Baru',
-              icon: Icons.forum_rounded,
-              gradientColors: AppColors.studentGradient,
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const PageMenuDiscussionEditorTeacher(),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const PageMenuDiscussionEditorTeacher(),
+                    ),
+                  );
+                },
+                child: Ink(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: AppColors.teacherGradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                );
-              },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(Icons.forum_rounded, color: Colors.white, size: 26),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                'Mulai Diskusi Baru',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                              SizedBox(height: 3),
+                              Text(
+                                'Buat ruang diskusi sekarang',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 22),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -499,20 +527,21 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
   // ── HELPER WIDGETS FOR RICH DASHBOARD (TEACHER) ──
 
   Widget _buildClassHorizontalCard(BuildContext context, ClassModel c, bool isDark) {
+    final relTime = _relativeTime(c.updatedAt);
     return Container(
-      width: 170,
+      width: 178,
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: isDark ? AppColors.cardDark : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+          color: isDark ? AppColors.borderDark : Colors.black.withValues(alpha: 0.05),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -526,23 +555,32 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
-                  Icons.class_rounded,
+                  Icons.menu_book_rounded,
                   color: AppColors.primary,
                   size: 16,
                 ),
               ),
-              Text(
-                c.codeClass,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white38 : Colors.grey.shade400,
+              // Kode kelas badge abu neutral (bukan biru)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  c.codeClass,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
             ],
@@ -560,9 +598,32 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today_rounded,
+                    size: 10,
+                    color: isDark ? AppColors.textSecondaryDark : const Color(0xFF94A3B8),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      c.semester.isEmpty ? "Semester —" : c.semester,
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppColors.textSecondaryDark : const Color(0xFF94A3B8),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 2),
               Text(
-                "Siswa Terdaftar",
+                "Diperbarui $relTime",
                 style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.w500,
@@ -574,6 +635,16 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
         ],
       ),
     );
+  }
+
+  String _relativeTime(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 1) return "baru saja";
+    if (diff.inMinutes < 60) return "${diff.inMinutes} mnt lalu";
+    if (diff.inHours < 24) return "${diff.inHours} jam lalu";
+    if (diff.inDays < 30) return "${diff.inDays} hari lalu";
+    if (diff.inDays < 365) return "${(diff.inDays / 30).floor()} bln lalu";
+    return "${(diff.inDays / 365).floor()} thn lalu";
   }
 
   Widget _buildEmptyClassCard(BuildContext context) {
@@ -634,7 +705,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
 
   Widget _buildContentSectionHeader(BuildContext context, String title, String stepNum, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -656,12 +727,30 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                   ),
                 ),
               ),
-              Text(
-                title,
-                style: AppTextStyles.titleMd(context).copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                ),
+              Row(
+                children: [
+                  // Garis aksen vertikal gradient
+                  Container(
+                    width: 4,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: AppColors.teacherGradient,
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    title,
+                    style: AppTextStyles.titleMd(context).copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -679,6 +768,81 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
             _classes.add(newClass);
           });
         },
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String value;
+  final String label;
+  final bool isDark;
+
+  const _StatCard({
+    required this.icon,
+    required this.iconColor,
+    required this.value,
+    required this.label,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : Colors.black.withValues(alpha: 0.05),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Ikon soft (kecil, alpha rendah)
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 16),
+          ),
+          const SizedBox(height: 10),
+          // Angka BESAR (hierarchy)
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              height: 1,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Label kecil
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: isDark ? AppColors.textSecondaryDark : const Color(0xFF94A3B8),
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
       ),
     );
   }

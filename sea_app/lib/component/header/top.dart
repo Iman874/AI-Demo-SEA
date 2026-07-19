@@ -139,29 +139,36 @@ class TopHeader extends StatelessWidget {
                 Row(mainAxisSize: MainAxisSize.min, children: actions!),
                 const SizedBox(width: 8),
               ],
-              // ── Avatar Profil Estetik Ring Melayang ──
+              // ── Avatar Profil Gradient + Border Putih + Shadow ──
               Container(
-                padding: const EdgeInsets.all(2.5),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white24,
-                    width: 1.5,
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
                   child: Center(
                     child: Text(
                       initial,
-                      style: TextStyle(
-                        color: isStudent ? AppColors.secondary : AppColors.primary,
-                        fontSize: 14,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
                         fontWeight: FontWeight.w800,
                       ),
                     ),

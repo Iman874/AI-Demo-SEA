@@ -1,5 +1,54 @@
 ==================================================
 Tanggal : 2026-07-19
+Waktu   : 18:30
+Kategori: Bug
+
+Judul:
+Hotfix v1.2.1 — Fix RenderFlex Overflow Bottom Navigation Capsule (T10)
+
+Detail:
+- Bottom nav capsule style (T10 v1.2.0) nambah AnimatedContainer dengan padding vertical 6/4, mempersempit ruang Column child ke max 30px
+- Icon 22px + SizedBox 2px + text fontSize ~10 (~12px) = 36px → overflow 6px
+- Fix: icon 22→18, hapus SizedBox — konten jadi ~30px, pas muat
+- Verifikasi: `flutter analyze` 0 error, 20 issues (baseline sama)
+
+Dampak:
+- File: bottom_navigation.dart (icon size 18, hapus SizedBox)
+- Tidak ada perubahan lain; visual icon tetap proporsional
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 18:03
+Kategori: Feature
+
+Judul:
+UI/UX Redesign v1.2.0 — Dashboard Modern Polish (Hierarchy, Composisi, Dark Mode 3-Tier)
+
+Detail:
+- Menjawab feedback desain user (10 poin + revisi dark mode) untuk naik dari ~8.3/10 ke target 9.3-9.5/10
+- T1 Dark mode 3-tier elevation: backgroundDark #0B1020, cardDark #151D2F (BARU), surfaceDark #1C2740, borderDark rgba(255,255,255,0.08); helper AppColors.card(Brightness); dark_theme cardColor & input fillColor → cardDark. Card sekarang "naik" dari background
+- T2 Avatar modern: gradient (role gradient) + border putih 2px + shadow + indikator online hijau (home); top.dart avatar gradient tanpa indikator
+- T3 Stats hierarchy: 2 card statistik direstrukturisasi vertikal — ikon soft kecil, angka BESAR 26px, label kecil 10px (sebelumnya horizontal flat)
+- T4 Header hidup: info row aktivitas (guru: kelas+diskusi aktif; murid: kelas+kuis aktif) + progress bar derived nyata (murid: completed/(active+completed), sembunyi jika total 0 → teks motivasi). Tidak ada angka palsu
+- T5 Card kelas metadata: horizontal card home + card_class.dart tambah semester + "Diperbarui X lalu" (relative time dari updatedAt) + ikon menu_book; kode kelas jadi badge abu neutral
+- T6 Aksen warna kedua: badge "Aktif" card_class → hijau (success) dengan dot; kode kelas badge abu; status diskusi hijau/abu. Tidak semua biru
+- T7 Tombol aksi card ringkas: card_discussion & card_quiz ganti AppButton.pill → IconButton bulat (bg alpha 0.12, radius 12, ikon 18px) + Tooltip; hapus import AppButton di kedua card
+- T8 Floating CTA restyle (home guru): container gradient teacherGradient + radius 20 + shadow lembut + ikon besar 26px + kolom [judul bold + subtitle kecil] + arrow; InkWell seluruh area (sebelumnya AppButton.primary flat)
+- T9 Section header aksen: garis vertikal gradient 4px di kiri judul (teacherGradient/studentGradient) + watermark angka besar dipertahankan
+- T10 Bottom nav capsule: active tab dibungkus Container pill (bg accentColor alpha 0.12, border alpha 0.25, radius 16, padding horizontal 12); inactive polos; pertahankan glassmorphism BackdropFilter
+- T11 Spacing pass: gap antar section 20→28, breathing room sebelum section header (16→24)
+- T12 Sapu hardcoded dark card color → token: card_class, card_discussion, card_quiz, card_material pakai AppColors.cardDark/borderDark (tambah import app_colors). Catatan: 52 hardcoded 0xFF1E293B/0xFF1F2D40 masih tersisa di windows/editors/pages lain — di luar scope dashboard, follow-up terpisah
+- Verifikasi: flutter analyze 0 error, 20 issues (sama dengan baseline, tidak ada warning baru)
+
+Dampak:
+- File berubah: app_colors.dart, dark_theme.dart, top.dart, page_menu_home_teacher.dart, page_menu_home_student.dart, card_class.dart, card_discussion.dart, card_quiz.dart, card_material.dart, bottom_navigation.dart, .memori.txt
+- File plan: plan/2026-07-19-dashboard-modern-polish/ (plan-design.md + tasks.md, 13 task)
+- Home guru & murid kini terasa hidup (header info+progress), hierarchy jelas (stats angka besar), card kelas informatif, bottom nav capsule, dark mode ber-elevasi 3-tier
+- Backend tidak tersentuh; tidak ada angka progress/jumlah siswa palsu (prinsip kejujuran)
+- Keputusan desain D1-D5 dikonfirmasi user: progress pakai data nyata, metadata pakai semester+last updated, tombol icon button, CTA container gradient, diterapkan ke both home
+==================================================
+==================================================
+Tanggal : 2026-07-19
 Waktu   : 17:39
 Kategori: Bug
 

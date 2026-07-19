@@ -18,7 +18,7 @@ final ThemeData darkTheme = ThemeData(
     error: AppColors.error,
     onError: Colors.white,
   ),
-  cardColor: AppColors.surfaceDark,
+  cardColor: AppColors.cardDark,
   dividerColor: AppColors.borderDark,
   shadowColor: Colors.black,
   appBarTheme: const AppBarTheme(
@@ -60,7 +60,7 @@ final ThemeData darkTheme = ThemeData(
   ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
-    fillColor: AppColors.surfaceDark,
+    fillColor: AppColors.cardDark,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     border: OutlineInputBorder(
       borderRadius: AppDecorations.borderRadiusSm,

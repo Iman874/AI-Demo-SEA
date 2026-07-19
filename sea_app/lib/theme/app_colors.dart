@@ -40,13 +40,14 @@ class AppColors {
   static const Color textSecondaryLight  = Color(0xFF64748B);  // slate-500
   static const Color scaffoldLight   = Color(0xFFF4F6FB);
 
-  // ── Surface (dark) — deep navy ──
-  static const Color backgroundDark  = Color(0xFF080C14);  // very deep navy
-  static const Color surfaceDark     = Color(0xFF111827);  // gray-900
-  static const Color borderDark      = Color(0xFF1F2D40);
+  // ── Surface (dark) — 3-tier deep navy elevation ──
+  static const Color backgroundDark  = Color(0xFF0B1020);  // tier 0: scaffold bg (deepest)
+  static const Color cardDark        = Color(0xFF151D2F);  // tier 1: cards (lifted from bg)
+  static const Color surfaceDark     = Color(0xFF1C2740);  // tier 2: surfaces/elevated (most lifted)
+  static const Color borderDark      = Color(0x14FFFFFF);  // rgba(255,255,255,0.08)
   static const Color textPrimaryDark    = Color(0xFFE2E8F2);  // slate-200
   static const Color textSecondaryDark  = Color(0xFF94A3B8);  // slate-400
-  static const Color scaffoldDark    = Color(0xFF080C14);
+  static const Color scaffoldDark    = backgroundDark;
 
   // ── Common ──
   static const Color white = Color(0xFFFFFFFF);
@@ -58,6 +59,10 @@ class AppColors {
 
   static Color surface(Brightness b) =>
       b == Brightness.dark ? surfaceDark : surfaceLight;
+
+  /// Card fill color (3-tier dark: card lebih terang dari background).
+  static Color card(Brightness b) =>
+      b == Brightness.dark ? cardDark : surfaceLight;
 
   static Color border(Brightness b) =>
       b == Brightness.dark ? borderDark : borderLight;

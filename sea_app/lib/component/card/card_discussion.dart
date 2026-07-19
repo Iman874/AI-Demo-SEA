@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/discussion_room.dart';
+import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_decorations.dart';
-import '../ui/app_button.dart';
 
 class CardDiscussionList extends StatelessWidget {
   final List<DiscussionRoom> discussions;
@@ -100,7 +100,7 @@ class _DiscussionItemCard extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: AppDecorations.borderRadiusLg,
         border: Border.all(
-          color: isDark ? const Color(0xFF1F2D40) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
           width: 1,
         ),
         boxShadow: AppDecorations.shadowSm(Theme.of(context).brightness),
@@ -178,12 +178,27 @@ class _DiscussionItemCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // AppButton Pill
-          AppButton.pill(
-            label: label,
-            onPressed: handleTap,
-            color: isOpen ? primaryColor : Colors.grey.shade600,
-            icon: isOpen ? Icons.edit_rounded : Icons.info_outline_rounded,
+          // Icon button ringkas (bukan pill berlabel) + tooltip
+          Tooltip(
+            message: label,
+            child: Material(
+              color: (isOpen ? primaryColor : Colors.grey).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: handleTap,
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    isOpen ? Icons.edit_rounded : Icons.info_outline_rounded,
+                    size: 18,
+                    color: isOpen ? primaryColor : Colors.grey.shade600,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

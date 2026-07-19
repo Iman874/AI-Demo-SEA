@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/quiz.dart';
+import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_decorations.dart';
-import '../ui/app_button.dart';
 
 class CardQuizList extends StatelessWidget {
   final List<Quiz> quizzes;
@@ -77,7 +77,7 @@ class _QuizItemCard extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: AppDecorations.borderRadiusLg,
         border: Border.all(
-          color: isDark ? const Color(0xFF1F2D40) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
           width: 1,
         ),
         boxShadow: AppDecorations.shadowSm(Theme.of(context).brightness),
@@ -137,12 +137,27 @@ class _QuizItemCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Action Button Pill
-          AppButton.pill(
-            label: buttonLabel,
-            onPressed: onViewResult != null ? () => onViewResult!(quiz) : null,
-            color: primaryColor,
-            icon: Icons.chevron_right_rounded,
+          // Icon button ringkas (bukan pill berlabel) + tooltip
+          Tooltip(
+            message: buttonLabel,
+            child: Material(
+              color: primaryColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: onViewResult != null ? () => onViewResult!(quiz) : null,
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: primaryColor,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

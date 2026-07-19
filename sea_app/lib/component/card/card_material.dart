@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/material.dart';
+import '../../theme/app_colors.dart';
 
 class CardMaterialList extends StatelessWidget {
   final List<MaterialPdf> materials;
@@ -19,10 +20,10 @@ class CardMaterialList extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: isDark ? AppColors.cardDark : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+          color: isDark ? AppColors.borderDark : Colors.black.withValues(alpha: 0.05),
           width: 1,
         ),
         boxShadow: [
