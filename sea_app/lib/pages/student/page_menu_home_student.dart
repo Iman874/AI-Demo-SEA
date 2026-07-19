@@ -535,8 +535,11 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     physics: const BouncingScrollPhysics(),
-                    itemCount: classes.length,
+                    itemCount: classes.length + 1,
                     itemBuilder: (context, idx) {
+                      if (idx == classes.length) {
+                        return _buildJoinClassCard(context, isDark);
+                      }
                       final c = classes[idx];
                       return _buildClassHorizontalCard(context, c, isDark);
                     },
@@ -756,6 +759,50 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildJoinClassCard(BuildContext context, bool isDark) {
+    return GestureDetector(
+      onTap: () => _joinClassDialog(context),
+      child: Container(
+        width: 100,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                PhosphorIconsRegular.plus,
+                color: AppColors.primary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Gabung",
+              style: TextStyle(
+                color: AppColors.primary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
