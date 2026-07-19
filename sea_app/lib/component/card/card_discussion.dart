@@ -5,6 +5,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_decorations.dart';
+import '../ui/staggered_slide_up.dart';
 
 class CardDiscussionList extends StatelessWidget {
   final List<DiscussionRoom> discussions;
@@ -47,13 +48,19 @@ class CardDiscussionList extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       child: Column(
-        children: discussions.map((d) {
-          return _DiscussionItemCard(
-            discussion: d,
-            onViewDetails: onViewDetails,
-            onEdit: onEdit,
-            onDetails: onDetails,
-            buttonLabel: buttonLabel,
+        children: discussions.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final d = entry.value;
+
+          return StaggeredSlideUp(
+            index: idx,
+            child: _DiscussionItemCard(
+              discussion: d,
+              onViewDetails: onViewDetails,
+              onEdit: onEdit,
+              onDetails: onDetails,
+              buttonLabel: buttonLabel,
+            ),
           );
         }).toList(),
       ),

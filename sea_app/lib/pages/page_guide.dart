@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_colors.dart';
+import '../component/ui/staggered_slide_up.dart';
 
 class PageGuide extends StatefulWidget {
   const PageGuide({super.key});
@@ -173,6 +174,7 @@ class _PageGuideState extends State<PageGuide> {
               // Guide Items List
               Expanded(
                 child: ListView.builder(
+                  key: ValueKey(_role),
                   physics: const BouncingScrollPhysics(),
                   itemCount: list.length,
                   itemBuilder: (ctx, i) {
@@ -181,65 +183,68 @@ class _PageGuideState extends State<PageGuide> {
                     final titleText = item['title'].toString();
                     final descText = item['desc'].toString();
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-                          width: 1,
+                    return StaggeredSlideUp(
+                      index: i,
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.02),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: (_role == 'student' ? AppColors.secondary : AppColors.primary)
-                                  .withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: (_role == 'student' ? AppColors.secondary : AppColors.primary)
+                                    .withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                iconData,
+                                color: _role == 'student' ? AppColors.secondary : AppColors.primary,
+                                size: 22,
+                              ),
                             ),
-                            child: Icon(
-                              iconData,
-                              color: _role == 'student' ? AppColors.secondary : AppColors.primary,
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  titleText,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    titleText,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  descText,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                                    height: 1.4,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    descText,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                                      height: 1.4,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },

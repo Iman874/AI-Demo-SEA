@@ -3,7 +3,6 @@ import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../component/nav/bottom_navigation.dart';
 import '../../component/header/top.dart';
 import '../../component/card/card_quiz.dart';
-import '../../component/card/card_discussion.dart';
 import '../../models/class.dart';
 import '../../models/quiz.dart';
 import '../../models/discussion_room.dart';
@@ -23,10 +22,15 @@ import '../page_settings.dart';
 import '../page_guide.dart';
 import '../../component/window/window_join_class.dart';
 import '../../component/window/window_message.dart';
+import '../../component/ui/staggered_slide_up.dart';
+import '../../component/window/window_view_list_class.dart';
+import '../../component/window/window_view_list_discussion.dart';
 import 'page_menu_discussion_detail_student.dart';
 import 'page_menu_quiz_result_student.dart';
 import '../../models/question.dart';
 import '../../models/answer_question.dart';
+import 'package:flutter/services.dart';
+import '../../utils/app_notification.dart';
 
 class MenuHomeStudent extends StatefulWidget {
   const MenuHomeStudent({super.key});
@@ -127,6 +131,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
   String? _error;
   List<ClassModel> _classes = [];
   List<DiscussionRoom> _discussions = [];
+  String _discussionSortType = 'terbaru';
   List<Quiz> _activeQuizzes = [];
   List<Quiz> _completedQuizzes = [];
 
@@ -279,7 +284,6 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
     final classes = (auth.token != null) ? _classes : <ClassModel>[];
     final quizzes = _activeQuizzes;
     final recentQuizzes = _completedQuizzes;
-    final discussions = _discussions.where((d) => d.status == "open" && d.chatroomActive == true).toList();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final String userName = auth.user?.name ?? "Student";
@@ -502,7 +506,15 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => WindowViewListClass(
+                        classes: classes,
+                        isTeacher: false,
+                      ),
+                    );
+                  },
                   child: const Row(
                     children: [
                       Text(
@@ -538,14 +550,20 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                     itemCount: classes.length + 1,
                     itemBuilder: (context, idx) {
                       if (idx == classes.length) {
-                        return _buildJoinClassCard(context, isDark);
+                        return StaggeredSlideUp(
+                          index: idx,
+                          child: _buildJoinClassCard(context, isDark),
+                        );
                       }
                       final c = classes[idx];
-                      return _buildClassHorizontalCard(context, c, isDark);
+                      return StaggeredSlideUp(
+                        index: idx,
+                        child: _buildClassHorizontalCard(context, c, isDark),
+                      );
                     },
                   ),
                 ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 12),
 
           // ── KONTEN BAWAH (QUIZ & DISKUSI) ──
           // Active Quiz Section
@@ -637,14 +655,138 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
             ),
           ],
 
-          _buildContentSectionHeader(context, "Diskusi Aktif", "3", isDark),
-          CardDiscussionList(
-            discussions: discussions,
-            onViewDetails: (discussion) async {
-              await Navigator.of(context).push(MaterialPageRoute(builder: (_) => DiscussionDetailStudentPage(discussion: discussion)));
-            },
-            buttonLabel: "Masuk Diskusi",
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: AppColors.studentGradient,
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Diskusi Aktif",
+                      style: AppTextStyles.titleMd(context).copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                InkWell(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => WindowViewListDiscussion(
+                        discussions: _discussions,
+                        isTeacher: false,
+                        onTap: (d) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => DiscussionDetailStudentPage(discussion: d),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                  child: const Row(
+                    children: [
+                      Text(
+                        "Lihat semua",
+                        style: TextStyle(
+                          color: Color(0xFF2563EB),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(PhosphorIconsRegular.caretRight, size: 16, color: Color(0xFF2563EB)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
+
+          // Filter Chips
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: Row(
+              children: [
+                _buildSortChip(
+                  context,
+                  label: "Terbaru",
+                  isSelected: _discussionSortType == 'terbaru',
+                  onTap: () => setState(() => _discussionSortType = 'terbaru'),
+                  isDark: isDark,
+                  accentColor: AppColors.studentAccent,
+                ),
+                const SizedBox(width: 8),
+                _buildSortChip(
+                  context,
+                  label: "Abjad A-Z",
+                  isSelected: _discussionSortType == 'abjad',
+                  onTap: () => setState(() => _discussionSortType = 'abjad'),
+                  isDark: isDark,
+                  accentColor: AppColors.studentAccent,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Horizontal scroll discussions
+          () {
+            final sortedDiscussions = List<DiscussionRoom>.from(_discussions);
+            if (_discussionSortType == 'abjad') {
+              sortedDiscussions.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+            } else {
+              sortedDiscussions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+            }
+
+            return sortedDiscussions.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: AppDecorations.card(context),
+                      child: Center(
+                        child: Text(
+                          "Belum ada ruang diskusi tersedia",
+                          style: AppTextStyles.bodySm(context),
+                        ),
+                      ),
+                    ),
+                  )
+                : SizedBox(
+                    height: 120,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: sortedDiscussions.length,
+                      itemBuilder: (context, idx) {
+                        final d = sortedDiscussions[idx];
+                        return StaggeredSlideUp(
+                          index: idx,
+                          child: _buildDiscussionHorizontalCard(context, d, isDark, isTeacher: false),
+                        );
+                      },
+                    ),
+                  );
+          }(),
           const SizedBox(height: 24),
         ],
       ),
@@ -693,19 +835,40 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                   size: 16,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  c.codeClass,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
-                    letterSpacing: 0.3,
+              GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: c.codeClass));
+                  AppNotification.show(
+                    context,
+                    "Kode kelas '${c.codeClass}' berhasil disalin!",
+                    isError: false,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        c.codeClass,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        PhosphorIconsRegular.copy,
+                        size: 10,
+                        color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1052,6 +1215,148 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSortChip(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required Color accentColor,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? accentColor.withValues(alpha: 0.15)
+              : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? accentColor : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            color: isSelected ? accentColor : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDiscussionHorizontalCard(BuildContext context, DiscussionRoom d, bool isDark, {required bool isTeacher}) {
+    final isOpen = d.status == 'open';
+    final accentColor = isTeacher ? AppColors.teacherAccent : AppColors.studentAccent;
+
+    return GestureDetector(
+      onTap: () {
+        if (!isTeacher) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => DiscussionDetailStudentPage(discussion: d),
+            ),
+          );
+        }
+      },
+      child: Container(
+        width: 240,
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : Colors.black.withValues(alpha: 0.05),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    PhosphorIconsRegular.chatsCircle,
+                    color: accentColor,
+                    size: 16,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isOpen
+                        ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                        : Colors.red.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    isOpen ? "AKTIF" : "SELESAI",
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      color: isOpen ? const Color(0xFF10B981) : Colors.red,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    d.title,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    d.description.isNotEmpty == true ? d.description : "Tidak ada deskripsi",
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

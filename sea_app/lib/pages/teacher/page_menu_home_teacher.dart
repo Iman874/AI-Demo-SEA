@@ -3,7 +3,6 @@ import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../theme/app_colors.dart';
 import '../../component/nav/bottom_navigation.dart';
 import '../../component/header/top.dart';
-import '../../component/card/card_discussion.dart';
 import '../../models/class.dart';
 import '../../models/discussion_room.dart';
 import '../../services/api_service.dart';
@@ -14,6 +13,8 @@ import '../page_guide.dart';
 import '../page_settings.dart';
 import 'page_menu_discussion_editor_teacher.dart';
 import '../../component/window/window_add_class.dart';
+import '../../component/window/window_view_list_class.dart';
+import '../../component/window/window_view_list_discussion.dart';
 import 'page_menu_discussion_details_teacher.dart';
 import '../../component/state/skeleton_loading.dart';
 import '../../component/animated_quote.dart';
@@ -21,6 +22,9 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_decorations.dart';
 import '../../theme/app_text_styles.dart';
+import 'package:flutter/services.dart';
+import '../../component/ui/staggered_slide_up.dart';
+import '../../utils/app_notification.dart';
 
 class MenuHomeTeacher extends StatefulWidget {
   const MenuHomeTeacher({super.key});
@@ -120,6 +124,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
   String? _error;
   List<ClassModel> _classes = [];
   List<DiscussionRoom> _discussions = [];
+  String _discussionSortType = 'terbaru';
 
   @override
   void initState() {
@@ -167,9 +172,6 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
     if (_error != null) {
       return Center(child: Text('Error: $_error'));
     }
-
-    final active = _discussions.where((d) => d.status == 'open').toList();
-    final completed = _discussions.where((d) => d.status == 'closed').toList();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final auth = Provider.of<AuthProvider>(context, listen: false);
@@ -364,7 +366,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                       child: _StatCard(
                         icon: PhosphorIconsFill.chatsCircle,
                         iconColor: const Color(0xFF8B5CF6),
-                        value: "${active.length}",
+                        value: "${_discussions.where((d) => d.status == 'open').length}",
                         label: "Diskusi Aktif",
                         isDark: isDark,
                       ),
@@ -390,7 +392,15 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                   ),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => WindowViewListClass(
+                        classes: _classes,
+                        isTeacher: true,
+                      ),
+                    );
+                  },
                   child: const Row(
                     children: [
                       Text(
@@ -433,23 +443,141 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                     },
                   ),
                 ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 12),
 
           // ── KONTEN BAWAH (DISKUSI & DISCUSSION ACTIONS) ──
-          _buildContentSectionHeader(context, "Ruang Diskusi Saat Ini", "1", isDark),
-          CardDiscussionList(
-            discussions: [...active, ...completed],
-            onEdit: (d) {
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom)));
-            },
-            onDetails: (d) {
-              if (d.status == 'closed') {
-                Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionDetailsTeacher(discussionId: d.idDiscussionRoom)));
-                return;
-              }
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom)));
-            },
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: AppColors.teacherGradient,
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Ruang Diskusi Saat Ini",
+                      style: AppTextStyles.titleMd(context).copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                InkWell(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => WindowViewListDiscussion(
+                        discussions: _discussions,
+                        isTeacher: true,
+                        onTap: (d) {
+                          if (d.status == 'closed') {
+                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionDetailsTeacher(discussionId: d.idDiscussionRoom)));
+                          } else {
+                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom)));
+                          }
+                        },
+                      ),
+                    );
+                  },
+                  child: const Row(
+                    children: [
+                      Text(
+                        "Lihat semua",
+                        style: TextStyle(
+                          color: Color(0xFF2563EB),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(PhosphorIconsRegular.caretRight, size: 16, color: Color(0xFF2563EB)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
+
+          // Filter Chips
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: Row(
+              children: [
+                _buildSortChip(
+                  context,
+                  label: "Terbaru",
+                  isSelected: _discussionSortType == 'terbaru',
+                  onTap: () => setState(() => _discussionSortType = 'terbaru'),
+                  isDark: isDark,
+                  accentColor: AppColors.teacherAccent,
+                ),
+                const SizedBox(width: 8),
+                _buildSortChip(
+                  context,
+                  label: "Abjad A-Z",
+                  isSelected: _discussionSortType == 'abjad',
+                  onTap: () => setState(() => _discussionSortType = 'abjad'),
+                  isDark: isDark,
+                  accentColor: AppColors.teacherAccent,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Horizontal scroll discussions
+          () {
+            final sortedDiscussions = List<DiscussionRoom>.from(_discussions);
+            if (_discussionSortType == 'abjad') {
+              sortedDiscussions.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+            } else {
+              sortedDiscussions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+            }
+
+            return sortedDiscussions.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: AppDecorations.card(context),
+                      child: Center(
+                        child: Text(
+                          "Belum ada ruang diskusi tersedia",
+                          style: AppTextStyles.bodySm(context),
+                        ),
+                      ),
+                    ),
+                  )
+                : SizedBox(
+                    height: 120,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: sortedDiscussions.length,
+                      itemBuilder: (context, idx) {
+                        final d = sortedDiscussions[idx];
+                        return StaggeredSlideUp(
+                          index: idx,
+                          child: _buildDiscussionHorizontalCard(context, d, isDark, isTeacher: true),
+                        );
+                      },
+                    ),
+                  );
+          }(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             child: Material(
@@ -572,20 +700,40 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                   size: 16,
                 ),
               ),
-              // Kode kelas badge abu neutral (bukan biru)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  c.codeClass,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
-                    letterSpacing: 0.3,
+              GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: c.codeClass));
+                  AppNotification.show(
+                    context,
+                    "Kode kelas '${c.codeClass}' berhasil disalin!",
+                    isError: false,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        c.codeClass,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        PhosphorIconsRegular.copy,
+                        size: 10,
+                        color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -753,58 +901,146 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
     );
   }
 
-  Widget _buildContentSectionHeader(BuildContext context, String title, String stepNum, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: -10,
-                top: -12,
-                child: Text(
-                  stepNum,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.black.withValues(alpha: 0.04),
-                    letterSpacing: -1,
+
+
+  Widget _buildSortChip(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required Color accentColor,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? accentColor.withValues(alpha: 0.15)
+              : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? accentColor : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+            color: isSelected ? accentColor : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDiscussionHorizontalCard(BuildContext context, DiscussionRoom d, bool isDark, {required bool isTeacher}) {
+    final isOpen = d.status == 'open';
+    final accentColor = isTeacher ? AppColors.teacherAccent : AppColors.studentAccent;
+
+    return GestureDetector(
+      onTap: () {
+        if (isTeacher) {
+          if (isOpen) {
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom)));
+          } else {
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => PageMenuDiscussionDetailsTeacher(discussionId: d.idDiscussionRoom)));
+          }
+        }
+      },
+      child: Container(
+        width: 240,
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : Colors.black.withValues(alpha: 0.05),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    PhosphorIconsRegular.chatsCircle,
+                    color: accentColor,
+                    size: 16,
                   ),
                 ),
-              ),
-              Row(
-                children: [
-                  // Garis aksen vertikal gradient
-                  Container(
-                    width: 4,
-                    height: 18,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: AppColors.teacherGradient,
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                      borderRadius: BorderRadius.circular(2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isOpen
+                        ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                        : Colors.red.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    isOpen ? "AKTIF" : "SELESAI",
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      color: isOpen ? const Color(0xFF10B981) : Colors.red,
+                      letterSpacing: 0.3,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
                   Text(
-                    title,
-                    style: AppTextStyles.titleMd(context).copyWith(
+                    d.title,
+                    style: TextStyle(
+                      fontSize: 13,
                       fontWeight: FontWeight.w800,
-                      fontSize: 16,
+                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    d.description.isNotEmpty == true ? d.description : "Tidak ada deskripsi",
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

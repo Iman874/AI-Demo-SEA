@@ -1,5 +1,211 @@
 ==================================================
 Tanggal : 2026-07-19
+Waktu   : 23:13
+Kategori: Refactor
+
+Judul:
+Penyelarasan Tata Letak Beranda & Fitur Salin Kode Kelas Serta List Diskusi Horizontal
+
+Detail:
+- Mengecilkan jarak vertikal (*margin*) antara kartu kelas terdaftar dengan bagian konten bawah menjadi `12px` di beranda guru dan siswa agar terlihat padat & proporsional.
+- Menambahkan fungsionalitas salin kode kelas secara instan ke Clipboard dengan menepuk lencana kode kelas di kartu horizontal.
+- Merombak ruang diskusi aktif menjadi scroll horizontal (*horizontal scroll list*) dengan struktur kartu horizontal kustom yang modis.
+- Menyediakan filter urutan diskusi dinamis berdasarkan "Terbaru" dan "Abjad A-Z" melalui baris tombol chip interaktif.
+- Membuat dialog modern pencarian & penjelajahan ruang diskusi `WindowViewListDiscussion` yang dipicu via tautan "Lihat semua".
+- Membersihkan impor `card_discussion.dart` serta variabel-variabel lokal tak terpakai untuk menghilangkan warning kompilasi.
+- File: page_menu_home_teacher.dart, page_menu_home_student.dart, window_view_list_discussion.dart
+- Verifikasi: flutter analyze 0 error / warning baru
+
+Dampak:
+- Navigasi beranda menjadi lebih ringkas, salin kode kelas lebih praktis, dan interaksi penelusuran ruang diskusi sangat modern.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 23:03
+Kategori: Feature
+
+Judul:
+Penyediaan Dialog Daftar Semua Kelas (WindowViewListClass)
+
+Detail:
+- Membuat dialog modern `WindowViewListClass` (`window_view_list_class.dart`) untuk menampilkan daftar lengkap seluruh kelas secara terperinci.
+- Melengkapi dialog dengan kolom pencarian dinamis (*search filter*), info semester, waktu pembaruan aktif, serta tombol salin kode kelas secara instan ke Clipboard.
+- Menggunakan widget `Wrap` (bukan `Row`) pada baris metadata kelas untuk mencegah isu horizontal overflow pada layar sempit/padat.
+- Mengintegrasikan aksi ketuk tombol "Lihat semua" di Beranda Guru (`page_menu_home_teacher.dart`) dan Beranda Siswa (`page_menu_home_student.dart`) untuk memicu dialog list kelas ini.
+- Menambahkan trigger ubin penampil "Window View List Class" di daftar showcase setelan mode pengembang (`page_settings.dart`).
+- File: window_view_list_class.dart, page_menu_home_teacher.dart, page_menu_home_student.dart, page_settings.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Tombol "Lihat semua" kelas kini berfungsi secara penuh, menawan, interaktif, dan mudah diuji dari setelan pengembang.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:59
+Kategori: Refactor
+
+Judul:
+Penerapan Animasi Staggered Slide-Up Global di Seluruh Halaman
+
+Detail:
+- Membuat komponen universal `StaggeredSlideUp` di `staggered_slide_up.dart` untuk membungkus list items dengan transisi masuk meluncur ke atas dan memudar secara staggered.
+- Merefaktor halaman panduan (`page_guide.dart`) untuk menggunakan komponen universal tersebut.
+- Menerapkan animasi staggered pada daftar kartu kelas di Halaman Beranda Guru (`page_menu_home_teacher.dart`) dan Siswa (`page_menu_home_student.dart`).
+- Mengintegrasikan animasi secara luas pada list kartu kuis (`CardQuizList` di `card_quiz.dart`) dan list kartu ruang diskusi (`CardDiscussionList` di `card_discussion.dart`).
+- File: staggered_slide_up.dart, page_guide.dart, page_menu_home_teacher.dart, page_menu_home_student.dart, card_quiz.dart, card_discussion.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Seluruh daftar kartu kelas, kuis, diskusi, dan panduan di aplikasi kini memiliki animasi masuk bertingkat yang mengalir mulus dan premium saat halaman dimuat.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:56
+Kategori: Refactor
+
+Judul:
+Animasi Staggered Slide-Up Card di Halaman Panduan (PageGuide)
+
+Detail:
+- Menambahkan widget animasi kustom `StaggeredSlideUpCard` yang meluncurkan card panduan ke atas (`SlideTransition` dari `0.35` ke `0`) dan memudar masuk (`FadeTransition` dari `0` ke `1`) menggunakan `Curves.easeOutQuart`.
+- Memberikan jeda waktu masuk bertingkat (*staggered delay*) berbasis indeks item (jeda `80ms` antar card) untuk transisi yang dinamis dan berkelas.
+- Menambahkan `ValueKey(_role)` pada `ListView.builder` agar animasi terpicu ulang secara otomatis setiap kali pengguna bertukar tab (Siswa/Guru).
+- File: page_guide.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Halaman panduan kini menyuguhkan animasi transisi masuk yang mengalir, hidup, dan sangat memanjakan mata pengguna saat pertama kali dibuka maupun saat berpindah peran.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:55
+Kategori: Refactor
+
+Judul:
+Modernisasi Sistem Notifikasi Pop-up (Top Overlay Toast)
+
+Detail:
+- Memindahkan posisi notifikasi pop-up dari yang sebelumnya SnackBar melayang di bawah layar menjadi **Top Overlay Toast** yang muncul dari atas layar.
+- Menggunakan `OverlayEntry` dengan paduan animasi `SlideTransition` (`Curves.outBack`) dan `FadeTransition` untuk efek masuk meluncur ke bawah yang halus dan dinamis.
+- Mengintegrasikan perhitungan area status bar (`MediaQuery.of(context).padding.top`) secara dinamis agar aman dan presisi di berbagai device.
+- Notifikasi akan otomatis tertutup dalam 3 detik atau dapat langsung di-tap untuk menutup seketika.
+- File: app_notification.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Notifikasi sistem terlihat sangat mewah, profesional, tidak mengganggu bottom navigation, serta mirip dengan banner notifikasi sistem operasi modern.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:54
+Kategori: Refactor
+
+Judul:
+Modernisasi Modal Buat Kelas (WindowAddClass) & Gabung Kelas (WindowJoinClass)
+
+Detail:
+- Merombak visual modal `WindowAddClass` (`window_add_class.dart`) dan `WindowJoinClass` (`window_join_class.dart`) agar sejajar dengan desain modern yang tajam (border radius 16px, efek bayangan lembut, integrated modern header).
+- Mengganti icon header solid dengan integrated header berikon Phosphor bulat berlatar belakang aksen transparan.
+- File: window_add_class.dart, window_join_class.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Tampilan pembuatan kelas dan pengisian kode gabung kelas terlihat jauh lebih premium, rapi, dan tidak terlalu membulat.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:52
+Kategori: Refactor
+
+Judul:
+Penyempurnaan Pemilih Format Tipe Materi di WindowAddMaterial
+
+Detail:
+- Mengubah pemilih format tipe materi dari Dropdown klasik yang membingungkan menjadi **Segmented Tab Control / Selector** (Teks/Artikel vs Dokumen PDF) menggunakan GestureDetector dan AnimatedContainer.
+- Melengkapi selector format dengan ikon murni Phosphor dan animasi transisi yang taktil dan interaktif.
+- File: window_add_material.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Memilih tipe dokumen materi kuis menjadi jauh lebih praktis, intuitif, dan secara visual menyatu indah dengan layout dialog.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:51
+Kategori: Refactor
+
+Judul:
+Modernisasi Modal Tambah Materi (WindowAddMaterial) & Simpan Ringkasan (WindowAddSummary)
+
+Detail:
+- Merombak visual modal `WindowAddMaterial` (`window_add_material.dart`) dan `WindowAddSummary` (`window_add_summary.dart`) agar sejajar dengan standar desain modern yang tajam (border radius 16px, efek bayangan lembut, integrated modern header).
+- Mengubah `WindowAddSummary` dari `AlertDialog` bawaan yang kaku menjadi kustom `Dialog` modern dengan ikon Sparkle interaktif, field berdesain outline border, serta tombol gradient `AppButton`.
+- Menerjemahkan dialog konfirmasi penutupan ruang diskusi di `WindowAddSummary` sepenuhnya ke Bahasa Indonesia.
+- File: window_add_material.dart, window_add_summary.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Alur pengisian materi dan penyimpanan ringkasan AI diskusi kini tampil menawan, lega, dan konsisten dalam Bahasa Indonesia.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:44
+Kategori: Refactor
+
+Judul:
+Penyempurnaan Pemilih Nomor Soal & Spasi Input Pilihan Jawaban (WindowAddQuestion & WindowEditQuestion)
+
+Detail:
+- Memodernisasi pemilih **Nomor Soal**: Ditambahkan container berlatar belakang soft-card (`#1E293B` / `#F1F5F9`), badge nomor `#1`, `#2` berwarna aksen peran, serta ikon penunjuk panah `PhosphorIconsRegular.caretDown`.
+- Menambah **Padding Kiri Input Pilihan Jawaban**: Memberikan spasi horisontal (`12px`) dan jarak pisah (`14px`) dari tombol kunci jawaban agar teks pilihan jawaban tidak menempel pada tombol di sebelah kiri.
+- File: window_add_question.dart, window_edit_question.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Pengisian teks pilihan jawaban terasa lebih bernapas dan pemilih nomor soal terlihat sangat modern.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:42
+Kategori: Refactor
+
+Judul:
+Penyempurnaan Header & Radius Corner Modal Soal Kuis (WindowAddQuestion & WindowEditQuestion)
+
+Detail:
+- Mengubah border radius dialog dari 24px yang terlalu membulat menjadi **16px** yang tajam, tegas, dan proporsional.
+- Merombak header balok gradien solid lama menjadi **Integrated Modern Header**:
+  1. Ikon Phosphor dalam container aksen bulat yang menyala lembut (`teacherAccent.withOpacity(0.12)`).
+  2. Tipografi judul dan deskripsi yang bersih menyesuaikan tema gelap/terang.
+  3. Pembatas garis halus di bawah header (*subtle bottom border*).
+- File: window_add_question.dart, window_edit_question.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Modal Tambah/Edit Soal Kuis terlihat sangat modern, presisi, dan tidak lagi terlihat membulat secara berlebihan.
+==================================================
+==================================================
+Tanggal : 2026-07-19
+Waktu   : 22:40
+Kategori: Refactor
+
+Judul:
+Overhaul Desain Modern & Spacious Modal Soal Kuis (WindowAddQuestion & WindowEditQuestion)
+
+Detail:
+- Merombak tata letak dan visual modal `WindowAddQuestion` (`window_add_question.dart`) dan `WindowEditQuestion` (`window_edit_question.dart`).
+- Mengganti pemilih bobot poin klasik (dropdown) menjadi **Pill Chip Selector** horizontal yang modern dan responsif.
+- Mengubah daftar pilihan jawaban menjadi **Choice Sub-Cards** individual dengan indikator radio pill hijau Emerald untuk penanda Kunci Jawaban Benar.
+- Menambah spasi internal (`padding: 24px`), border radius melengkung halus (`24px`), serta header gradien lengkap dengan tombol penutup (X).
+- Menyediakan footer action bar terpisah dengan tombol `Batal` dan `AppButton.primary` ('Simpan Soal' / 'Simpan Perubahan').
+- File: window_add_question.dart, window_edit_question.dart
+- Verifikasi: flutter analyze 0 error
+
+Dampak:
+- Antarmuka pembuatan dan pengeditan soal kuis terasa jauh lebih lega, terstruktur rapi, dan estetis.
+==================================================
+==================================================
+Tanggal : 2026-07-19
 Waktu   : 22:36
 Kategori: Refactor
 

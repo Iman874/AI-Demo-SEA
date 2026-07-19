@@ -5,6 +5,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_decorations.dart';
+import '../ui/staggered_slide_up.dart';
 
 class CardQuizList extends StatelessWidget {
   final List<Quiz> quizzes;
@@ -43,11 +44,17 @@ class CardQuizList extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       child: Column(
-        children: quizzes.map((q) {
-          return _QuizItemCard(
-            quiz: q,
-            onViewResult: onViewResult,
-            buttonLabel: buttonLabel,
+        children: quizzes.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final q = entry.value;
+
+          return StaggeredSlideUp(
+            index: idx,
+            child: _QuizItemCard(
+              quiz: q,
+              onViewResult: onViewResult,
+              buttonLabel: buttonLabel,
+            ),
           );
         }).toList(),
       ),

@@ -9,6 +9,7 @@ import '../theme/app_colors.dart';
 import 'connection_config_page.dart';
 import 'page_choice_user.dart';
 
+import '../component/window/window_view_list_class.dart';
 import '../component/window/window_add_class.dart';
 import '../component/window/window_join_class.dart';
 import '../component/window/window_add_material.dart';
@@ -270,6 +271,21 @@ class _PageSettingsState extends State<PageSettings> {
                         context: context,
                         builder: (_) => WindowMessage(
                           message: 'Ini adalah contoh pesan dialog informasi.',
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.list,
+                    title: 'Window View List Class',
+                    subtitle: 'Uji dialog daftar semua kelas terdaftar',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => const WindowViewListClass(
+                          classes: [],
+                          isTeacher: true,
                         ),
                       );
                     },

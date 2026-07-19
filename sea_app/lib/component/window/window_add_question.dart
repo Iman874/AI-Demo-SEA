@@ -5,8 +5,7 @@ import '../../models/question.dart';
 import '../../models/answer_question.dart';
 import '../../models/material.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_spacing.dart';
-import '../../theme/app_decorations.dart';
+import '../../component/ui/app_button.dart';
 
 class WindowAddQuestion extends StatefulWidget {
   final int nextNumber;
@@ -33,8 +32,11 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
   int _selectedPoin = 10;
   final List<int> _poinOptions = [5, 10, 15, 20];
   final TextEditingController _questionController = TextEditingController();
-  final List<TextEditingController> _choiceControllers = [TextEditingController()];
-  final List<bool> _isCorrectList = [false];
+  final List<TextEditingController> _choiceControllers = [
+    TextEditingController(),
+    TextEditingController(),
+  ];
+  final List<bool> _isCorrectList = [true, false];
   String? _selectedMaterialId;
 
   List<MaterialPdf> get materialsList => widget.materials ?? [];
@@ -67,6 +69,10 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
     setState(() {
       _choiceControllers.removeAt(idx);
       _isCorrectList.removeAt(idx);
+      // Ensure at least one choice is marked correct if possible
+      if (!_isCorrectList.contains(true) && _isCorrectList.isNotEmpty) {
+        _isCorrectList[0] = true;
+      }
     });
   }
 
@@ -127,161 +133,359 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
     final availableNumbers = getAvailableNumbers();
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: AppDecorations.borderRadiusXl),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: Colors.transparent,
       child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.88,
+          maxWidth: 540,
+        ),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF151D2F) : Colors.white,
-          borderRadius: AppDecorations.borderRadiusXl,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
+            width: 1,
           ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _header(context),
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _numberPoinRow(context, availableNumbers, isDark),
-                    AppSpacing.hLg,
-                    _materialDropdown(context, isDark),
-                    AppSpacing.hLg,
-                    _questionField(context, isDark),
-                    AppSpacing.hLg,
-                    _choicesSection(context, isDark),
-                    AppSpacing.hLg,
-                    _submitButton(context),
-                    AppSpacing.hSm,
-                  ],
-                ),
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
+              blurRadius: 24,
+              offset: const Offset(0, 10),
             ),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _header(context, isDark),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Section 1: Nomor Soal & Poin Chips
+                      _numberAndPoinSection(context, availableNumbers, isDark),
+                      const SizedBox(height: 20),
+
+                      // Section 2: Teks Pertanyaan
+                      _questionField(context, isDark),
+                      const SizedBox(height: 20),
+
+                      // Section 3: Materi Terkait (Optional)
+                      if (materialsList.isNotEmpty) ...[
+                        _materialDropdown(context, isDark),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // Section 4: Pilihan Jawaban
+                      _choicesSection(context, isDark),
+                    ],
+                  ),
+                ),
+              ),
+              _footerActionBar(context, isDark),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _header(BuildContext context) {
+  Widget _header(BuildContext context, bool isDark) {
     return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: AppColors.teacherGradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+      padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.6) : const Color(0xFFF8FAFC),
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
+          ),
         ),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.teacherAccent.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
             ),
-            child: const Icon(PhosphorIconsRegular.notePencil, color: Colors.white, size: 20),
+            child: const Icon(
+              PhosphorIconsRegular.notePencil,
+              color: AppColors.teacherAccent,
+              size: 20,
+            ),
           ),
-          const SizedBox(width: 12),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Tambah Soal',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 18,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tambah Soal Kuis',
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                  ),
                 ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'Buat soal baru untuk bank soal',
-                style: TextStyle(
-                  color: Colors.white60,
-                  fontSize: 12,
+                const SizedBox(height: 2),
+                Text(
+                  'Susun butir pertanyaan dan tentukan kunci jawaban',
+                  style: TextStyle(
+                    color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                    fontSize: 12,
+                  ),
                 ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
               ),
-            ],
+              child: Icon(
+                PhosphorIconsRegular.x,
+                color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                size: 18,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _numberPoinRow(BuildContext context, List<int> availableNumbers, bool isDark) {
-    return Row(
-      children: [
-        Expanded(
-          child: _styledDropdown<int>(
-            label: 'Nomor Soal',
-            icon: PhosphorIconsRegular.hash,
-            value: _selectedNumber,
-            items: availableNumbers.map((n) => DropdownMenuItem(value: n, child: Text(n.toString()))).toList(),
-            onChanged: (val) {
-              if (val != null) setState(() => _selectedNumber = val);
-            },
-            isDark: isDark,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _styledDropdown<int>(
-            label: 'Poin',
-            icon: PhosphorIconsFill.star,
-            value: _selectedPoin,
-            items: _poinOptions.map((p) => DropdownMenuItem(value: p, child: Text(p.toString()))).toList(),
-            onChanged: (val) {
-              if (val != null) setState(() => _selectedPoin = val);
-            },
-            isDark: isDark,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _styledDropdown<T>({
-    required String label,
-    required IconData icon,
-    required T value,
-    required List<DropdownMenuItem<T>> items,
-    required ValueChanged<T?> onChanged,
-    required bool isDark,
-  }) {
+  Widget _numberAndPoinSection(BuildContext context, List<int> availableNumbers, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icon, size: 13, color: isDark ? Colors.white54 : Colors.grey.shade500),
-            const SizedBox(width: 5),
-            Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? Colors.white54 : Colors.grey.shade500)),
+            // Nomor Soal Dropdown
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(PhosphorIconsRegular.hash, size: 14, color: AppColors.teacherAccent),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Nomor Soal',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white70 : const Color(0xFF475569),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<int>(
+                        value: _selectedNumber,
+                        isExpanded: true,
+                        icon: Icon(
+                          PhosphorIconsRegular.caretDown,
+                          size: 16,
+                          color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                        items: availableNumbers
+                            .map(
+                              (n) => DropdownMenuItem(
+                                value: n,
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.teacherAccent.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        '#$n',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.teacherAccent,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      'Soal No. $n',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedNumber = val);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-        AppSpacing.hXs,
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-            borderRadius: AppDecorations.borderRadiusSm,
-            border: Border.all(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08)),
+        const SizedBox(height: 16),
+
+        // Poin Chips Selector
+        Row(
+          children: [
+            Icon(PhosphorIconsFill.star, size: 14, color: const Color(0xFFF59E0B)),
+            const SizedBox(width: 6),
+            Text(
+              'Bobot Poin',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white70 : const Color(0xFF475569),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: _poinOptions.map((poin) {
+            final isSelected = _selectedPoin == poin;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedPoin = poin),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? (isDark ? AppColors.teacherAccent.withValues(alpha: 0.25) : AppColors.teacherAccent.withValues(alpha: 0.12))
+                        : (isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF1F5F9)),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.teacherAccent
+                          : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06)),
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '$poin',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                            color: isSelected
+                                ? AppColors.teacherAccent
+                                : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          'pt',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isSelected
+                                ? AppColors.teacherAccent
+                                : (isDark ? Colors.white38 : const Color(0xFF94A3B8)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _questionField(BuildContext context, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(PhosphorIconsRegular.chatText, size: 14, color: AppColors.teacherAccent),
+            const SizedBox(width: 6),
+            Text(
+              'Pertanyaan Soal',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white70 : const Color(0xFF475569),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _questionController,
+          maxLines: 4,
+          style: TextStyle(
+            fontSize: 14,
+            height: 1.4,
+            color: isDark ? Colors.white : const Color(0xFF0F172A),
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<T>(
-              value: value,
-              isExpanded: true,
-              isDense: true,
-              borderRadius: AppDecorations.borderRadiusSm,
-              items: items,
-              onChanged: onChanged,
+          decoration: InputDecoration(
+            hintText: 'Tuliskan butir pertanyaan di sini...',
+            hintStyle: TextStyle(
+              fontSize: 13,
+              color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+            ),
+            filled: true,
+            fillColor: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.all(16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(
+                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: AppColors.teacherAccent, width: 1.5),
             ),
           ),
         ),
@@ -295,70 +499,59 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
       children: [
         Row(
           children: [
-            Icon(PhosphorIconsRegular.fileText, size: 13, color: isDark ? Colors.white54 : Colors.grey.shade500),
-            const SizedBox(width: 5),
-            Text('Materi Terkait', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? Colors.white54 : Colors.grey.shade500)),
+            Icon(PhosphorIconsRegular.filePdf, size: 14, color: AppColors.teacherAccent),
+            const SizedBox(width: 6),
+            Text(
+              'Materi Belajar Terkait (Opsional)',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white70 : const Color(0xFF475569),
+              ),
+            ),
           ],
         ),
-        AppSpacing.hXs,
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-            borderRadius: AppDecorations.borderRadiusSm,
-            border: Border.all(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08)),
+            color: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+            ),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _selectedMaterialId,
               isExpanded: true,
-              isDense: true,
-              borderRadius: AppDecorations.borderRadiusSm,
-              hint: Text('Pilih materi (opsional)', style: TextStyle(fontSize: 13, color: isDark ? Colors.white38 : Colors.grey.shade500)),
-              items: materialsList.map((m) => DropdownMenuItem(value: m.id, child: Text(m.title, style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : Colors.black87)))).toList(),
+              borderRadius: BorderRadius.circular(16),
+              dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+              hint: Text(
+                'Pilih materi referensi...',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                ),
+              ),
+              items: materialsList
+                  .map(
+                    (m) => DropdownMenuItem(
+                      value: m.id,
+                      child: Text(
+                        m.title,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
               onChanged: (val) {
                 setState(() => _selectedMaterialId = val);
               },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _questionField(BuildContext context, bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(PhosphorIconsRegular.question, size: 13, color: isDark ? Colors.white54 : Colors.grey.shade500),
-            const SizedBox(width: 5),
-            Text('Pertanyaan', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? Colors.white54 : Colors.grey.shade500)),
-          ],
-        ),
-        AppSpacing.hXs,
-        TextField(
-          controller: _questionController,
-          maxLines: 3,
-          style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
-          decoration: InputDecoration(
-            hintText: 'Tulis pertanyaan di sini...',
-            hintStyle: TextStyle(color: isDark ? Colors.white30 : Colors.grey.shade400),
-            filled: true,
-            fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            border: OutlineInputBorder(
-              borderRadius: AppDecorations.borderRadiusSm,
-              borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: AppDecorations.borderRadiusSm,
-              borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: AppDecorations.borderRadiusSm,
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
             ),
           ),
         ),
@@ -372,129 +565,216 @@ class _WindowAddQuestionState extends State<WindowAddQuestion> {
       children: [
         Row(
           children: [
-            Icon(PhosphorIconsRegular.listDashes, size: 13, color: isDark ? Colors.white54 : Colors.grey.shade500),
-            const SizedBox(width: 5),
-            Text('Pilihan Jawaban', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: isDark ? Colors.white54 : Colors.grey.shade500)),
+            Icon(PhosphorIconsRegular.listChecks, size: 14, color: AppColors.teacherAccent),
+            const SizedBox(width: 6),
+            Text(
+              'Pilihan Jawaban',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white70 : const Color(0xFF475569),
+              ),
+            ),
             const Spacer(),
-            Text('${_choiceControllers.length}/5', style: TextStyle(fontSize: 11, color: isDark ? Colors.white38 : Colors.grey.shade500)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${_choiceControllers.length}/5 Opsi',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                ),
+              ),
+            ),
           ],
         ),
-        AppSpacing.hXs,
+        const SizedBox(height: 6),
+        Text(
+          'Tandai lingkaran di kiri sebagai Kunci Jawaban Benar.',
+          style: TextStyle(
+            fontSize: 11,
+            color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Choice Cards List
         Column(
           children: List.generate(_choiceControllers.length, (i) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+            final isCorrect = _isCorrectList[i];
+            final optionLetter = String.fromCharCode(65 + i);
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isCorrect
+                    ? (isDark ? const Color(0xFF10B981).withValues(alpha: 0.12) : const Color(0xFFECFDF5))
+                    : (isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFF8FAFC)),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isCorrect
+                      ? const Color(0xFF10B981)
+                      : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06)),
+                  width: isCorrect ? 1.5 : 1,
+                ),
+              ),
               child: Row(
                 children: [
+                  // Radio Selector (Kunci Jawaban)
                   GestureDetector(
                     onTap: () => _setCorrect(i),
-                    child: Container(
-                      width: 22,
-                      height: 22,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _isCorrectList[i]
+                        color: isCorrect
                             ? const Color(0xFF10B981)
-                            : (isDark ? Colors.white10 : const Color(0xFFF1F5F9)),
-                        border: Border.all(
-                          color: _isCorrectList[i]
-                              ? const Color(0xFF10B981)
-                              : (isDark ? Colors.white.withValues(alpha: 0.2) : const Color(0xFFCBD5E1)),
-                          width: 1.5,
-                        ),
+                            : (isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: _isCorrectList[i]
-                          ? const Icon(PhosphorIconsRegular.check, size: 13, color: Colors.white)
-                          : null,
+                      child: Row(
+                        children: [
+                          Icon(
+                            isCorrect ? PhosphorIconsFill.checkCircle : PhosphorIconsRegular.circle,
+                            size: 16,
+                            color: isCorrect ? Colors.white : (isDark ? Colors.white38 : const Color(0xFF64748B)),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            optionLetter,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: isCorrect ? Colors.white : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 14),
+
+                  // Answer TextField
                   Expanded(
                     child: TextField(
                       controller: _choiceControllers[i],
-                      style: TextStyle(fontSize: 13, color: isDark ? Colors.white : Colors.black87),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white : const Color(0xFF0F172A),
+                      ),
                       decoration: InputDecoration(
-                        hintText: 'Pilihan ${String.fromCharCode(65 + i)}',
-                        hintStyle: TextStyle(color: isDark ? Colors.white30 : Colors.grey.shade400),
-                        filled: true,
-                        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        border: OutlineInputBorder(
-                          borderRadius: AppDecorations.borderRadiusSm,
-                          borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08)),
+                        hintText: 'Isi pilihan $optionLetter...',
+                        hintStyle: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: AppDecorations.borderRadiusSm,
-                          borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: AppDecorations.borderRadiusSm,
-                          borderSide: BorderSide(color: _isCorrectList[i] ? const Color(0xFF10B981) : AppColors.primary, width: 1.5),
-                        ),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: InputBorder.none,
                       ),
                     ),
                   ),
+
+                  // Delete Choice Button
                   if (_choiceControllers.length > 1)
-                    IconButton(
-                      icon: Icon(PhosphorIconsRegular.x, color: isDark ? Colors.white38 : Colors.grey.shade400, size: 18),
-                      onPressed: () => _removeChoiceField(i),
-                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                      padding: EdgeInsets.zero,
+                    GestureDetector(
+                      onTap: () => _removeChoiceField(i),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          PhosphorIconsRegular.trash,
+                          color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                          size: 16,
+                        ),
+                      ),
                     ),
                 ],
               ),
             );
           }),
         ),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: _choiceControllers.length < 5 ? _addChoiceField : null,
-            icon: const Icon(PhosphorIconsRegular.plus, size: 18),
-            label: const Text('Tambah Pilihan', style: TextStyle(fontWeight: FontWeight.w600)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
+        // Add Choice Button
+        if (_choiceControllers.length < 5)
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _addChoiceField,
+              icon: const Icon(PhosphorIconsRegular.plus, size: 16),
+              label: const Text(
+                'Tambah Pilihan Jawaban',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.teacherAccent,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                side: BorderSide(
+                  color: AppColors.teacherAccent.withValues(alpha: 0.35),
+                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
             ),
           ),
-        ),
       ],
     );
   }
 
-  Widget _submitButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: _submitQuestion,
-          child: Ink(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: AppColors.teacherGradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(PhosphorIconsRegular.check, color: Colors.white, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  'Tambah Soal',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
-                ),
-              ],
-            ),
+  Widget _footerActionBar(BuildContext context, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : const Color(0xFFF8FAFC),
+        border: Border(
+          top: BorderSide(
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
           ),
         ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.black12,
+                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              child: Text(
+                'Batal',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : const Color(0xFF475569),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: AppButton.primary(
+              label: 'Simpan Soal',
+              icon: PhosphorIconsRegular.check,
+              gradientColors: AppColors.teacherGradient,
+              onPressed: _submitQuestion,
+            ),
+          ),
+        ],
       ),
     );
   }

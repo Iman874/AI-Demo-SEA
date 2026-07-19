@@ -79,249 +79,407 @@ class _WindowAddMaterialState extends State<WindowAddMaterial> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: Colors.transparent,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 520),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E293B) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          color: isDark ? const Color(0xFF151D2F) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-              blurRadius: 20,
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+              blurRadius: 24,
               offset: const Offset(0, 8),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(24),
-        child: SingleChildScrollView(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            Row(
-              children: [
-                Icon(
-                  PhosphorIconsRegular.notePencil,
-                  color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
-                  size: 24,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    "Tambah Materi Baru",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    PhosphorIconsRegular.x,
-                    color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
-                    size: 20,
-                  ),
-                  onPressed: () => Navigator.of(context).pop(),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Judul
-            Text(
-              "Judul Materi",
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white70 : const Color(0xFF475569),
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _titleController,
-              style: TextStyle(
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-                fontSize: 14,
-              ),
-              decoration: InputDecoration(
-                hintText: "Contoh: Pengenalan Flutter & Dart",
-                hintStyle: TextStyle(
-                  color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
-                  fontSize: 14,
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                filled: true,
-                fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-                prefixIcon: Icon(
-                  PhosphorIconsRegular.textT,
-                  color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Tipe
-            Text(
-              "Tipe Format",
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white70 : const Color(0xFF475569),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButtonFormField<String>(
-                  value: _selectedType,
-                  decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    border: InputBorder.none,
-                    prefixIcon: Icon(
-                      PhosphorIconsRegular.textAlignLeft,
-                      color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
-                    ),
-                  ),
-                  dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  style: TextStyle(
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'text', child: Text('Teks / Artikel')),
-                    DropdownMenuItem(value: 'pdf', child: Text('Dokumen PDF')),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) setState(() => _selectedType = v);
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Konten
-            if (_selectedType == 'text') ...[
-              Text(
-                "Isi Materi / Deskripsi",
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white70 : const Color(0xFF475569),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _contentController,
-                maxLines: 4,
-                style: TextStyle(
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  fontSize: 14,
-                ),
-                decoration: InputDecoration(
-                  hintText: "Tulis atau tempel materi teks di sini...",
-                  hintStyle: TextStyle(
-                    color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
-                    fontSize: 14,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  filled: true,
-                  fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
-            if (_selectedType == 'pdf') ...[
-              Text(
-                "Unggah File PDF",
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white70 : const Color(0xFF475569),
-                ),
-              ),
-              const SizedBox(height: 8),
-              AddPdfWidget(onPdfSelected: (path, bytes, name) {
-                setState(() {
-                  pdfPath = path;
-                  pdfBytes = bytes;
-                  pdfFileName = name;
-                });
-              }),
-              if (pdfFileName != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    'Terpilih: $pdfFileName',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
-                    ),
-                  ),
-                ),
-            ],
-            const SizedBox(height: 24),
-
-            // Aksi
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: BorderSide(
-                        color: isDark ? Colors.white10 : Colors.black12,
+              _header(context, isDark),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Judul Materi
+                      Row(
+                        children: [
+                          Icon(PhosphorIconsRegular.textT, size: 14, color: AppColors.teacherAccent),
+                          const SizedBox(width: 6),
+                          Text(
+                            "Judul Materi",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white70 : const Color(0xFF475569),
+                            ),
+                          ),
+                        ],
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _titleController,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: "Contoh: Pengenalan Flutter & Dart",
+                          hintStyle: TextStyle(
+                            color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                            fontSize: 13,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          filled: true,
+                          fillColor: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(
+                              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(color: AppColors.teacherAccent, width: 1.5),
+                          ),
+                        ),
                       ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      "Batal",
-                      style: TextStyle(
-                        color: isDark ? Colors.white70 : const Color(0xFF475569),
-                        fontWeight: FontWeight.w600,
+                      const SizedBox(height: 20),
+
+                      // Tipe Format
+                      Row(
+                        children: [
+                          Icon(PhosphorIconsRegular.textAlignLeft, size: 14, color: AppColors.teacherAccent),
+                          const SizedBox(width: 6),
+                          Text(
+                            "Tipe Format",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white70 : const Color(0xFF475569),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _selectedType = 'text'),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: _selectedType == 'text'
+                                      ? AppColors.teacherAccent.withValues(alpha: 0.12)
+                                      : (isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF1F5F9)),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _selectedType == 'text'
+                                        ? AppColors.teacherAccent
+                                        : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06)),
+                                    width: _selectedType == 'text' ? 1.5 : 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      PhosphorIconsRegular.textAlignLeft,
+                                      size: 16,
+                                      color: _selectedType == 'text' ? AppColors.teacherAccent : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Teks / Artikel',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: _selectedType == 'text' ? FontWeight.w800 : FontWeight.w600,
+                                        color: _selectedType == 'text' ? AppColors.teacherAccent : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _selectedType = 'pdf'),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: _selectedType == 'pdf'
+                                      ? AppColors.teacherAccent.withValues(alpha: 0.12)
+                                      : (isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF1F5F9)),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _selectedType == 'pdf'
+                                        ? AppColors.teacherAccent
+                                        : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06)),
+                                    width: _selectedType == 'pdf' ? 1.5 : 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      PhosphorIconsRegular.filePdf,
+                                      size: 16,
+                                      color: _selectedType == 'pdf' ? AppColors.teacherAccent : (isDark ? Colors.white70 : const Color(0xFF64748B)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Dokumen PDF',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: _selectedType == 'pdf' ? FontWeight.w800 : FontWeight.w600,
+                                        color: _selectedType == 'pdf' ? AppColors.teacherAccent : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Konten
+                      if (_selectedType == 'text') ...[
+                        Row(
+                          children: [
+                            Icon(PhosphorIconsRegular.alignLeft, size: 14, color: AppColors.teacherAccent),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Isi Materi / Deskripsi",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.white70 : const Color(0xFF475569),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _contentController,
+                          maxLines: 5,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF0F172A),
+                            fontSize: 14,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: "Tulis atau tempel materi teks di sini...",
+                            hintStyle: TextStyle(
+                              color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                              fontSize: 13,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            filled: true,
+                            fillColor: isDark ? Colors.white.withValues(alpha: 0.04) : const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(color: AppColors.teacherAccent, width: 1.5),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (_selectedType == 'pdf') ...[
+                        Row(
+                          children: [
+                            Icon(PhosphorIconsRegular.filePdf, size: 14, color: AppColors.teacherAccent),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Unggah File PDF",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.white70 : const Color(0xFF475569),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        AddPdfWidget(onPdfSelected: (path, bytes, name) {
+                          setState(() {
+                            pdfPath = path;
+                            pdfBytes = bytes;
+                            pdfFileName = name;
+                          });
+                        }),
+                        if (pdfFileName != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              'Terpilih: $pdfFileName',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AppButton.primary(
-                    label: "Simpan",
-                    gradientColors: AppColors.teacherGradient,
-                    isLoading: _loading,
-                    onPressed: _loading ? null : _save,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              _footerActionBar(context, isDark),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _header(BuildContext context, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.6) : const Color(0xFFF8FAFC),
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.teacherAccent.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              PhosphorIconsRegular.filePlus,
+              color: AppColors.teacherAccent,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tambah Materi Baru',
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Upload materi PDF atau buat catatan belajar teks',
+                  style: TextStyle(
+                    color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                PhosphorIconsRegular.x,
+                color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                size: 18,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _footerActionBar(BuildContext context, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.5) : const Color(0xFFF8FAFC),
+        border: Border(
+          top: BorderSide(
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.black12,
+                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              child: Text(
+                'Batal',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : const Color(0xFF475569),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: AppButton.primary(
+              label: 'Simpan Materi',
+              icon: PhosphorIconsRegular.check,
+              isLoading: _loading,
+              gradientColors: AppColors.teacherGradient,
+              onPressed: _loading ? null : _save,
+            ),
+          ),
+        ],
       ),
     );
   }
