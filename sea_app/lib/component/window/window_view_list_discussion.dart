@@ -236,18 +236,29 @@ class _WindowViewListDiscussionState extends State<WindowViewListDiscussion> {
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(width: 10),
-                                            Icon(
-                                              PhosphorIconsRegular.clock,
-                                              size: 12,
-                                              color: isDark ? Colors.white38 : const Color(0xFF64748B),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              _relativeTime(d.createdAt),
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                                            const SizedBox(width: 6),
+                                            Flexible(
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    PhosphorIconsRegular.clock,
+                                                    size: 12,
+                                                    color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Flexible(
+                                                    child: Text(
+                                                      _relativeTime(d.createdAt),
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ],
