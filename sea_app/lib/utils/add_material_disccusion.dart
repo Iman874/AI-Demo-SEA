@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:sea_app/utils/add_pdf.dart';
 import 'package:sea_app/utils/pdf_to_text.dart'; // import convertPdfToText
 import '../models/material.dart';
@@ -193,8 +194,8 @@ class _AddMaterialDiscussionPageState
                     child: ListTile(
                       leading: Icon(
                         mat.type == "pdf"
-                            ? Icons.picture_as_pdf
-                            : Icons.description,
+                            ? PhosphorIconsRegular.filePdf
+                            : PhosphorIconsRegular.fileText,
                         color: mat.type == "pdf" ? Colors.red : Colors.blue,
                       ),
                       title: Text(mat.title),

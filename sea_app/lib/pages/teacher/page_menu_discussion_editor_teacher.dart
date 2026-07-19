@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 
@@ -356,7 +357,7 @@ class _PageMenuDiscussionEditorTeacherState extends State<PageMenuDiscussionEdit
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                    icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Colors.white, size: 20),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   const SizedBox(width: 8),
@@ -436,7 +437,7 @@ class _PageMenuDiscussionEditorTeacherState extends State<PageMenuDiscussionEdit
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                                     border: InputBorder.none,
                                     prefixIcon: Icon(
-                                      Icons.school_rounded,
+                                      PhosphorIconsRegular.graduationCap,
                                       color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                                     ),
                                   ),
@@ -529,7 +530,7 @@ class _PageMenuDiscussionEditorTeacherState extends State<PageMenuDiscussionEdit
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                                       border: InputBorder.none,
                                       prefixIcon: Icon(
-                                        Icons.analytics_rounded,
+                                        PhosphorIconsRegular.chartBar,
                                         color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                                       ),
                                     ),
@@ -610,7 +611,7 @@ class _PageMenuDiscussionEditorTeacherState extends State<PageMenuDiscussionEdit
                                   borderSide: BorderSide.none,
                                 ),
                                 prefixIcon: Icon(
-                                  Icons.forum_rounded,
+                                  PhosphorIconsRegular.chatsCircle,
                                   color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                                 ),
                               ),
@@ -791,7 +792,7 @@ class _PageMenuDiscussionEditorTeacherState extends State<PageMenuDiscussionEdit
                                         borderRadius: BorderRadius.circular(14),
                                       ),
                                     ),
-                                    icon: const Icon(Icons.group_rounded),
+                                    icon: const Icon(PhosphorIconsRegular.users),
                                     label: const Text("Lihat Anggota Kelompok"),
                                     onPressed: () async => await showDialog(
                                       context: context,
@@ -848,7 +849,7 @@ class _PageMenuDiscussionEditorTeacherState extends State<PageMenuDiscussionEdit
                           ),
                           IconButton(
                             icon: Icon(
-                              Icons.add_circle_outline_rounded,
+                              PhosphorIconsRegular.plusCircle,
                               color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
                             ),
                             onPressed: _addMaterial,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../models/question.dart';
 import '../../models/material.dart';
 import '../../component/window/window_add_question.dart';
@@ -122,7 +123,7 @@ class _PageQuizQuestionsTeacherState extends State<PageQuizQuestionsTeacher> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                    icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Colors.white, size: 20),
                     onPressed: () => Navigator.of(context).pop(_questions),
                   ),
                   const SizedBox(width: 8),
@@ -164,7 +165,7 @@ class _PageQuizQuestionsTeacherState extends State<PageQuizQuestionsTeacher> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.quiz_rounded, color: Colors.white, size: 14),
+                        const Icon(PhosphorIconsRegular.notePencil, color: Colors.white, size: 14),
                         const SizedBox(width: 5),
                         Text(
                           '${_questions.length} Soal',
@@ -203,7 +204,7 @@ class _PageQuizQuestionsTeacherState extends State<PageQuizQuestionsTeacher> {
                 child: Row(
                   children: [
                     _StatChip(
-                      icon: Icons.list_alt_rounded,
+                      icon: PhosphorIconsRegular.list,
                       label: 'Total Soal',
                       value: _questions.length.toString(),
                       color: AppColors.primary,
@@ -211,7 +212,7 @@ class _PageQuizQuestionsTeacherState extends State<PageQuizQuestionsTeacher> {
                     ),
                     const SizedBox(width: 12),
                     _StatChip(
-                      icon: Icons.star_rounded,
+                      icon: PhosphorIconsFill.star,
                       label: 'Total Poin',
                       value: totalPoin.toString(),
                       color: const Color(0xFFF59E0B),
@@ -260,7 +261,7 @@ class _PageQuizQuestionsTeacherState extends State<PageQuizQuestionsTeacher> {
         onPressed: _openAddQuestion,
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
+        icon: const Icon(PhosphorIconsRegular.plus),
         label: const Text(
           'Tambah Soal',
           style: TextStyle(fontWeight: FontWeight.w700),
@@ -282,7 +283,7 @@ class _PageQuizQuestionsTeacherState extends State<PageQuizQuestionsTeacher> {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.quiz_outlined,
+              PhosphorIconsRegular.notePencil,
               size: 60,
               color: isDark ? Colors.blue.shade300 : AppColors.primary,
             ),
@@ -491,7 +492,7 @@ class _QuestionCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.star_rounded, size: 12, color: Color(0xFFF59E0B)),
+                      const Icon(PhosphorIconsFill.star, size: 12, color: Color(0xFFF59E0B)),
                       const SizedBox(width: 4),
                       Text(
                         '${question.poin} poin',
@@ -560,7 +561,7 @@ class _QuestionCard extends StatelessWidget {
                             ),
                           ),
                           child: c.isCorrect
-                              ? const Icon(Icons.check_rounded, size: 11, color: Color(0xFF10B981))
+                              ? const Icon(PhosphorIconsRegular.check, size: 11, color: Color(0xFF10B981))
                               : null,
                         ),
                         Expanded(
@@ -598,7 +599,7 @@ class _QuestionCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF10B981)),
+                  const Icon(PhosphorIconsFill.checkCircle, size: 14, color: Color(0xFF10B981)),
                   const SizedBox(width: 6),
                   const Text(
                     'Jawaban: ',
@@ -632,7 +633,7 @@ class _QuestionCard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onEdit,
-                    icon: const Icon(Icons.edit_rounded, size: 15),
+                    icon: const Icon(PhosphorIconsRegular.pencil, size: 15),
                     label: const Text('Edit Soal', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: isDark ? Colors.blue.shade300 : AppColors.primary,
@@ -653,7 +654,7 @@ class _QuestionCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Icon(Icons.delete_outline_rounded, size: 18),
+                  child: const Icon(PhosphorIconsRegular.trash, size: 18),
                 ),
               ],
             ),

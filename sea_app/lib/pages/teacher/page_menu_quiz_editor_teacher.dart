@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import '../../services/api_service.dart';
@@ -90,7 +91,7 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                        icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Colors.white, size: 20),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       const SizedBox(width: 8),
@@ -179,7 +180,7 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
                                       borderSide: BorderSide.none,
                                     ),
                                     prefixIcon: Icon(
-                                      Icons.quiz_rounded,
+                                      PhosphorIconsRegular.notePencil,
                                       color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                                     ),
                                   ),
@@ -229,7 +230,7 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                                         border: InputBorder.none,
                                         prefixIcon: Icon(
-                                          Icons.school_rounded,
+                                          PhosphorIconsRegular.graduationCap,
                                           color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                                         ),
                                       ),
@@ -295,7 +296,7 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                                         border: InputBorder.none,
                                         prefixIcon: Icon(
-                                          Icons.timer_rounded,
+                                          PhosphorIconsRegular.clock,
                                           color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                                         ),
                                       ),
@@ -356,7 +357,7 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
                                     ),
                                     IconButton(
                                       icon: Icon(
-                                        Icons.add_circle_outline_rounded,
+                                        PhosphorIconsRegular.plusCircle,
                                         color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
                                       ),
                                       onPressed: () async {
@@ -493,7 +494,7 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
                                         });
                                       }
                                     },
-                                    icon: const Icon(Icons.list_alt_rounded, size: 18),
+                                    icon: const Icon(PhosphorIconsRegular.list, size: 18),
                                     label: Text(
                                       _questions.isEmpty
                                           ? 'Buka Editor Soal'
@@ -563,7 +564,7 @@ class _PageMenuQuizEditorTeacherState extends State<PageMenuQuizEditorTeacher> {
                                           borderRadius: BorderRadius.circular(14),
                                         ),
                                       ),
-                                      icon: const Icon(Icons.auto_awesome_rounded),
+                                      icon: const Icon(PhosphorIconsRegular.sparkle),
                                       label: const Text(
                                         "Generate Soal dari Materi [AI]",
                                         style: TextStyle(fontWeight: FontWeight.w700),

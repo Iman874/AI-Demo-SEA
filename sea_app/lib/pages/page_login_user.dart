@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'student/page_menu_home_student.dart';
 import 'teacher/page_menu_home_teacher.dart';
@@ -131,7 +132,7 @@ class _LoginUserPageState extends State<LoginUserPage> {
                             borderSide: BorderSide.none,
                           ),
                           prefixIcon: Icon(
-                            Icons.email_rounded,
+                            PhosphorIconsRegular.envelope,
                             color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                           ),
                         ),
@@ -168,7 +169,7 @@ class _LoginUserPageState extends State<LoginUserPage> {
                             borderSide: BorderSide.none,
                           ),
                           prefixIcon: Icon(
-                            Icons.lock_rounded,
+                            PhosphorIconsRegular.lock,
                             color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                           ),
                         ),

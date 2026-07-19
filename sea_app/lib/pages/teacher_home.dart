@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -18,7 +19,7 @@ class TeacherHomePage extends StatelessWidget {
                 await auth.logout();
                 navigator.pushReplacementNamed('/login');
               },
-              icon: const Icon(Icons.logout))
+              icon: const Icon(PhosphorIconsRegular.signOut))
         ],
       ),
       body: Center(child: Text('Welcome teacher: ${auth.user?.name ?? ''}')),

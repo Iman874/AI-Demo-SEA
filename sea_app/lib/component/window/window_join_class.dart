@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../theme/app_colors.dart';
 import '../../component/ui/app_button.dart';
 
@@ -44,7 +45,7 @@ class _WindowJoinClassState extends State<WindowJoinClass> {
             Row(
               children: [
                 Icon(
-                  Icons.group_add_rounded,
+                  PhosphorIconsRegular.userPlus,
                   color: isDark ? Colors.orange.shade300 : const Color(0xFFD97B43),
                   size: 24,
                 ),
@@ -89,7 +90,7 @@ class _WindowJoinClassState extends State<WindowJoinClass> {
                   borderSide: BorderSide.none,
                 ),
                 prefixIcon: Icon(
-                  Icons.vpn_key_rounded,
+                  PhosphorIconsRegular.key,
                   color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                 ),
               ),

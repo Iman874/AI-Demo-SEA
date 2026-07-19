@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'page_login_user.dart' as login;
 import '../theme/app_colors.dart';
 
@@ -72,7 +73,7 @@ class _ChoiceUserPageState extends State<ChoiceUserPage> {
                 title: "Saya Sebagai Siswa",
                 description: "Masuk ke portal pembelajaran interaktif, berdiskusi dengan AI, dan kerjakan kuis mandiri.",
                 gradient: AppColors.studentGradient,
-                iconData: Icons.school_rounded,
+                iconData: PhosphorIconsRegular.graduationCap,
                 onTap: () => _navigateToLogin(login.UserType.student),
                 isDark: isDark,
               ),
@@ -83,7 +84,7 @@ class _ChoiceUserPageState extends State<ChoiceUserPage> {
                 title: "Saya Sebagai Guru",
                 description: "Kelola kelas terdaftar, buat kuis interaktif, unggah materi belajar, dan pantau pemahaman murid.",
                 gradient: AppColors.teacherGradient,
-                iconData: Icons.co_present_rounded,
+                iconData: PhosphorIconsRegular.chalkboardTeacher,
                 onTap: () => _navigateToLogin(login.UserType.teacher),
                 isDark: isDark,
               ),
@@ -179,7 +180,7 @@ class _ChoiceUserPageState extends State<ChoiceUserPage> {
             const SizedBox(width: 6),
             // Arrow indicator
             Icon(
-              Icons.chevron_right_rounded,
+              PhosphorIconsRegular.caretRight,
               color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
             ),
           ],

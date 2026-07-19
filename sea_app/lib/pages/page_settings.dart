@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/auth_provider.dart';
@@ -41,7 +42,7 @@ class PageSettings extends StatelessWidget {
             _SettingsCard(
               children: [
                 _SettingsTile(
-                  icon: Icons.dns_outlined,
+                  icon: PhosphorIconsRegular.hardDrives,
                   title: 'Konfigurasi Server',
                   subtitle: 'Ubah host, port, dan skema koneksi',
                   onTap: () {
@@ -65,7 +66,7 @@ class PageSettings extends StatelessWidget {
             _SettingsCard(
               children: [
                 _SettingsTile(
-                  icon: Icons.logout_rounded,
+                  icon: PhosphorIconsRegular.signOut,
                   title: 'Keluar',
                   subtitle: 'Logout dari akun saat ini',
                   iconColor: AppColors.error,
@@ -83,21 +84,21 @@ class PageSettings extends StatelessWidget {
             _SettingsCard(
               children: [
                 _SettingsTile(
-                  icon: Icons.school_outlined,
+                  icon: PhosphorIconsRegular.graduationCap,
                   title: 'SEA App',
                   subtitle: 'Smart Education Assistant',
                   onTap: null,
                 ),
                 const Divider(height: 1, indent: 56, endIndent: 16),
                 _SettingsTile(
-                  icon: Icons.info_outline_rounded,
+                  icon: PhosphorIconsRegular.info,
                   title: 'Versi',
                   subtitle: '1.0.2+3',
                   onTap: null,
                 ),
                 const Divider(height: 1, indent: 56, endIndent: 16),
                 _SettingsTile(
-                  icon: Icons.code_rounded,
+                  icon: PhosphorIconsRegular.code,
                   title: 'Framework',
                   subtitle: 'Flutter + Laravel 11 API',
                   onTap: null,
@@ -176,7 +177,7 @@ class _ThemeCard extends StatelessWidget {
       child: Column(
         children: [
           _ThemeOption(
-            icon: Icons.light_mode_rounded,
+            icon: PhosphorIconsRegular.sun,
             title: 'Mode Terang',
             subtitle: 'Gunakan tema terang',
             isSelected: themeProvider.isLight,
@@ -185,7 +186,7 @@ class _ThemeCard extends StatelessWidget {
           ),
           const Divider(height: 1, indent: 56, endIndent: 16),
           _ThemeOption(
-            icon: Icons.dark_mode_rounded,
+            icon: PhosphorIconsRegular.moon,
             title: 'Mode Gelap',
             subtitle: 'Gunakan tema gelap',
             isSelected: themeProvider.isDark,
@@ -194,7 +195,7 @@ class _ThemeCard extends StatelessWidget {
           ),
           const Divider(height: 1, indent: 56, endIndent: 16),
           _ThemeOption(
-            icon: Icons.brightness_auto_rounded,
+            icon: PhosphorIconsRegular.circle,
             title: 'Ikuti Sistem',
             subtitle: 'Sesuaikan dengan pengaturan perangkat',
             isSelected: themeProvider.isSystem,
@@ -289,7 +290,7 @@ class _ThemeOption extends StatelessWidget {
                 color: isSelected ? accent : Colors.transparent,
               ),
               child: isSelected
-                  ? const Icon(Icons.check, size: 12, color: Colors.white)
+                  ? const Icon(PhosphorIconsRegular.check, size: 12, color: Colors.white)
                   : null,
             ),
           ],
@@ -392,7 +393,7 @@ class _SettingsTile extends StatelessWidget {
             ),
             if (onTap != null)
               Icon(
-                Icons.chevron_right_rounded,
+                PhosphorIconsRegular.caretRight,
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.3)
                     : Colors.grey.shade400,

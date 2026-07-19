@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../component/card/card_material.dart';
 import '../../component/card/card_quiz.dart';
 import '../../models/material.dart';
@@ -114,7 +115,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                       border: InputBorder.none,
                       prefixIcon: Icon(
-                        Icons.school_rounded,
+                        PhosphorIconsRegular.graduationCap,
                         color: isDark ? Colors.white38 : const Color(0xFF64748B),
                       ),
                     ),
@@ -179,7 +180,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                       border: InputBorder.none,
                       prefixIcon: Icon(
-                        Icons.assignment_turned_in_rounded,
+                        PhosphorIconsRegular.checkCircle,
                         color: isDark ? Colors.white38 : const Color(0xFF64748B),
                       ),
                     ),
@@ -233,7 +234,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               child: AppButton.primary(
                 label: "Tambah Materi Kuis",
-                icon: Icons.upload_file_rounded,
+                icon: PhosphorIconsRegular.upload,
                 gradientColors: AppColors.teacherGradient,
                 onPressed: () async {
                   final qProv = Provider.of<QuizProvider>(context, listen: false);
@@ -292,7 +293,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               child: AppButton.primary(
                 label: "Buat Kuis Baru",
-                icon: Icons.assignment_rounded,
+                icon: PhosphorIconsRegular.clipboardText,
                 gradientColors: AppColors.teacherGradient,
                 onPressed: () async {
                   final parentContext = context;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:provider/provider.dart';
 import 'page_login_user.dart';
 import '../providers/auth_provider.dart';
@@ -147,7 +148,7 @@ class _PageDaftarUserState extends State<PageDaftarUser> {
                             borderSide: BorderSide.none,
                           ),
                           prefixIcon: Icon(
-                            Icons.person_rounded,
+                            PhosphorIconsRegular.user,
                             color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                           ),
                         ),
@@ -184,7 +185,7 @@ class _PageDaftarUserState extends State<PageDaftarUser> {
                             borderSide: BorderSide.none,
                           ),
                           prefixIcon: Icon(
-                            Icons.email_rounded,
+                            PhosphorIconsRegular.envelope,
                             color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                           ),
                         ),
@@ -223,7 +224,7 @@ class _PageDaftarUserState extends State<PageDaftarUser> {
                             borderSide: BorderSide.none,
                           ),
                           prefixIcon: Icon(
-                            Icons.lock_rounded,
+                            PhosphorIconsRegular.lock,
                             color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                           ),
                         ),
@@ -252,7 +253,7 @@ class _PageDaftarUserState extends State<PageDaftarUser> {
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                               border: InputBorder.none,
                               prefixIcon: Icon(
-                                Icons.settings_accessibility_rounded,
+                                PhosphorIconsRegular.userSwitch,
                                 color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                               ),
                             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../models/class.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_colors.dart';
@@ -79,7 +80,7 @@ class _WindowAddClassState extends State<WindowAddClass> {
             Row(
               children: [
                 Icon(
-                  Icons.add_business_rounded,
+                  PhosphorIconsRegular.plus,
                   color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
                   size: 24,
                 ),
@@ -124,7 +125,7 @@ class _WindowAddClassState extends State<WindowAddClass> {
                   borderSide: BorderSide.none,
                 ),
                 prefixIcon: Icon(
-                  Icons.school_rounded,
+                  PhosphorIconsRegular.graduationCap,
                   color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                 ),
               ),

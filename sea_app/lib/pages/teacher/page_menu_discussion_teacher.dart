@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../component/card/card_discussion.dart';
 import '../../component/card/card_material.dart';
 import '../../models/discussion_room.dart';
@@ -150,7 +151,7 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         border: InputBorder.none,
                         prefixIcon: Icon(
-                          Icons.school_rounded,
+                          PhosphorIconsRegular.graduationCap,
                           color: isDark ? Colors.white38 : const Color(0xFF64748B),
                         ),
                       ),
@@ -203,7 +204,7 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                 child: AppButton.primary(
                   label: 'Buat Ruang Diskusi',
-                  icon: Icons.add_comment_rounded,
+                  icon: PhosphorIconsRegular.chatCircle,
                   gradientColors: AppColors.teacherGradient,
                   onPressed: () {
                     Navigator.of(context).push(

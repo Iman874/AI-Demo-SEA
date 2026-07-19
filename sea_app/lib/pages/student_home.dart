@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -19,7 +20,7 @@ class StudentHomePage extends StatelessWidget {
                 if (!navigator.context.mounted) return;
                 navigator.pushReplacementNamed('/login');
               },
-              icon: const Icon(Icons.logout))
+              icon: const Icon(PhosphorIconsRegular.signOut))
         ],
       ),
       body: Center(child: Text('Welcome student: ${auth.user?.name ?? ''}')),

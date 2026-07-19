@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_text_styles.dart';
@@ -34,44 +35,44 @@ class _PageGuideState extends State<PageGuide> {
         {
           'title': 'Buat & Kelola Kelas',
           'desc': 'Buat kelas baru melalui tombol "+ Buat Kelas" di halaman Beranda untuk mengundang siswa belajar bersama.',
-          'icon': Icons.add_business_rounded,
+          'icon': PhosphorIconsRegular.plus,
         },
         {
           'title': 'Rancang Kuis Interaktif',
           'desc': 'Buat kuis baru di tab Kuis, susun butir-butir pertanyaan pilihan ganda, dan tugaskan ke kelas pilihan Anda.',
-          'icon': Icons.assignment_rounded,
+          'icon': PhosphorIconsRegular.clipboardText,
         },
         {
           'title': 'Kelompok & Ruang Diskusi',
           'desc': 'Sediakan ruang diskusi kelompok lengkap dengan lampiran materi belajar berupa file PDF.',
-          'icon': Icons.forum_rounded,
+          'icon': PhosphorIconsRegular.chatsCircle,
         },
         {
           'title': 'Integrasikan AI Gemini',
           'desc': 'Aktifkan AI ChatRoom pada diskusi agar siswa dapat berkonsultasi secara mandiri dengan asisten AI.',
-          'icon': Icons.psychology_rounded,
+          'icon': PhosphorIconsRegular.brain,
         },
       ],
       'student': [
         {
           'title': 'Gabung Kelas Baru',
           'desc': 'Masuk ke kelas guru Anda dengan memasukkan kode akses unik di halaman utama ("Gabung Kelas").',
-          'icon': Icons.group_add_rounded,
+          'icon': PhosphorIconsRegular.userPlus,
         },
         {
           'title': 'Kerjakan Kuis Terjadwal',
           'desc': 'Buka tab Kuis untuk melihat daftar kuis aktif kelas Anda. Mulai kuis dan jawab pertanyaan dengan cermat.',
-          'icon': Icons.play_lesson_rounded,
+          'icon': PhosphorIconsRegular.playCircle,
         },
         {
           'title': 'Diskusikan Materi Bersama AI',
           'desc': 'Masuk ke grup diskusi aktif. Gunakan fitur Tanya AI untuk memahami materi belajar secara interaktif.',
-          'icon': Icons.assistant_rounded,
+          'icon': PhosphorIconsRegular.sparkle,
         },
         {
           'title': 'Ekstraksi & Unduh Materi',
           'desc': 'Pelajari dokumen PDF yang diunggah guru di dalam ruang diskusi sebelum Anda memulai kuis.',
-          'icon': Icons.picture_as_pdf_rounded,
+          'icon': PhosphorIconsRegular.filePdf,
         },
       ],
     };

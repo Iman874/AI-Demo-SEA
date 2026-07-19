@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../services/api_service.dart';
 import '../../utils/add_pdf.dart';
 import '../../utils/pdf_to_text.dart';
@@ -106,7 +107,7 @@ class _WindowAddMaterialState extends State<WindowAddMaterial> {
             Row(
               children: [
                 Icon(
-                  Icons.note_add_rounded,
+                  PhosphorIconsRegular.notePencil,
                   color: isDark ? Colors.blue.shade300 : const Color(0xFF4B6A85),
                   size: 24,
                 ),
@@ -124,7 +125,7 @@ class _WindowAddMaterialState extends State<WindowAddMaterial> {
                 ),
                 IconButton(
                   icon: Icon(
-                    Icons.close_rounded,
+                    PhosphorIconsRegular.x,
                     color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
                     size: 20,
                   ),
@@ -166,7 +167,7 @@ class _WindowAddMaterialState extends State<WindowAddMaterial> {
                   borderSide: BorderSide.none,
                 ),
                 prefixIcon: Icon(
-                  Icons.title_rounded,
+                  PhosphorIconsRegular.textT,
                   color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                 ),
               ),
@@ -195,7 +196,7 @@ class _WindowAddMaterialState extends State<WindowAddMaterial> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     border: InputBorder.none,
                     prefixIcon: Icon(
-                      Icons.format_align_left_rounded,
+                      PhosphorIconsRegular.textAlignLeft,
                       color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
                     ),
                   ),

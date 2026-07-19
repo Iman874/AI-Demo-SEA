@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../component/ui/app_button.dart';
 
 class WindowConfirmation extends StatelessWidget {
@@ -48,7 +49,7 @@ class WindowConfirmation extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.warning_amber_rounded,
+                PhosphorIconsRegular.warning,
                 color: Colors.red,
                 size: 32,
               ),

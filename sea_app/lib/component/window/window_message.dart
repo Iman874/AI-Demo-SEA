@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_decorations.dart';
@@ -66,7 +67,7 @@ class WindowMessage extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 padding: const EdgeInsets.all(6),
-                child: Icon(Icons.close, color: cs.error, size: 22),
+                child: Icon(PhosphorIconsRegular.x, color: cs.error, size: 22),
               ),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 
@@ -10,7 +11,7 @@ class AddPdfWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
-      icon: const Icon(Icons.picture_as_pdf),
+      icon: const Icon(PhosphorIconsRegular.filePdf),
       label: const Text("Add PDF"),
       onPressed: () async {
         FilePickerResult? result = await FilePicker.platform.pickFiles(

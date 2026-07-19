@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../component/card/card_quiz.dart';
 import '../../models/quiz.dart';
 // imports for quiz_student and user removed: this page is API-only and no longer uses local dummy data
@@ -149,7 +150,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         border: InputBorder.none,
                         prefixIcon: Icon(
-                          Icons.school_rounded,
+                          PhosphorIconsRegular.graduationCap,
                           color: isDark ? Colors.white38 : const Color(0xFF64748B),
                         ),
                       ),

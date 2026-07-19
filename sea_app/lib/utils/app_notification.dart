@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 
 class AppNotification {
   static void show(
@@ -9,7 +10,7 @@ class AppNotification {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accentColor = isError ? const Color(0xFFEF4444) : const Color(0xFF10B981);
-    final defaultIcon = isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded;
+    final defaultIcon = isError ? PhosphorIconsRegular.warningCircle : PhosphorIconsRegular.checkCircle;
 
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(

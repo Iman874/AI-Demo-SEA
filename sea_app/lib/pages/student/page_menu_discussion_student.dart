@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../component/card/card_discussion.dart';
 import '../../models/discussion_room.dart';
 import '../../models/class.dart';
@@ -167,7 +168,7 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                         border: InputBorder.none,
                         prefixIcon: Icon(
-                          Icons.school_rounded,
+                          PhosphorIconsRegular.graduationCap,
                           color: isDark ? Colors.white38 : const Color(0xFF64748B),
                         ),
                       ),
