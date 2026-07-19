@@ -131,6 +131,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
   String? _error;
   List<ClassModel> _classes = [];
   List<DiscussionRoom> _discussions = [];
+  String _classSortType = 'terbaru';
   String _discussionSortType = 'terbaru';
   List<Quiz> _activeQuizzes = [];
   List<Quiz> _completedQuizzes = [];
@@ -533,7 +534,34 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
+
+          // Filter Chips Kelas
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: Row(
+              children: [
+                _buildSortChip(
+                  context,
+                  label: "Terbaru",
+                  isSelected: _classSortType == 'terbaru',
+                  onTap: () => setState(() => _classSortType = 'terbaru'),
+                  isDark: isDark,
+                  accentColor: AppColors.studentAccent,
+                ),
+                const SizedBox(width: 8),
+                _buildSortChip(
+                  context,
+                  label: "Abjad A-Z",
+                  isSelected: _classSortType == 'abjad',
+                  onTap: () => setState(() => _classSortType = 'abjad'),
+                  isDark: isDark,
+                  accentColor: AppColors.studentAccent,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
 
           // Horizontal list kelas / Empty state border putus-putus
           classes.isEmpty
@@ -541,28 +569,36 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _buildEmptyClassCard(context),
                 )
-              : SizedBox(
-                  height: 110,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: classes.length + 1,
-                    itemBuilder: (context, idx) {
-                      if (idx == classes.length) {
+              : () {
+                  final sortedClasses = List<ClassModel>.from(classes);
+                  if (_classSortType == 'abjad') {
+                    sortedClasses.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+                  } else {
+                    sortedClasses.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+                  }
+                  return SizedBox(
+                    height: 110,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: sortedClasses.length + 1,
+                      itemBuilder: (context, idx) {
+                        if (idx == sortedClasses.length) {
+                          return StaggeredSlideUp(
+                            index: idx,
+                            child: _buildJoinClassCard(context, isDark),
+                          );
+                        }
+                        final c = sortedClasses[idx];
                         return StaggeredSlideUp(
                           index: idx,
-                          child: _buildJoinClassCard(context, isDark),
+                          child: _buildClassHorizontalCard(context, c, isDark),
                         );
-                      }
-                      final c = classes[idx];
-                      return StaggeredSlideUp(
-                        index: idx,
-                        child: _buildClassHorizontalCard(context, c, isDark),
-                      );
-                    },
-                  ),
-                ),
+                      },
+                    ),
+                  );
+                }(),
           const SizedBox(height: 12),
 
           // ── KONTEN BAWAH (QUIZ & DISKUSI) ──

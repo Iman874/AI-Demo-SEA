@@ -124,6 +124,7 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
   String? _error;
   List<ClassModel> _classes = [];
   List<DiscussionRoom> _discussions = [];
+  String _classSortType = 'terbaru';
   String _discussionSortType = 'terbaru';
 
   @override
@@ -419,7 +420,34 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
+
+          // Filter Chips Kelas
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: Row(
+              children: [
+                _buildSortChip(
+                  context,
+                  label: "Terbaru",
+                  isSelected: _classSortType == 'terbaru',
+                  onTap: () => setState(() => _classSortType = 'terbaru'),
+                  isDark: isDark,
+                  accentColor: AppColors.teacherAccent,
+                ),
+                const SizedBox(width: 8),
+                _buildSortChip(
+                  context,
+                  label: "Abjad A-Z",
+                  isSelected: _classSortType == 'abjad',
+                  onTap: () => setState(() => _classSortType = 'abjad'),
+                  isDark: isDark,
+                  accentColor: AppColors.teacherAccent,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
 
           // Horizontal list kelas / Empty state border putus-putus
           _classes.isEmpty
@@ -427,22 +455,30 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _buildEmptyClassCard(context),
                 )
-              : SizedBox(
-                  height: 110,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: _classes.length + 1,
-                    itemBuilder: (context, idx) {
-                      if (idx == _classes.length) {
-                        return _buildAddClassCard(context, isDark);
-                      }
-                      final c = _classes[idx];
-                      return _buildClassHorizontalCard(context, c, isDark);
-                    },
-                  ),
-                ),
+              : () {
+                  final sortedClasses = List<ClassModel>.from(_classes);
+                  if (_classSortType == 'abjad') {
+                    sortedClasses.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+                  } else {
+                    sortedClasses.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+                  }
+                  return SizedBox(
+                    height: 110,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: sortedClasses.length + 1,
+                      itemBuilder: (context, idx) {
+                        if (idx == sortedClasses.length) {
+                          return _buildAddClassCard(context, isDark);
+                        }
+                        final c = sortedClasses[idx];
+                        return _buildClassHorizontalCard(context, c, isDark);
+                      },
+                    ),
+                  );
+                }(),
           const SizedBox(height: 12),
 
           // ── KONTEN BAWAH (DISKUSI & DISCUSSION ACTIONS) ──
