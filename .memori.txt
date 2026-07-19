@@ -18,6 +18,24 @@ Dampak:
 ==================================================
 ==================================================
 Tanggal : 2026-07-19
+Waktu   : 18:36
+Kategori: Bug
+
+Judul:
+Hotfix v1.2.2 — Fix RenderFlex Overflow Horizontal Class Card (spaceBetween Column)
+
+Detail:
+- Horizontal class card (`_buildClassHorizontalCard`) di student & teacher home menggunakan Column(mainAxisAlignment: spaceBetween) di dalam Container(width: 178, height: 110 via SizedBox)
+- Setelah padding 14 all around, Column dikonstrain ke ~150x82px. Dengan icon container(30px) + SizedBox(4) + name(~18px) + SizedBox(2) + semester row(~12px) + SizedBox(2) + updated time(~12px) = total ~80px lebih → overflow 1px
+- Fix: SizedBox(height: 4) → SizedBox(height: 2) antara name dan semester row; SizedBox(height: 2) → SizedBox(height: 1) sebelum updated time. Hemat 3px, konten muat
+- Verifikasi: `flutter analyze` 0 error, 20 issues (baseline sama)
+
+Dampak:
+- File: page_menu_home_student.dart (2 SizedBox values), page_menu_home_teacher.dart (2 SizedBox values)
+- Tidak ada perubahan lain; visual tetap proporsional
+==================================================
+==================================================
+Tanggal : 2026-07-19
 Waktu   : 18:03
 Kategori: Feature
 

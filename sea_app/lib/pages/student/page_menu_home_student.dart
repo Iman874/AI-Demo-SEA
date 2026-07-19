@@ -718,7 +718,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Row(
                 children: [
                   Icon(
@@ -741,7 +741,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                   ),
                 ],
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 "Diperbarui $relTime",
                 style: TextStyle(
