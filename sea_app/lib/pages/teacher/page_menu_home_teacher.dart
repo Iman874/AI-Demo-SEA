@@ -15,6 +15,7 @@ import 'page_menu_discussion_editor_teacher.dart';
 import '../../component/window/window_add_class.dart';
 import 'page_menu_discussion_details_teacher.dart';
 import '../../component/state/skeleton_loading.dart';
+import '../../component/animated_quote.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_decorations.dart';
@@ -173,6 +174,14 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final String userName = auth.user?.name ?? "Teacher";
 
+    final teacherQuotes = [
+      "Belajar mengajar hari ini",
+      "Guru adalah cahaya ilmu",
+      "Mendidik dengan hati dan karya",
+      "Bersama mencerdaskan generasi",
+      "Ilmu yang dibagi takkan pernah habis",
+    ];
+
     // Greeting time based on hour
     final hour = DateTime.now().hour;
     String timeGreeting = "Selamat Hari";
@@ -315,8 +324,8 @@ class _HomeTeacherContentState extends State<_HomeTeacherContent> {
                           const Icon(Icons.today_rounded, color: Colors.white, size: 14),
                           const SizedBox(width: 6),
                           Expanded(
-                            child: Text(
-                              "Belajar mengajar hari ini",
+                            child: AnimatedQuote(
+                              quotes: teacherQuotes,
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.85),
                                 fontSize: 11,

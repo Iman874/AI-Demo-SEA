@@ -17,6 +17,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_decorations.dart';
 import '../../theme/app_text_styles.dart';
 import '../../component/state/skeleton_loading.dart';
+import '../../component/animated_quote.dart';
 import '../page_settings.dart';
 import '../page_guide.dart';
 import '../../component/window/window_join_class.dart';
@@ -282,6 +283,14 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final String userName = auth.user?.name ?? "Student";
 
+    final studentQuotes = [
+      "Semangat belajar hari ini!",
+      "Ilmu adalah investasi masa depan",
+      "Terus belajar, terus tumbuh",
+      "Setiap usaha tidak sia-sia",
+      "Raih mimpi lewat ilmu",
+    ];
+
     // Greeting time based on hour
     final hour = DateTime.now().hour;
     String timeGreeting = "Selamat Hari";
@@ -424,8 +433,8 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
                           const Icon(Icons.today_rounded, color: Colors.white, size: 14),
                           const SizedBox(width: 6),
                           Expanded(
-                            child: Text(
-                              "Aktivitas belajar",
+                            child: AnimatedQuote(
+                              quotes: studentQuotes,
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.85),
                                 fontSize: 11,
