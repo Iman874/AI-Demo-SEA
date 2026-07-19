@@ -1,5 +1,26 @@
 ==================================================
 Tanggal : 2026-07-19
+Waktu   : 21:50
+Kategori: Refactor
+
+Judul:
+Modernisasi Modal Bank Soal (Tambah & Edit Soal)
+
+Detail:
+- Gradient header biru dgn icon notePencil/pencil + judul + subtitle
+- Styled dropdown nomor/poin dalam container filled rounded
+- TextField pertanyaan filled rounded dgn fokus border primary
+- Pilihan jawaban: radio circle hijau (correct) / abu (not correct), icon hapus, counter n/5
+- Tombol tambah pilihan outline + submit gradient
+- Dark mode support penuh
+- Import: AppColors, AppSpacing, AppDecorations; PhosphorIcons
+
+Dampak:
+- `flutter analyze`: 0 error
+- File: window_add_question.dart (rewrite), window_edit_question.dart (rewrite)
+==================================================
+==================================================
+Tanggal : 2026-07-19
 Waktu   : 21:20
 Kategori: Refactor
 
