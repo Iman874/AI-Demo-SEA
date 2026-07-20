@@ -31,7 +31,7 @@ class _DiscussionPageChatRoomStudentState
   String? studentId;
   String? studentName;
 
-  List<MessageModel> messages = List.from(sampleMessages);
+  List<MessageModel> messages = [];
   List<MaterialPdf> materials = [];
   List<SummaryDiscussion> summaries = [];
   String? understandingResult;
@@ -205,9 +205,13 @@ class _DiscussionPageChatRoomStudentState
     });
   }
 
-  Future<void> _handleSend() async {
-    final text = _controller.text.trim();
+  Future<void> _handleSend([String? customText]) async {
+    final text = customText ?? _controller.text.trim();
     if (text.isEmpty || _isSending) return;
+
+    if (customText != null) {
+      _controller.text = customText;
+    }
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
     final uid = auth.user?.id ?? studentId ?? 'user_dev';
@@ -238,438 +242,572 @@ class _DiscussionPageChatRoomStudentState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const gradient = AppColors.studentGradient;
     const accent = AppColors.studentAccent;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: isDark ? AppColors.cardDark : Colors.white,
-        surfaceTintColor: Colors.transparent,
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: gradient),
+      backgroundColor: isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC),
+      body: Stack(
+        children: [
+          // ── Background Glow Gradient Effect ─────────────────────────────
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                PhosphorIconsRegular.robot,
-                color: Colors.white,
-                size: 20,
+                gradient: RadialGradient(
+                  colors: [
+                    accent.withValues(alpha: isDark ? 0.15 : 0.12),
+                    Colors.transparent,
+                  ],
+                ),
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.discussion.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                // ── Top Header Navigation Bar ───────────────────────────────
+                _buildTopAppBar(isDark, accent),
+
+                // ── Main Scrollable Body Content ────────────────────────────
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Column(
+                      children: [
+                        // 1. Card: Progress Materi
+                        _buildProgressMateriCard(isDark, accent),
+
+                        const SizedBox(height: 12),
+
+                        // 2. Card: Ringkasan & Evaluasi AI
+                        _buildSummaryCard(isDark, accent),
+
+                        const SizedBox(height: 14),
+
+                        // 3. Card: Main AI Chatbot Assistant Container
+                        _buildMainChatbotContainer(isDark, accent),
+
+                        const SizedBox(height: 80), // extra space for floating bar
+                      ],
                     ),
                   ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: const BoxDecoration(
-                          color: AppColors.success,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Gemini AI Assistant Aktif',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark
-                              ? AppColors.textSecondaryDark
-                              : AppColors.textSecondaryLight,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _showMaterials
-                  ? PhosphorIconsRegular.filePdf
-                  : PhosphorIconsRegular.files,
-              color: accent,
-            ),
-            tooltip: 'Materi Pembelajaran',
-            onPressed: () => setState(() => _showMaterials = !_showMaterials),
+          ),
+
+          // ── Bottom Floating Input Bar ────────────────────────────────────
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            child: _buildFloatingInputBar(isDark, accent),
           ),
         ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            children: [
-              // ── Top Header Banner & Panel Materials ──────────────────────
-              _buildTopBanner(isDark, accent),
-
-              const SizedBox(height: 10),
-
-              // ── Ringkasan Diskusi & Evaluasi Pemahaman AI Card ───────────
-              _buildSummaryAndUnderstandingCard(isDark, accent),
-
-              const SizedBox(height: 14),
-
-              // ── MAIN AI CHATBOT PANEL CARD CONTAINER ─────────────────────
-              _buildChatbotPanelCard(isDark, accent, gradient),
-            ],
-          ),
-        ),
       ),
     );
   }
 
-  Widget _buildTopBanner(bool isDark, Color accent) {
+  // ── Top Navigation Bar Widget ───────────────────────────────────────────
+  Widget _buildTopAppBar(bool isDark, Color accent) {
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          if (canPop)
+            InkWell(
+              onTap: () => Navigator.of(context).pop(),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.cardDark : Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  PhosphorIconsRegular.arrowLeft,
+                  size: 20,
+                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                ),
+              ),
+            ),
+          if (canPop) const SizedBox(width: 12),
+
+          // Icon briefcase/discussion
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: AppColors.studentGradient),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: const Icon(
+              PhosphorIconsRegular.briefcase,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Title & Subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.discussion.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Text(
+                      widget.discussion.tag.isNotEmpty
+                          ? widget.discussion.tag
+                          : 'Provider & State Management',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.success,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'AI Assistant Aktif',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Material Button Icon Top Right
+          InkWell(
+            onTap: () => setState(() => _showMaterials = !_showMaterials),
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.cardDark : Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: accent.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                PhosphorIconsRegular.fileText,
+                color: accent,
+                size: 20,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Card 1: Progress Materi Widget ──────────────────────────────────────
+  Widget _buildProgressMateriCard(bool isDark, Color accent) {
+    final total = materials.isNotEmpty ? materials.length : 12;
+    final done = messages.isNotEmpty ? (messages.length > total ? total : (messages.length ~/ 2)) : 0;
+    final progress = total > 0 ? (done / total) : 0.0;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
-          width: 1,
+          color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(PhosphorIconsRegular.info, size: 16, color: accent),
-              const SizedBox(width: 6),
+              // Icon Container (Soft Pastel Orange)
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF7ED),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  PhosphorIconsRegular.bookOpen,
+                  color: Color(0xFFEA580C),
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Title & Progress Bar
               Expanded(
-                child: Text(
-                  widget.discussion.description.isNotEmpty
-                      ? widget.discussion.description
-                      : 'Diskusi kelompok interaktif dengan bantuan AI Gemini.',
-                  maxLines: _showMaterials ? 3 : 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Progress Materi',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      done == 0
+                          ? 'Belum ada materi yang dibahas'
+                          : '$done dari $total materi telah dibahas',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 6,
+                        backgroundColor: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : const Color(0xFFF1F5F9),
+                        valueColor:
+                            const AlwaysStoppedAnimation<Color>(Color(0xFFEA580C)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 16),
+              Container(
+                width: 1,
+                height: 40,
+                color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+              ),
+              const SizedBox(width: 16),
+
+              // Right Counter Big Number
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '$done ',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFFEA580C),
+                          ),
+                        ),
+                        TextSpan(
+                          text: '/ $total',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Materi selesai',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+          if (_showMaterials && materials.isNotEmpty) ...[
+            const Divider(height: 20),
+            Column(
+              children: materials
+                  .map((m) => Container(
+                        margin: const EdgeInsets.only(top: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.04)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(PhosphorIconsRegular.filePdf,
+                                color: Color(0xFFEA580C), size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                m.title,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? Colors.white
+                                      : AppColors.textPrimaryLight,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── Card 2: Ringkasan & Evaluasi AI Widget ─────────────────────────────
+  Widget _buildSummaryCard(bool isDark, Color accent) {
+    final sum = currentSummary;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Icon Container (Soft Pastel Purple)
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3E8FF),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              PhosphorIconsRegular.sparkle,
+              color: Color(0xFF9333EA),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Title & Status
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ringkasan & Evaluasi AI',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  sum != null
+                      ? sum.content
+                      : 'Belum ada ringkasan percakapan',
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: isDark
                         ? AppColors.textSecondaryDark
                         : AppColors.textSecondaryLight,
                   ),
                 ),
-              ),
-              InkWell(
-                onTap: () => setState(() => _showMaterials = !_showMaterials),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                if (understandingResult != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
                     children: [
-                      Text(
-                        '${materials.length} Materi',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: accent,
-                        ),
-                      ),
-                      Icon(
-                        _showMaterials
-                            ? PhosphorIconsRegular.caretUp
-                            : PhosphorIconsRegular.caretDown,
-                        size: 14,
-                        color: accent,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (_showMaterials && materials.isNotEmpty) ...[
-            const Divider(height: 16),
-            Column(
-              children: materials.map((m) => _buildMaterialTile(m, isDark, accent)).toList(),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMaterialTile(MaterialPdf mat, bool isDark, Color accent) {
-    return Container(
-      margin: const EdgeInsets.only(top: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.04)
-            : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            mat.type.toLowerCase() == 'pdf'
-                ? PhosphorIconsRegular.filePdf
-                : PhosphorIconsRegular.fileText,
-            color: accent,
-            size: 18,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              mat.title,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : AppColors.textPrimaryLight,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              mat.type.toUpperCase(),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: accent,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryAndUnderstandingCard(bool isDark, Color accent) {
-    final sum = currentSummary;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: sum != null
-              ? accent.withValues(alpha: 0.4)
-              : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0)),
-          width: sum != null ? 1.5 : 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    PhosphorIconsRegular.fileText,
-                    size: 16,
-                    color: accent,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Ringkasan & Evaluasi AI',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                    ),
-                  ),
-                ],
-              ),
-              InkWell(
-                onTap: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (context) => WindowAddSummary(
-                      summaries: summaries,
-                      chatRoomId: chatRoom.id,
-                      userId: studentId ?? '',
-                      initialContent: currentSummary?.content,
-                    ),
-                  );
-                  if (!mounted) return;
-                  await _loadPersistedSummaries();
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        sum == null
-                            ? PhosphorIconsRegular.plus
-                            : PhosphorIconsRegular.pencilSimple,
-                        size: 12,
-                        color: accent,
-                      ),
+                      const Icon(PhosphorIconsRegular.checkCircle,
+                          size: 12, color: AppColors.success),
                       const SizedBox(width: 4),
                       Text(
-                        sum == null ? 'Buat Ringkasan' : 'Edit Ringkasan',
-                        style: TextStyle(
-                          fontSize: 11,
+                        'Evaluasi: $understandingResult',
+                        style: const TextStyle(
+                          fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: accent,
+                          color: AppColors.success,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-            ],
-          ),
-          if (sum != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              sum.content,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+                ],
+              ],
             ),
-          ],
-          if (understandingResult != null) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          ),
+          const SizedBox(width: 10),
+
+          // Action Button "+ Buat Ringkasan"
+          InkWell(
+            onTap: () async {
+              await showDialog(
+                context: context,
+                builder: (context) => WindowAddSummary(
+                  summaries: summaries,
+                  chatRoomId: chatRoom.id,
+                  userId: studentId ?? '',
+                  initialContent: currentSummary?.content,
+                ),
+              );
+              if (!mounted) return;
+              await _loadPersistedSummaries();
+            },
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFFFFF7ED),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: AppColors.success.withValues(alpha: 0.3),
+                  color: const Color(0xFFFDBA74).withValues(alpha: 0.5),
                 ),
               ),
               child: Row(
                 children: [
                   const Icon(
-                    PhosphorIconsRegular.checkCircle,
-                    color: AppColors.success,
+                    PhosphorIconsRegular.sparkle,
+                    color: Color(0xFFEA580C),
                     size: 14,
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Tingkat Pemahaman AI: ',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    understandingResult!,
+                    sum == null ? 'Buat Ringkasan' : 'Edit Ringkasan',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.success,
+                      color: Color(0xFFEA580C),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ],
       ),
     );
   }
 
-  // ── MAIN CHATBOT PANEL CARD WRAPPER CONTAINER ──────────────────────────
-  Widget _buildChatbotPanelCard(
-      bool isDark, Color accent, List<Color> gradient) {
+  // ── Card 3: Main AI Chatbot Container ────────────────────────────────────
+  Widget _buildMainChatbotContainer(bool isDark, Color accent) {
     return Container(
-      height: 520,
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark
-              ? AppColors.borderDark
-              : const Color(0xFFE2E8F0),
-          width: 1.2,
+          color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── 1. Inner Card Header Bar ─────────────────────────────────
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.03)
-                  : const Color(0xFFF8FAFC),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-              border: Border(
-                bottom: BorderSide(
-                  color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
-                ),
-              ),
-            ),
+          // Header inside Card
+          Padding(
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
+                    color: const Color(0xFFFFF7ED),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     PhosphorIconsRegular.robot,
-                    color: accent,
-                    size: 18,
+                    color: Color(0xFFEA580C),
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -677,14 +815,36 @@ class _DiscussionPageChatRoomStudentState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'AI Chatbot Assistant',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            'AI Chatbot Assistant',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Text(
+                              'Gemini 2.0 Flash',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2563EB),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         'Tanyakan materi & ajukan diskusi ke AI',
                         style: TextStyle(
@@ -697,396 +857,546 @@ class _DiscussionPageChatRoomStudentState
                     ],
                   ),
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: const Text(
-                    'Gemini 2.0 Flash',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
 
-          // ── 2. Inner Scrollable Message Area ──────────────────────────
-          Expanded(
-            child: Container(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.15)
-                  : const Color(0xFFF1F5F9).withValues(alpha: 0.5),
-              child: messages.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            PhosphorIconsRegular.chatsTeardrop,
-                            size: 40,
-                            color: accent.withValues(alpha: 0.4),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Belum ada obrolan.',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: isDark
-                                  ? Colors.white70
-                                  : AppColors.textPrimaryLight,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Tanyakan materi pembelajaran pada AI Assistant.',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isDark
-                                  ? AppColors.textSecondaryDark
-                                  : AppColors.textSecondaryLight,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Scrollbar(
-                      controller: _chatScrollController,
-                      child: ListView.builder(
-                        controller: _chatScrollController,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final msg = messages[index];
-                          final isAi = msg.role == 'ai';
-                          final isUser =
-                              msg.senderId == studentId || msg.role == 'student';
+          const Divider(height: 1),
 
-                          return _buildModernChatBubble(
-                              msg, isAi, isUser, isDark, accent);
-                        },
-                      ),
-                    ),
-            ),
-          ),
+          // Dynamic Body: Empty State or Message List
+          if (messages.isEmpty)
+            _buildEmptyStateContent(isDark, accent)
+          else
+            _buildMessageListContent(isDark, accent),
+        ],
+      ),
+    );
+  }
 
-          // ── 3. Inner Quick Prompt Chips ──────────────────────────────
-          if (messages.length < 5)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              color: isDark ? AppColors.cardDark : Colors.white,
-              child: _buildQuickPromptChips(isDark, accent),
-            ),
-
-          // ── 4. Embedded Bottom Input Bar ─────────────────────────────
+  // ── Empty State View matching Reference ─────────────────────────────────
+  Widget _buildEmptyStateContent(bool isDark, Color accent) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Inner Empty State Card
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.cardDark : Colors.white,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-              border: Border(
-                top: BorderSide(
-                  color: isDark
-                      ? AppColors.borderDark
-                      : const Color(0xFFE2E8F0),
-                ),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : const Color(0xFFFAFAFA),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
               ),
             ),
             child: Row(
               children: [
+                // Mascot Graphic Area
+                Container(
+                  width: 110,
+                  height: 130,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF7ED),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        PhosphorIconsRegular.robot,
+                        size: 56,
+                        color: const Color(0xFFEA580C).withValues(alpha: 0.8),
+                      ),
+                      Positioned(
+                        bottom: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.06),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: const [
+                              Icon(PhosphorIconsRegular.bookOpen,
+                                  size: 12, color: Color(0xFFEA580C)),
+                              SizedBox(width: 4),
+                              Text(
+                                'SEA AI',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFEA580C),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+
+                // Right Bullet Points
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.05)
-                          : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.borderDark
-                            : const Color(0xFFCBD5E1),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Belum ada percakapan',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                        ),
                       ),
-                    ),
-                    child: TextField(
-                      controller: _controller,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => _handleSend(),
-                      style: TextStyle(
-                        fontSize: 13,
-                        color:
-                            isDark ? Colors.white : AppColors.textPrimaryLight,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Tanyakan sesuatu pada AI...',
-                        hintStyle: TextStyle(
-                          fontSize: 12,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Mulai diskusi mengenai materi untuk mendapatkan bantuan AI yang lebih personal.',
+                        style: TextStyle(
+                          fontSize: 11,
                           color: isDark
                               ? AppColors.textSecondaryDark
                               : AppColors.textSecondaryLight,
+                          height: 1.3,
                         ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 8),
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                InkWell(
-                  onTap: _isSending ? null : _handleSend,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: gradient),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: gradient.first.withValues(alpha: 0.35),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: _isSending
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(
-                              PhosphorIconsFill.paperPlaneRight,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                    ),
+                      const SizedBox(height: 10),
+                      _buildBulletItem(
+                          PhosphorIconsRegular.bookOpen,
+                          'Menjelaskan konsep dengan mudah',
+                          const Color(0xFFEA580C),
+                          const Color(0xFFFFF7ED),
+                          isDark),
+                      const SizedBox(height: 6),
+                      _buildBulletItem(
+                          PhosphorIconsRegular.lightbulb,
+                          'Memberikan contoh & studi kasus',
+                          const Color(0xFFD97706),
+                          const Color(0xFFFEF3C7),
+                          isDark),
+                      const SizedBox(height: 6),
+                      _buildBulletItem(
+                          PhosphorIconsRegular.clipboardText,
+                          'Membuat latihan & evaluasi',
+                          const Color(0xFFEA580C),
+                          const Color(0xFFFFF7ED),
+                          isDark),
+                      const SizedBox(height: 6),
+                      _buildBulletItem(
+                          PhosphorIconsRegular.question,
+                          'Menjawab pertanyaan Anda',
+                          const Color(0xFFD97706),
+                          const Color(0xFFFEF3C7),
+                          isDark),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildModernChatBubble(
-      MessageModel msg, bool isAi, bool isUser, bool isDark, Color accent) {
-    final senderName = isAi
-        ? 'SEA Bot AI'
-        : (isUser ? (studentName ?? 'Saya') : 'Anggota');
+          const SizedBox(height: 16),
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!isUser) ...[
-            Container(
-              width: 28,
-              height: 28,
-              margin: const EdgeInsets.only(right: 6, top: 2),
-              decoration: BoxDecoration(
-                color: isAi ? AppColors.primary : accent.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isAi
-                    ? PhosphorIconsRegular.robot
-                    : PhosphorIconsRegular.user,
-                color: isAi ? Colors.white : accent,
-                size: 14,
-              ),
-            ),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: isUser
-                    ? accent
-                    : (isAi
-                        ? (isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFEFF6FF))
-                        : (isDark ? AppColors.cardDark : Colors.white)),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(14),
-                  topRight: const Radius.circular(14),
-                  bottomLeft: Radius.circular(isUser ? 14 : 2),
-                  bottomRight: Radius.circular(isUser ? 2 : 14),
-                ),
-                border: Border.all(
-                  color: isUser
-                      ? Colors.transparent
-                      : (isAi
-                          ? AppColors.primary.withValues(alpha: 0.3)
-                          : (isDark
-                              ? AppColors.borderDark
-                              : const Color(0xFFE2E8F0))),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!isUser) ...[
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          senderName,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: isAi
-                                ? AppColors.primary
-                                : (isDark
-                                    ? Colors.white70
-                                    : AppColors.textSecondaryLight),
-                          ),
-                        ),
-                        if (isAi) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text(
-                              'AI',
-                              style: TextStyle(
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                  ],
-                  Text(
-                    msg.content,
-                    style: TextStyle(
-                      fontSize: 12,
-                      height: 1.35,
-                      color: isUser
-                          ? Colors.white
-                          : (isDark
-                              ? Colors.white
-                              : AppColors.textPrimaryLight),
-                    ),
-                  ),
-                ],
-              ),
+          // Quick Action Header
+          Text(
+            'Mulai dengan quick action',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white70 : AppColors.textPrimaryLight,
             ),
           ),
-          if (isUser) ...[
-            Container(
-              width: 28,
-              height: 28,
-              margin: const EdgeInsets.only(left: 6, top: 2),
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
+          const SizedBox(height: 10),
+
+          // 4 Quick Action Cards Grid
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: PhosphorIconsRegular.fileText,
+                  iconColor: const Color(0xFFEA580C),
+                  bgColor: const Color(0xFFFFF7ED),
+                  title: 'Ringkas Materi',
+                  subtitle: 'Dapatkan ringkasan materi ini',
+                  prompt: 'Tolong buatkan ringkasan dari materi pembelajaran ini.',
+                  isDark: isDark,
+                ),
               ),
-              child: Icon(
-                PhosphorIconsRegular.user,
-                color: accent,
-                size: 14,
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: PhosphorIconsRegular.lightbulb,
+                  iconColor: const Color(0xFF2563EB),
+                  bgColor: const Color(0xFFEFF6FF),
+                  title: 'Berikan Contoh',
+                  subtitle: 'Minta contoh nyata atau studi kasus',
+                  prompt: 'Berikan contoh nyata dan studi kasus terkait materi ini.',
+                  isDark: isDark,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: PhosphorIconsRegular.brain,
+                  iconColor: const Color(0xFF16A34A),
+                  bgColor: const Color(0xFFF0FDF4),
+                  title: 'Buat Latihan',
+                  subtitle: 'Buat soal latihan atau kuis',
+                  prompt: 'Buatkan 3 soal latihan singkat untuk menguji pemahaman saya.',
+                  isDark: isDark,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildQuickActionCard(
+                  icon: PhosphorIconsRegular.question,
+                  iconColor: const Color(0xFF9333EA),
+                  bgColor: const Color(0xFFF3E8FF),
+                  title: 'Jelaskan Konsep',
+                  subtitle: 'Minta penjelasan konsep tertentu',
+                  prompt: 'Tolong jelaskan konsep utama dari materi ini secara rinci.',
+                  isDark: isDark,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickPromptChips(bool isDark, Color accent) {
-    final prompts = [
-      'Jelaskan kesimpulan materi',
-      'Berikan contoh kasus',
-      'Buat kuis singkat',
-    ];
+  Widget _buildBulletItem(IconData icon, String text, Color iconColor,
+      Color bgCircle, bool isDark) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: bgCircle,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 12, color: iconColor),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-    return SizedBox(
-      height: 30,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        scrollDirection: Axis.horizontal,
-        itemCount: prompts.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 6),
-        itemBuilder: (context, i) {
-          return InkWell(
-            onTap: () {
-              _controller.text = prompts[i];
-              _handleSend();
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required String title,
+    required String subtitle,
+    required String prompt,
+    required bool isDark,
+  }) {
+    return InkWell(
+      onTap: () => _handleSend(prompt),
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.04)
+              : const Color(0xFFFAFAFA),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: accent.withValues(alpha: 0.3),
-                ),
+                color: bgColor,
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    PhosphorIconsRegular.sparkle,
-                    size: 11,
-                    color: accent,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    prompts[i],
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white70 : AppColors.textPrimaryLight,
+              child: Icon(icon, color: iconColor, size: 16),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : AppColors.textPrimaryLight,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 9,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Message Stream View ──────────────────────────────────────────────────
+  Widget _buildMessageListContent(bool isDark, Color accent) {
+    return Container(
+      height: 380,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: ListView.builder(
+        controller: _chatScrollController,
+        itemCount: messages.length,
+        itemBuilder: (context, index) {
+          final msg = messages[index];
+          final isAi = msg.role == 'ai';
+          final isUser = msg.senderId == studentId || msg.role == 'student';
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              mainAxisAlignment:
+                  isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!isUser) ...[
+                  Container(
+                    width: 28,
+                    height: 28,
+                    margin: const EdgeInsets.only(right: 6, top: 2),
+                    decoration: BoxDecoration(
+                      color: isAi
+                          ? const Color(0xFFEA580C)
+                          : accent.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isAi
+                          ? PhosphorIconsRegular.robot
+                          : PhosphorIconsRegular.user,
+                      color: isAi ? Colors.white : accent,
+                      size: 14,
                     ),
                   ),
                 ],
-              ),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isUser
+                          ? const Color(0xFFEA580C)
+                          : (isAi
+                              ? (isDark
+                                  ? const Color(0xFF1E293B)
+                                  : const Color(0xFFFFF7ED))
+                              : (isDark ? AppColors.cardDark : Colors.white)),
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(14),
+                        topRight: const Radius.circular(14),
+                        bottomLeft: Radius.circular(isUser ? 14 : 2),
+                        bottomRight: Radius.circular(isUser ? 2 : 14),
+                      ),
+                      border: Border.all(
+                        color: isUser
+                            ? Colors.transparent
+                            : (isAi
+                                ? const Color(0xFFFDBA74).withValues(alpha: 0.4)
+                                : (isDark
+                                    ? AppColors.borderDark
+                                    : const Color(0xFFE2E8F0))),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (!isUser) ...[
+                          Text(
+                            isAi ? 'SEA Bot AI' : 'Member',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFEA580C),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                        ],
+                        Text(
+                          msg.content,
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.35,
+                            color: isUser
+                                ? Colors.white
+                                : (isDark
+                                    ? Colors.white
+                                    : AppColors.textPrimaryLight),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (isUser) ...[
+                  Container(
+                    width: 28,
+                    height: 28,
+                    margin: const EdgeInsets.only(left: 6, top: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFED7AA),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      PhosphorIconsRegular.user,
+                      color: Color(0xFFEA580C),
+                      size: 14,
+                    ),
+                  ),
+                ],
+              ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  // ── Bottom Floating Input Bar Widget ─────────────────────────────────────
+  Widget _buildFloatingInputBar(bool isDark, Color accent) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 6),
+          const Icon(
+            PhosphorIconsRegular.sparkle,
+            size: 18,
+            color: Color(0xFFCBD5E1),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _handleSend(),
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? Colors.white : AppColors.textPrimaryLight,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Tanyakan sesuatu pada AI...',
+                hintStyle: TextStyle(
+                  fontSize: 12,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+            ),
+          ),
+          InkWell(
+            onTap: () {},
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : const Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                PhosphorIconsRegular.microphone,
+                color: Color(0xFF64748B),
+                size: 18,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          InkWell(
+            onTap: _isSending ? null : () => _handleSend(),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient:
+                    const LinearGradient(colors: AppColors.studentGradient),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEA580C).withValues(alpha: 0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: _isSending
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(
+                        PhosphorIconsFill.paperPlaneRight,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
