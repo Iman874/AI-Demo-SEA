@@ -13,6 +13,7 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/app_notification.dart';
 import '../student/page_menu_quiz_result_student.dart';
+import '../../component/window/window_view_question.dart';
 
 class PageMenuQuizResultTeacher extends StatefulWidget {
   final String quizId;
@@ -368,7 +369,25 @@ class _PageMenuQuizResultTeacherState extends State<PageMenuQuizResultTeacher> {
               ),
               CardQuestionList(
                 questions: _questions,
-                onViewDetails: (q) {},
+                onViewDetails: (q) {
+                  // Temukan judul materi pendukung jika ada
+                  String? matTitle;
+                  try {
+                    final needle = q.fkIdMaterial?.toString().trim() ?? '';
+                    if (needle.isNotEmpty) {
+                      final found = _materials.firstWhere((m) => m.id == needle);
+                      matTitle = found.title;
+                    }
+                  } catch (_) {}
+
+                  showDialog(
+                    context: context,
+                    builder: (_) => WindowViewQuestion(
+                      question: q,
+                      relatedMaterialTitle: matTitle,
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 12),
             ],

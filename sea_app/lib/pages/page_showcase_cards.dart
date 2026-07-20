@@ -23,6 +23,7 @@ import '../component/card/card_quiz_result.dart';
 import '../component/card/card_answer_question_student.dart';
 import '../component/card/card_conclusion_student.dart';
 import '../component/card/card_percentage_understanding.dart';
+import '../component/window/window_view_question.dart';
 
 // Theme & Utils
 import '../theme/app_colors.dart';
@@ -397,7 +398,15 @@ class _PageShowcaseCardsState extends State<PageShowcaseCards> {
               isDark: isDark,
               child: CardQuestionList(
                 questions: _showEmptyState ? [] : _sampleQuestions,
-                onViewDetails: (q) => _notify('Lihat soal #${q.number}'),
+                onViewDetails: (q) {
+                  showDialog(
+                    context: context,
+                    builder: (_) => WindowViewQuestion(
+                      question: q,
+                      relatedMaterialTitle: 'Dasar Pemrograman Mobile',
+                    ),
+                  );
+                },
                 onEdit: (q) => _notify('Edit soal #${q.number}'),
                 onDelete: (q) => _notify('Hapus soal #${q.number}'),
               ),
