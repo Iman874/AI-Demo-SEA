@@ -140,7 +140,8 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
       return _buildErrorCard(_error!, isDark, accent, gradient);
     }
 
-    return RefreshIndicator(
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+    final content = RefreshIndicator(
       color: accent,
       backgroundColor: isDark ? AppColors.cardDark : Colors.white,
       onRefresh: _loadAll,
@@ -161,9 +162,13 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
             () {
               final sortedActive = List<DiscussionRoom>.from(activeDiscussions);
               if (_sortType == 'abjad') {
-                sortedActive.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+                sortedActive.sort(
+                  (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+                );
               } else if (_sortType == 'z-a') {
-                sortedActive.sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+                sortedActive.sort(
+                  (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+                );
               } else {
                 sortedActive.sort((a, b) => b.createdAt.compareTo(a.createdAt));
               }
@@ -172,46 +177,49 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionHeader(
-                    'Diskusi Aktif',
+                    'Ruang Diskusi Aktif',
                     sortedActive.length,
                     isDark,
                     gradient,
-                    subtitle: 'Ruang diskusi interaktif dengan AI & teman',
+                    subtitle: 'Diskusi kelompok interaktif berbasis AI',
                     iconData: PhosphorIconsRegular.chatsCircle,
                   ),
 
                   // Filter Urutan khusus Diskusi Aktif
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                    child: Row(
-                      children: [
-                        _buildSortChip(
-                          context,
-                          label: "Terbaru",
-                          isSelected: _sortType == 'terbaru',
-                          onTap: () => setState(() => _sortType = 'terbaru'),
-                          isDark: isDark,
-                          gradient: gradient,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildSortChip(
-                          context,
-                          label: "A-Z",
-                          isSelected: _sortType == 'abjad',
-                          onTap: () => setState(() => _sortType = 'abjad'),
-                          isDark: isDark,
-                          gradient: gradient,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildSortChip(
-                          context,
-                          label: "Z-A",
-                          isSelected: _sortType == 'z-a',
-                          onTap: () => setState(() => _sortType = 'z-a'),
-                          isDark: isDark,
-                          gradient: gradient,
-                        ),
-                      ],
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildSortChip(
+                            context,
+                            label: "Terbaru",
+                            isSelected: _sortType == 'terbaru',
+                            onTap: () => setState(() => _sortType = 'terbaru'),
+                            isDark: isDark,
+                            gradient: gradient,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildSortChip(
+                            context,
+                            label: "A-Z",
+                            isSelected: _sortType == 'abjad',
+                            onTap: () => setState(() => _sortType = 'abjad'),
+                            isDark: isDark,
+                            gradient: gradient,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildSortChip(
+                            context,
+                            label: "Z-A",
+                            isSelected: _sortType == 'z-a',
+                            onTap: () => setState(() => _sortType = 'z-a'),
+                            isDark: isDark,
+                            gradient: gradient,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -227,47 +235,55 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
                       if (!mounted) return;
                       await _loadDiscussions();
                     },
-                    buttonLabel: 'Masuk Diskusi',
+                    buttonLabel: 'Masuk Obrolan',
                   ),
                 ],
               );
             }(),
 
             // ── Dokumen Materi Diskusi (Selalu Tampil) ───────────────
-            _buildSectionHeader('Dokumen Materi Diskusi', _materials.length, isDark, gradient),
+            _buildSectionHeader(
+              'Dokumen Materi Diskusi',
+              _materials.length,
+              isDark,
+              gradient,
+            ),
 
             // Filter Chips khusus Materi Diskusi (Semua, PDF, Teks)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-              child: Row(
-                children: [
-                  _buildSortChip(
-                    context,
-                    label: "Semua",
-                    isSelected: _materialFilter == 'semua',
-                    onTap: () => setState(() => _materialFilter = 'semua'),
-                    isDark: isDark,
-                    gradient: gradient,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildSortChip(
-                    context,
-                    label: "Dokumen PDF",
-                    isSelected: _materialFilter == 'pdf',
-                    onTap: () => setState(() => _materialFilter = 'pdf'),
-                    isDark: isDark,
-                    gradient: gradient,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildSortChip(
-                    context,
-                    label: "Catatan Teks",
-                    isSelected: _materialFilter == 'teks',
-                    onTap: () => setState(() => _materialFilter = 'teks'),
-                    isDark: isDark,
-                    gradient: gradient,
-                  ),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildSortChip(
+                      context,
+                      label: "Semua",
+                      isSelected: _materialFilter == 'semua',
+                      onTap: () => setState(() => _materialFilter = 'semua'),
+                      isDark: isDark,
+                      gradient: gradient,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildSortChip(
+                      context,
+                      label: "Dokumen PDF",
+                      isSelected: _materialFilter == 'pdf',
+                      onTap: () => setState(() => _materialFilter = 'pdf'),
+                      isDark: isDark,
+                      gradient: gradient,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildSortChip(
+                      context,
+                      label: "Catatan Teks",
+                      isSelected: _materialFilter == 'teks',
+                      onTap: () => setState(() => _materialFilter = 'teks'),
+                      isDark: isDark,
+                      gradient: gradient,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 6),
@@ -275,9 +291,12 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
             () {
               var filteredMats = List<MaterialPdf>.from(_materials);
               if (_materialFilter == 'pdf') {
-                filteredMats = filteredMats.where((m) => m.type.toLowerCase() == 'pdf').toList();
+                filteredMats =
+                    filteredMats.where((m) => m.type.toLowerCase() == 'pdf').toList();
               } else if (_materialFilter == 'teks') {
-                filteredMats = filteredMats.where((m) => m.type.toLowerCase() != 'pdf').toList();
+                filteredMats = filteredMats
+                    .where((m) => m.type.toLowerCase() != 'pdf')
+                    .toList();
               }
               return CardMaterialList(materials: filteredMats);
             }(),
@@ -323,6 +342,21 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
         ),
       ),
     );
+
+    if (canPop) {
+      return Scaffold(
+        backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        appBar: AppBar(
+          title: const Text('Forum Diskusi Siswa'),
+          backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: content,
+      );
+    }
+
+    return content;
   }
 
   // ── Section header: Ikon Lingkaran + Judul + Subtitle + Count Badge ─────────
@@ -505,14 +539,16 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
                     padding: EdgeInsets.only(
                       right: i < studentClasses.length - 1 ? 10 : 0,
                     ),
-                    child: InkWell(
-                      onTap: () async {
-                        if (isSelected) return;
-                        setState(() => selectedClassId = c.idClass);
-                        await _loadDiscussions();
-                      },
-                      borderRadius: BorderRadius.circular(14),
-                      child: AnimatedContainer(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () async {
+                          if (isSelected) return;
+                          setState(() => selectedClassId = c.idClass);
+                          await _loadDiscussions();
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         width: 100,
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
@@ -570,7 +606,8 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
                         ),
                       ),
                     ),
-                  );
+                  ),
+                );
                 },
               ),
             ),

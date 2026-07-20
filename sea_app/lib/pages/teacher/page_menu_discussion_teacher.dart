@@ -113,7 +113,8 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
         ? selectedClassId
         : (classItems.isNotEmpty ? classItems.first.idClass : null);
 
-    return RefreshIndicator(
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+    final content = RefreshIndicator(
       color: accent,
       backgroundColor: isDark ? AppColors.cardDark : Colors.white,
       onRefresh: _loadClasses,
@@ -156,35 +157,38 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                   // Filter Urutan khusus Diskusi Aktif
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                    child: Row(
-                      children: [
-                        _buildSortChip(
-                          context,
-                          label: "Terbaru",
-                          isSelected: _sortType == 'terbaru',
-                          onTap: () => setState(() => _sortType = 'terbaru'),
-                          isDark: isDark,
-                          gradient: gradient,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildSortChip(
-                          context,
-                          label: "A-Z",
-                          isSelected: _sortType == 'abjad',
-                          onTap: () => setState(() => _sortType = 'abjad'),
-                          isDark: isDark,
-                          gradient: gradient,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildSortChip(
-                          context,
-                          label: "Z-A",
-                          isSelected: _sortType == 'z-a',
-                          onTap: () => setState(() => _sortType = 'z-a'),
-                          isDark: isDark,
-                          gradient: gradient,
-                        ),
-                      ],
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildSortChip(
+                            context,
+                            label: "Terbaru",
+                            isSelected: _sortType == 'terbaru',
+                            onTap: () => setState(() => _sortType = 'terbaru'),
+                            isDark: isDark,
+                            gradient: gradient,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildSortChip(
+                            context,
+                            label: "A-Z",
+                            isSelected: _sortType == 'abjad',
+                            onTap: () => setState(() => _sortType = 'abjad'),
+                            isDark: isDark,
+                            gradient: gradient,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildSortChip(
+                            context,
+                            label: "Z-A",
+                            isSelected: _sortType == 'z-a',
+                            onTap: () => setState(() => _sortType = 'z-a'),
+                            isDark: isDark,
+                            gradient: gradient,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -228,35 +232,38 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
             // Filter Chips khusus Materi Diskusi (Semua, PDF, Teks)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-              child: Row(
-                children: [
-                  _buildSortChip(
-                    context,
-                    label: "Semua",
-                    isSelected: _materialFilter == 'semua',
-                    onTap: () => setState(() => _materialFilter = 'semua'),
-                    isDark: isDark,
-                    gradient: gradient,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildSortChip(
-                    context,
-                    label: "Dokumen PDF",
-                    isSelected: _materialFilter == 'pdf',
-                    onTap: () => setState(() => _materialFilter = 'pdf'),
-                    isDark: isDark,
-                    gradient: gradient,
-                  ),
-                  const SizedBox(width: 8),
-                  _buildSortChip(
-                    context,
-                    label: "Catatan Teks",
-                    isSelected: _materialFilter == 'teks',
-                    onTap: () => setState(() => _materialFilter = 'teks'),
-                    isDark: isDark,
-                    gradient: gradient,
-                  ),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildSortChip(
+                      context,
+                      label: "Semua",
+                      isSelected: _materialFilter == 'semua',
+                      onTap: () => setState(() => _materialFilter = 'semua'),
+                      isDark: isDark,
+                      gradient: gradient,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildSortChip(
+                      context,
+                      label: "Dokumen PDF",
+                      isSelected: _materialFilter == 'pdf',
+                      onTap: () => setState(() => _materialFilter = 'pdf'),
+                      isDark: isDark,
+                      gradient: gradient,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildSortChip(
+                      context,
+                      label: "Catatan Teks",
+                      isSelected: _materialFilter == 'teks',
+                      onTap: () => setState(() => _materialFilter = 'teks'),
+                      isDark: isDark,
+                      gradient: gradient,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 6),
@@ -303,6 +310,21 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
         ),
       ),
     );
+
+    if (canPop) {
+      return Scaffold(
+        backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        appBar: AppBar(
+          title: const Text('Kelola Forum Diskusi (Guru)'),
+          backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: content,
+      );
+    }
+
+    return content;
   }
 
   // ── Section header: Ikon Lingkaran + Judul + Subtitle + Count Badge ─────────
@@ -490,14 +512,16 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                   final isSelected = c.idClass == selectedId;
                   return Padding(
                     padding: EdgeInsets.only(right: i < classItems.length - 1 ? 10 : 0),
-                    child: InkWell(
-                      onTap: () async {
-                        if (isSelected) return;
-                        setState(() => selectedClassId = c.idClass);
-                        await _loadDiscussions();
-                      },
-                      borderRadius: BorderRadius.circular(14),
-                      child: AnimatedContainer(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () async {
+                          if (isSelected) return;
+                          setState(() => selectedClassId = c.idClass);
+                          await _loadDiscussions();
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         width: 100,
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
@@ -555,7 +579,8 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                         ),
                       ),
                     ),
-                  );
+                  ),
+                );
                 },
               ),
             ),

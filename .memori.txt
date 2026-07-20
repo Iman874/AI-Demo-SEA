@@ -1,5 +1,25 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 19:50
+Kategori: Bug
+
+Judul:
+Perbaikan Tampilan Background Hitam & InkWell Exception di Mode Standalone (Dev Showcase)
+
+Detail:
+- Menyelesaikan masalah latar belakang hitam (*black background*) dan exception `No Material widget found` pada `InkWell` (baris 493/508) ketika halaman `PageMenuDiscussionTeacher` dan `PageMenuDiscussionStudent` dibuka secara independen lewat `Navigator.push`.
+- Penyebab: Halaman tab sebelumnya mengembalikan `RefreshIndicator` secara langsung tanpa pembungkus `Scaffold`, sehingga saat diluncurkan di luar shell navigasi utama, aplikasi tidak memiliki warna latar belakang (*theme background*) dan widget `Material`.
+- Solusi:
+  1. Mendeteksi `ModalRoute.of(context)?.canPop`: Jika `canPop == true` (dibuka standalone dari Dev Mode), bungkus body dengan `Scaffold(backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight, appBar: AppBar(...))`.
+  2. Membungkus `InkWell` pada kartu pemilih kelas (`ListView.builder`) dengan `Material(color: Colors.transparent)`.
+- Berhasil diverifikasi dengan `flutter analyze` (0 issue).
+
+Dampak:
+- Halaman forum diskusi kini memiliki warna latar belakang tema yang presisi, AppBar navigasi kembali yang estetis, serta bebas dari crash `No Material widget found`.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 19:46
 Kategori: Bug
 
