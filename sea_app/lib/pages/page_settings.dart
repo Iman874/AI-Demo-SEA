@@ -11,6 +11,8 @@ import 'page_choice_user.dart';
 import 'page_showcase_cards.dart';
 import 'dev/page_showcase_work_quiz.dart';
 import '../component/window/window_dev_switch_user.dart';
+import 'teacher/page_menu_home_teacher.dart';
+import 'student/page_menu_home_student.dart';
 
 import '../component/window/window_view_list_class.dart';
 import '../component/window/window_add_class.dart';
@@ -158,6 +160,21 @@ class _PageSettingsState extends State<PageSettings> {
                           'Berhasil beralih akun!',
                           isError: false,
                         );
+                        
+                        final auth = Provider.of<AuthProvider>(context, listen: false);
+                        final role = auth.user?.role ?? 'student';
+                        
+                        if (role == 'teacher') {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const MenuHomeTeacher()),
+                            (route) => false,
+                          );
+                        } else {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const MenuHomeStudent()),
+                            (route) => false,
+                          );
+                        }
                       }
                     },
                   ),

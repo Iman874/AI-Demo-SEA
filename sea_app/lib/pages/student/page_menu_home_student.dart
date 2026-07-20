@@ -135,14 +135,16 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
   String _discussionSortType = 'terbaru';
   List<Quiz> _activeQuizzes = [];
   List<Quiz> _completedQuizzes = [];
+  AuthProvider? _auth;
 
   @override
   void initState() {
     super.initState();
     _loadData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      auth.addListener(_authListener);
+      if (!mounted) return;
+      _auth = Provider.of<AuthProvider>(context, listen: false);
+      _auth?.addListener(_authListener);
     });
   }
 
@@ -152,10 +154,7 @@ class _HomeStudentContentState extends State<_HomeStudentContent> {
 
   @override
   void dispose() {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    try {
-      auth.removeListener(_authListener);
-    } catch (_) {}
+    _auth?.removeListener(_authListener);
     super.dispose();
   }
 

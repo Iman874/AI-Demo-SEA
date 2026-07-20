@@ -27,6 +27,8 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
   late List<ClassModel> studentClasses;
   late String selectedClassId;
 
+  AuthProvider? _auth;
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +36,8 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
     selectedClassId = '';
     _loadClasses();
     // Register listener synchronously (listen: false is safe in initState)
-    Provider.of<AuthProvider>(context, listen: false).addListener(_authListener);
+    _auth = Provider.of<AuthProvider>(context, listen: false);
+    _auth?.addListener(_authListener);
   }
 
   void _authListener() {
@@ -43,10 +46,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
 
   @override
   void dispose() {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    try {
-      auth.removeListener(_authListener);
-    } catch (_) {}
+    _auth?.removeListener(_authListener);
     super.dispose();
   }
 
@@ -395,8 +395,8 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
   // ── Card Selector Kelas Modern (Presisi Referensi) ─────────────────────────
   Widget _buildClassChips(bool isDark, List<Color> gradient, Color accent) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -420,7 +420,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: accent.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
@@ -428,10 +428,10 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                 child: Icon(
                   PhosphorIconsRegular.graduationCap,
                   color: accent,
-                  size: 20,
+                  size: 18,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,16 +439,16 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                     Text(
                       'Pilih Kelas',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
                       'Pilih kelas untuk melihat kuis',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B),
                       ),
                     ),
@@ -456,7 +456,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: accent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
@@ -464,7 +464,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                 child: Text(
                   '${studentClasses.length} Kelas',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: accent,
                   ),
@@ -473,7 +473,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
             ],
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           if (studentClasses.isEmpty)
             Padding(
@@ -488,7 +488,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
             )
           else
             SizedBox(
-              height: 102,
+              height: 84,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: studentClasses.length,
@@ -506,17 +506,16 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                         await _loadQuizzesForClass(c.idClass);
                         if (mounted) setState(() {});
                       },
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(14),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        width: 115,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                        width: 100,
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                         decoration: BoxDecoration(
-                          gradient: isSelected ? LinearGradient(colors: gradient) : null,
                           color: isSelected
-                              ? null
+                              ? accent
                               : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF8FAFC)),
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: isSelected
                                 ? Colors.transparent
@@ -538,12 +537,12 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                           children: [
                             Icon(
                               PhosphorIconsRegular.bookOpen,
-                              size: 24,
+                              size: 20,
                               color: isSelected
                                   ? Colors.white
                                   : (isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B)),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 4),
                             Expanded(
                               child: Center(
                                 child: Text(
@@ -553,7 +552,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    height: 1.15,
+                                    height: 1.1,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                                     color: isSelected
                                         ? Colors.white
@@ -742,8 +741,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          gradient: isSelected ? LinearGradient(colors: gradient) : null,
-          color: isSelected ? null : (isDark ? AppColors.cardDark : Colors.white),
+          color: isSelected ? gradient.first : (isDark ? AppColors.cardDark : Colors.white),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? Colors.transparent : (isDark ? AppColors.borderDark : AppColors.borderLight),

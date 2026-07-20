@@ -299,7 +299,6 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
                         borderRadius: BorderRadius.circular(10),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: isCurrent
                                 ? AppColors.studentAccent
@@ -326,16 +325,18 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              Text(
-                                '${idx + 1}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: isCurrent
-                                      ? Colors.white
-                                      : (isAnswered
-                                          ? AppColors.success
-                                          : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                              Center(
+                                child: Text(
+                                  '${idx + 1}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: isCurrent
+                                        ? Colors.white
+                                        : (isAnswered
+                                            ? AppColors.success
+                                            : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                                  ),
                                 ),
                               ),
                               if (isAnswered && !isCurrent)
@@ -377,7 +378,6 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
                           duration: const Duration(milliseconds: 200),
                           width: 38,
                           height: 38,
-                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: isCurrent
                                 ? AppColors.studentAccent
@@ -404,16 +404,18 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              Text(
-                                '${idx + 1}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: isCurrent
-                                      ? Colors.white
-                                      : (isAnswered
-                                          ? AppColors.success
-                                          : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                              Center(
+                                child: Text(
+                                  '${idx + 1}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: isCurrent
+                                        ? Colors.white
+                                        : (isAnswered
+                                            ? AppColors.success
+                                            : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                                  ),
                                 ),
                               ),
                               if (isAnswered && !isCurrent)

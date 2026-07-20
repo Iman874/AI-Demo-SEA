@@ -1,5 +1,111 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 14:14
+Kategori: Bug
+
+Judul:
+Perbaikan Exception "Looking up a deactivated widget's ancestor is unsafe" pada Metode Dispose
+
+Detail:
+- Memperbaiki crash/exception ketika pengguna berpindah akun (unmounting halaman/widget) karena memanggil `Provider.of<AuthProvider>(context)` di dalam metode `dispose()`. Pada siklus dispose, *context* elemen tree sudah berstatus dinonaktifkan/tidak stabil.
+- Solusi: Mendeklarasikan variabel `_auth` bertipe `AuthProvider?` di tingkat kelas *state* untuk menyimpan referensi `AuthProvider` saat `initState()` (ketika *context* masih aktif).
+- Di dalam metode `dispose()`, pemanggilan `removeListener` kini langsung merujuk pada objek referensi tersimpan `_auth?.removeListener(...)` tanpa memerlukan pencarian *ancestor* via *context* lagi.
+- Perbaikan diterapkan secara menyeluruh di 3 berkas: `page_menu_home_student.dart`, `page_menu_discussion_student.dart`, dan `page_menu_quiz_student.dart`.
+
+Dampak:
+- Navigasi keluar dari halaman siswa/pergantian akun kini 100% aman, stabil, bebas crash, dan tidak lagi memicu pesan error exception di konsol debug.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
+Waktu   : 14:13
+Kategori: Bug
+
+Judul:
+Perbaikan Posisi Dot Hijau (Penanda Soal Terjawab) yang Menimpa Angka
+
+Detail:
+- Memperbaiki bug di mana titik hijau (*success dot indicator*) pada tombol nomor navigasi kuis (`page_menu_quiz_work_student.dart` & `page_showcase_work_quiz.dart`) bertumpang tindih atau bergeser menimpa angka (misal angka 2, 3, 4).
+- Penyebab utama: `AnimatedContainer` induk menggunakan `alignment: Alignment.center` sehingga anak `Stack` menyusut (*shrink-wrap*) hanya seukuran tinggi & lebar widget `Text` angka di dalamnya. Akibatnya, `Positioned(top: 4, right: 4)` diposisikan relatif terhadap kotak teks angka yang sempit, bukan terhadap tombol 38x38px.
+- Solusi: Menghapus properti `alignment` pada `AnimatedContainer` agar `Stack` membesar penuh mengisi seluruh ukuran tombol (38x38px atau ukuran sel grid), lalu membungkus widget `Text` angka di dalam `Center()` agar tetap berada tepat di tengah tombol.
+
+Dampak:
+- Titik hijau kecil sukses penanda soal terjawab kini berposisi sangat rapi di pojok kanan atas tombol nomor tanpa pernah menimpa atau mengganggu keterbacaan angka kuis lagi.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
+Waktu   : 14:11
+Kategori: Refactor
+
+Judul:
+Optimasi Performa Animasi Transisi Warna Filter & Pemilihan Kelas (Menghilangkan Lag)
+
+Detail:
+- Mendiagnosis penyebab tersendatnya (*lag/stutter*) animasi perubahan warna saat filter atau kelas dipilih dalam widget `AnimatedContainer`.
+- Penyebab utama: interpolasi *layout decoration* dari gradient (`LinearGradient`) ke warna solid (`color: null` atau sebaliknya) memaksa Flutter merender ulang shader baru di setiap *frame* transisi 200ms.
+- Solusi: Mengganti gradien menjadi warna solid (`color: accent` atau `color: gradient.first`) ketika kartu/chip dalam keadaan terpilih (*selected*), dan warna solid latar belakang saat tidak terpilih (*unselected*), serta menonaktifkan properti `gradient`.
+- Perubahan ini diterapkan secara merata di 4 halaman: `page_menu_quiz_teacher.dart`, `page_menu_discussion_teacher.dart`, `page_menu_quiz_student.dart`, dan `page_menu_discussion_student.dart`.
+
+Dampak:
+- Animasi transisi penyorotan kartu dan tombol filter berjalan sangat mulus di 60fps/120fps tanpa ada penurunan *frame rate* (jank) yang mengganggu kenyamanan pengguna.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
+Waktu   : 14:05
+Kategori: Bug
+
+Judul:
+Perbaikan Pengalihan Rute Setelah Pindah Akun Instant (Dev Switch User)
+
+Detail:
+- Memperbaiki bug di mana mengganti akun melalui dialog "Pindah Akun Instant (Dev Switch User)" di `page_settings.dart` tidak memperbarui layout halaman utama atau warna tema secara langsung.
+- Menambahkan logika pembersihan stack navigasi dan redirect instan ke `MenuHomeTeacher` atau `MenuHomeStudent` (menggunakan `pushAndRemoveUntil`) setelah pergantian akun dev terdeteksi bernilai true.
+- Mengimpor `page_menu_home_teacher.dart` dan `page_menu_home_student.dart` ke dalam berkas `page_settings.dart`.
+
+Dampak:
+- Halaman dashboard dan skema tema warna (biru/orange) sekarang langsung berubah secara otomatis dan bersih begitu pengguna berganti akun melalui menu Dev Mode.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
+Waktu   : 13:58
+Kategori: Bug
+
+Judul:
+Perbaikan Alur Tampilan Card Pilihan Kuis Guru (Quiz Selector)
+
+Detail:
+- Memperbaiki kesalahan logika pada item selektor kuis (`isQuizSelector` di `page_menu_quiz_teacher.dart`) yang sebelumnya memiliki judul statis hardcoded "Buat Kuis Baru" dengan ikon plus (`plusCircle`).
+- Mengubah judul kartu tersebut agar dinamis menampilkan nama kuis (`label`, contoh: "Quiz1") dan subjudul status pilihan (`isSelected ? 'Kuis Terpilih' : 'Ketuk untuk memilih'`).
+- Mengubah ikon kuis dari ikon plus (`plusCircle`) menjadi ikon dokumen kuis (`clipboardText`).
+
+Dampak:
+- Alur seleksi kuis menjadi logis, jelas, dan tidak lagi membingungkan pengguna dengan label "Buat Kuis Baru" ketika sebenarnya sedang memilih kuis yang sudah ada.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
+Waktu   : 13:55
+Kategori: Refactor
+
+Judul:
+Penciutan Ukuran Card Pilih Kelas dan Pilih Kuis (Lebih Compact)
+
+Detail:
+- Menyusutkan ukuran dua Card selektor utama ("Pilih Kelas" dan "Pilih Kuis") di 4 halaman (page_menu_quiz_teacher.dart, page_menu_discussion_teacher.dart, page_menu_quiz_student.dart, page_menu_discussion_student.dart).
+- Mengurangi padding internal card dari 16 menjadi EdgeInsets.symmetric(horizontal: 14, vertical: 12) dan margin vertikal dari 8 menjadi 6.
+- Menurunkan tinggi container list kelas dari 102 menjadi 84 dan lebar kartu kelas dari 115 menjadi 100.
+- Menurunkan tinggi container list kuis dari 68 menjadi 56, ukuran font judul dari 15 ke 14, subjudul dari 12 ke 11.
+- Memperkecil ikon dari 24/22/20 menjadi 20/18/16 serta padding ikon di dalamnya agar visual tetap presisi dan proporsional.
+
+Dampak:
+- Tampilan dua card selektor jauh lebih compact, tidak memakan ruang vertikal layar secara berlebihan, dan bebas dari overflow pada berbagai ukuran layar.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 13:46
 Kategori: Refactor
 

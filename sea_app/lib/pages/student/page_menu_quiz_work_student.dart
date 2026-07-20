@@ -333,7 +333,6 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                         borderRadius: BorderRadius.circular(10),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: isCurrent
                                 ? AppColors.studentAccent
@@ -360,16 +359,18 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              Text(
-                                '${idx + 1}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: isCurrent
-                                      ? Colors.white
-                                      : (isAnswered
-                                          ? AppColors.success
-                                          : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                              Center(
+                                child: Text(
+                                  '${idx + 1}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: isCurrent
+                                        ? Colors.white
+                                        : (isAnswered
+                                            ? AppColors.success
+                                            : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                                  ),
                                 ),
                               ),
                               if (isAnswered && !isCurrent)
@@ -411,7 +412,6 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                           duration: const Duration(milliseconds: 200),
                           width: 38,
                           height: 38,
-                          alignment: Alignment.center,
                           decoration: BoxDecoration(
                             color: isCurrent
                                 ? AppColors.studentAccent
@@ -438,16 +438,18 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              Text(
-                                '${idx + 1}',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: isCurrent
-                                      ? Colors.white
-                                      : (isAnswered
-                                          ? AppColors.success
-                                          : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                              Center(
+                                child: Text(
+                                  '${idx + 1}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: isCurrent
+                                        ? Colors.white
+                                        : (isAnswered
+                                            ? AppColors.success
+                                            : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                                  ),
                                 ),
                               ),
                               if (isAnswered && !isCurrent)
