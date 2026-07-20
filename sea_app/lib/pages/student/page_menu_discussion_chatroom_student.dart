@@ -36,11 +36,8 @@ class _DiscussionPageChatRoomStudentState
   List<SummaryDiscussion> summaries = [];
   String? understandingResult;
   bool _isSending = false;
-
-  // Option 1: Collapsed by default flags
-  bool _showProgressCard = false;
-  bool _showSummaryCard = false;
   bool _showMaterials = false;
+  bool _showFloatingSummaryCard = false;
 
   SummaryDiscussion? get currentSummary {
     final idx = summaries.indexWhere((s) => s.fkIdChatroomAi == chatRoom.id);
@@ -274,7 +271,7 @@ class _DiscussionPageChatRoomStudentState
           SafeArea(
             child: Column(
               children: [
-                // ── Top Header Navigation & Quick Badges Bar ───────────────
+                // ── Top Header Navigation Bar ───────────────────────────────
                 _buildTopAppBar(isDark, accent),
 
                 // ── Main Scrollable Body Content ────────────────────────────
@@ -283,42 +280,15 @@ class _DiscussionPageChatRoomStudentState
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: Column(
                       children: [
-                        // 1. Collapsible Card: Progress Materi
-                        AnimatedCrossFade(
-                          duration: const Duration(milliseconds: 250),
-                          crossFadeState: _showProgressCard
-                              ? CrossFadeState.showSecond
-                              : CrossFadeState.showFirst,
-                          firstChild: const SizedBox.shrink(),
-                          secondChild: Column(
-                            children: [
-                              const SizedBox(height: 8),
-                              _buildProgressMateriCard(isDark, accent),
-                            ],
-                          ),
-                        ),
+                        // 1. Progress Materi Card (Tetap di Atas Sesuai Permintaan)
+                        _buildProgressMateriCard(isDark, accent),
 
-                        // 2. Collapsible Card: Ringkasan & Evaluasi AI
-                        AnimatedCrossFade(
-                          duration: const Duration(milliseconds: 250),
-                          crossFadeState: _showSummaryCard
-                              ? CrossFadeState.showSecond
-                              : CrossFadeState.showFirst,
-                          firstChild: const SizedBox.shrink(),
-                          secondChild: Column(
-                            children: [
-                              const SizedBox(height: 8),
-                              _buildSummaryCard(isDark, accent),
-                            ],
-                          ),
-                        ),
+                        const SizedBox(height: 12),
 
-                        const SizedBox(height: 10),
-
-                        // 3. Card Utama: Main AI Chatbot Assistant Container
+                        // 2. Card Utama: Main AI Chatbot Assistant Container
                         _buildMainChatbotContainer(isDark, accent),
 
-                        const SizedBox(height: 80), // Space for floating bar
+                        const SizedBox(height: 120), // Extra space for floating elements
                       ],
                     ),
                   ),
@@ -326,6 +296,22 @@ class _DiscussionPageChatRoomStudentState
               ],
             ),
           ),
+
+          // ── FLOATING RINGKASAN & EVALUASI AI CHIP (Option 3 Floating Style) ─
+          Positioned(
+            right: 16,
+            bottom: 76,
+            child: _buildFloatingSummaryChip(isDark),
+          ),
+
+          // ── Floating Expanded Summary Overlay Modal ─────────────────────
+          if (_showFloatingSummaryCard)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 130,
+              child: _buildFloatingSummaryCardModal(isDark, accent),
+            ),
 
           // ── Bottom Floating Input Bar ────────────────────────────────────
           Positioned(
@@ -339,339 +325,168 @@ class _DiscussionPageChatRoomStudentState
     );
   }
 
-  // ── Top Navigation Bar & Collapsed Action Badges ─────────────────────────
+  // ── Top Navigation Bar Widget ───────────────────────────────────────────
   Widget _buildTopAppBar(bool isDark, Color accent) {
     final canPop = ModalRoute.of(context)?.canPop ?? false;
-    final total = materials.isNotEmpty ? materials.length : 12;
-    final done = messages.isNotEmpty ? (messages.length > total ? total : (messages.length ~/ 2)) : 0;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              if (canPop)
-                InkWell(
-                  onTap: () => Navigator.of(context).pop(),
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.cardDark : Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      PhosphorIconsRegular.arrowLeft,
-                      size: 20,
-                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                    ),
-                  ),
-                ),
-              if (canPop) const SizedBox(width: 10),
-
-              // Discussion Briefcase Icon
-              Container(
-                width: 42,
-                height: 42,
+          if (canPop)
+            InkWell(
+              onTap: () => Navigator.of(context).pop(),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: AppColors.studentGradient),
+                  color: isDark ? AppColors.cardDark : Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: accent.withValues(alpha: 0.3),
+                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                       blurRadius: 8,
-                      offset: const Offset(0, 3),
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Icon(
-                  PhosphorIconsRegular.briefcase,
-                  color: Colors.white,
+                child: Icon(
+                  PhosphorIconsRegular.arrowLeft,
                   size: 20,
+                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
                 ),
               ),
-              const SizedBox(width: 10),
+            ),
+          if (canPop) const SizedBox(width: 10),
 
-              // Title & Subtitle
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.discussion.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            widget.discussion.tag.isNotEmpty
-                                ? widget.discussion.tag
-                                : 'Provider & State Management',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isDark
-                                  ? AppColors.textSecondaryDark
-                                  : AppColors.textSecondaryLight,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: AppColors.success,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          'AI Aktif',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.success,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+          // Discussion Briefcase Icon
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: AppColors.studentGradient),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: const Icon(
+              PhosphorIconsRegular.briefcase,
+              color: Colors.white,
+              size: 20,
+            ),
           ),
+          const SizedBox(width: 10),
 
-          const SizedBox(height: 10),
-
-          // ── STICKY COLLAPSED ACTION BADGES ROW (Default Option 1) ───────
-          Row(
-            children: [
-              // 1. Badge Progress Materi (Soft Orange)
-              Expanded(
-                child: InkWell(
-                  onTap: () =>
-                      setState(() => _showProgressCard = !_showProgressCard),
-                  borderRadius: BorderRadius.circular(12),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _showProgressCard
-                          ? const Color(0xFFEA580C)
-                          : (isDark
-                              ? const Color(0xFF431407)
-                              : const Color(0xFFFFF7ED)),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFFDBA74).withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          PhosphorIconsRegular.bookOpen,
-                          size: 14,
-                          color: _showProgressCard
-                              ? Colors.white
-                              : const Color(0xFFEA580C),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Progress ($done/$total)',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: _showProgressCard
-                                ? Colors.white
-                                : const Color(0xFFEA580C),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          _showProgressCard
-                              ? PhosphorIconsRegular.caretUp
-                              : PhosphorIconsRegular.caretDown,
-                          size: 12,
-                          color: _showProgressCard
-                              ? Colors.white
-                              : const Color(0xFFEA580C),
-                        ),
-                      ],
-                    ),
+          // Title & Subtitle
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.discussion.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
                   ),
                 ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // 2. Badge Ringkasan & Evaluasi AI (Soft Purple)
-              Expanded(
-                child: InkWell(
-                  onTap: () =>
-                      setState(() => _showSummaryCard = !_showSummaryCard),
-                  borderRadius: BorderRadius.circular(12),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _showSummaryCard
-                          ? const Color(0xFF9333EA)
-                          : (isDark
-                              ? const Color(0xFF3B0764)
-                              : const Color(0xFFF3E8FF)),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFFD8B4FE).withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          PhosphorIconsRegular.sparkle,
-                          size: 14,
-                          color: _showSummaryCard
-                              ? Colors.white
-                              : const Color(0xFF9333EA),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          currentSummary != null ? 'Evaluasi AI' : '+ Ringkasan',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: _showSummaryCard
-                                ? Colors.white
-                                : const Color(0xFF9333EA),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          _showSummaryCard
-                              ? PhosphorIconsRegular.caretUp
-                              : PhosphorIconsRegular.caretDown,
-                          size: 12,
-                          color: _showSummaryCard
-                              ? Colors.white
-                              : const Color(0xFF9333EA),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // 3. Badge Toggle Materi PDF
-              InkWell(
-                onTap: () => setState(() => _showMaterials = !_showMaterials),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.cardDark : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: accent.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(PhosphorIconsRegular.fileText,
-                          size: 14, color: accent),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${materials.length}',
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        widget.discussion.tag.isNotEmpty
+                            ? widget.discussion.tag
+                            : 'Provider & State Management',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: accent,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.success,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'AI Aktif',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
 
-          if (_showMaterials && materials.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(10),
+          // Toggle Materials Button Icon Top Right
+          InkWell(
+            onTap: () => setState(() => _showMaterials = !_showMaterials),
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.cardDark : Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+                  color: accent.withValues(alpha: 0.3),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: Column(
-                children: materials
-                    .map((m) => Container(
-                          margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.04)
-                                : const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(PhosphorIconsRegular.filePdf,
-                                  color: Color(0xFFEA580C), size: 14),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  m.title,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? Colors.white
-                                        : AppColors.textPrimaryLight,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ))
-                    .toList(),
+              child: Row(
+                children: [
+                  Icon(
+                    PhosphorIconsRegular.fileText,
+                    color: accent,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${materials.length}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: accent,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ],
       ),
     );
   }
 
-  // ── Card 1: Progress Materi Widget ──────────────────────────────────────
+  // ── Card Progress Materi (Tetap di Atas Sesuai Instruktur User) ─────────────
   Widget _buildProgressMateriCard(bool isDark, Color accent) {
     final total = materials.isNotEmpty ? materials.length : 12;
     final done = messages.isNotEmpty ? (messages.length > total ? total : (messages.length ~/ 2)) : 0;
@@ -751,13 +566,13 @@ class _DiscussionPageChatRoomStudentState
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Container(
                 width: 1,
                 height: 40,
                 color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -766,16 +581,16 @@ class _DiscussionPageChatRoomStudentState
                       children: [
                         TextSpan(
                           text: '$done ',
-                          style: TextStyle(
-                            fontSize: 20,
+                          style: const TextStyle(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFFEA580C),
+                            color: Color(0xFFEA580C),
                           ),
                         ),
                         TextSpan(
                           text: '/ $total',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: isDark
                                 ? AppColors.textSecondaryDark
                                 : AppColors.textSecondaryLight,
@@ -798,13 +613,113 @@ class _DiscussionPageChatRoomStudentState
               ),
             ],
           ),
+
+          if (_showMaterials && materials.isNotEmpty) ...[
+            const Divider(height: 20),
+            Column(
+              children: materials
+                  .map((m) => Container(
+                        margin: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.04)
+                              : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(PhosphorIconsRegular.filePdf,
+                                color: Color(0xFFEA580C), size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                m.title,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? Colors.white
+                                      : AppColors.textPrimaryLight,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  // ── Card 2: Ringkasan & Evaluasi AI Widget ─────────────────────────────
-  Widget _buildSummaryCard(bool isDark, Color accent) {
+  // ── FLOATING RINGKASAN & EVALUASI AI CHIP (Option 3 Floating Style) ───────
+  Widget _buildFloatingSummaryChip(bool isDark) {
+    final sum = currentSummary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _showFloatingSummaryCard = !_showFloatingSummaryCard;
+          });
+        },
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF9333EA), Color(0xFFA855F7)],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF9333EA).withValues(alpha: 0.4),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                PhosphorIconsRegular.sparkle,
+                color: Colors.white,
+                size: 16,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                understandingResult != null
+                    ? 'Evaluasi: $understandingResult'
+                    : (sum != null ? 'Lihat Ringkasan' : '+ Ringkasan AI'),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                _showFloatingSummaryCard
+                    ? PhosphorIconsRegular.caretDown
+                    : PhosphorIconsRegular.caretUp,
+                color: Colors.white,
+                size: 14,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── FLOATING EXPANDED SUMMARY OVERLAY CARD MODAL ─────────────────────────
+  Widget _buildFloatingSummaryCardModal(bool isDark, Color accent) {
     final sum = currentSummary;
 
     return Container(
@@ -813,121 +728,120 @@ class _DiscussionPageChatRoomStudentState
         color: isDark ? AppColors.cardDark : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
+          color: const Color(0xFFD8B4FE).withValues(alpha: 0.6),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3E8FF),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(
-              PhosphorIconsRegular.sparkle,
-              color: Color(0xFF9333EA),
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ringkasan & Evaluasi AI',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  sum != null
-                      ? sum.content
-                      : 'Belum ada ringkasan percakapan',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondaryLight,
-                  ),
-                ),
-                if (understandingResult != null) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(PhosphorIconsRegular.checkCircle,
-                          size: 12, color: AppColors.success),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Evaluasi: $understandingResult',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.success,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          InkWell(
-            onTap: () async {
-              await showDialog(
-                context: context,
-                builder: (context) => WindowAddSummary(
-                  summaries: summaries,
-                  chatRoomId: chatRoom.id,
-                  userId: studentId ?? '',
-                  initialContent: currentSummary?.content,
-                ),
-              );
-              if (!mounted) return;
-              await _loadPersistedSummaries();
-            },
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF7ED),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: const Color(0xFFFDBA74).withValues(alpha: 0.5),
-                ),
-              ),
-              child: Row(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
                 children: [
-                  const Icon(
-                    PhosphorIconsRegular.sparkle,
-                    color: Color(0xFFEA580C),
-                    size: 14,
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3E8FF),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      PhosphorIconsRegular.sparkle,
+                      color: Color(0xFF9333EA),
+                      size: 18,
+                    ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Text(
-                    sum == null ? 'Buat Ringkasan' : 'Edit Ringkasan',
-                    style: const TextStyle(
-                      fontSize: 11,
+                    'Ringkasan & Evaluasi AI',
+                    style: TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFEA580C),
+                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
                     ),
                   ),
                 ],
+              ),
+              InkWell(
+                onTap: () => setState(() => _showFloatingSummaryCard = false),
+                child: const Icon(PhosphorIconsRegular.x, size: 18),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            sum != null ? sum.content : 'Belum ada ringkasan percakapan yang dibuat.',
+            style: TextStyle(
+              fontSize: 12,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondaryLight,
+            ),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (understandingResult != null) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(PhosphorIconsRegular.checkCircle,
+                      size: 12, color: AppColors.success),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Evaluasi AI: $understandingResult',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.success,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerRight,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                setState(() => _showFloatingSummaryCard = false);
+                await showDialog(
+                  context: context,
+                  builder: (context) => WindowAddSummary(
+                    summaries: summaries,
+                    chatRoomId: chatRoom.id,
+                    userId: studentId ?? '',
+                    initialContent: currentSummary?.content,
+                  ),
+                );
+                if (!mounted) return;
+                await _loadPersistedSummaries();
+              },
+              icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 14),
+              label: Text(sum == null ? 'Buat Ringkasan' : 'Edit Ringkasan'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF9333EA),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -936,7 +850,7 @@ class _DiscussionPageChatRoomStudentState
     );
   }
 
-  // ── Card 3: Main AI Chatbot Container ────────────────────────────────────
+  // ── Card Utama: Main AI Chatbot Container ──────────────────────────────────
   Widget _buildMainChatbotContainer(bool isDark, Color accent) {
     return Container(
       decoration: BoxDecoration(
@@ -980,12 +894,16 @@ class _DiscussionPageChatRoomStudentState
                     children: [
                       Row(
                         children: [
-                          Text(
-                            'AI Chatbot Assistant',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                          Flexible(
+                            child: Text(
+                              'AI Chatbot Assistant',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -1054,7 +972,7 @@ class _DiscussionPageChatRoomStudentState
             child: Row(
               children: [
                 Container(
-                  width: 110,
+                  width: 100,
                   height: 130,
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF7ED),
@@ -1065,14 +983,14 @@ class _DiscussionPageChatRoomStudentState
                     children: [
                       Icon(
                         PhosphorIconsRegular.robot,
-                        size: 56,
+                        size: 52,
                         color: const Color(0xFFEA580C).withValues(alpha: 0.8),
                       ),
                       Positioned(
-                        bottom: 12,
+                        bottom: 10,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
@@ -1086,12 +1004,12 @@ class _DiscussionPageChatRoomStudentState
                           child: Row(
                             children: const [
                               Icon(PhosphorIconsRegular.bookOpen,
-                                  size: 12, color: Color(0xFFEA580C)),
+                                  size: 10, color: Color(0xFFEA580C)),
                               SizedBox(width: 4),
                               Text(
                                 'SEA AI',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 9,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFFEA580C),
                                 ),
@@ -1103,7 +1021,7 @@ class _DiscussionPageChatRoomStudentState
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1127,28 +1045,28 @@ class _DiscussionPageChatRoomStudentState
                           height: 1.3,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       _buildBulletItem(
                           PhosphorIconsRegular.bookOpen,
                           'Menjelaskan konsep dengan mudah',
                           const Color(0xFFEA580C),
                           const Color(0xFFFFF7ED),
                           isDark),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       _buildBulletItem(
                           PhosphorIconsRegular.lightbulb,
                           'Memberikan contoh & studi kasus',
                           const Color(0xFFD97706),
                           const Color(0xFFFEF3C7),
                           isDark),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       _buildBulletItem(
                           PhosphorIconsRegular.clipboardText,
                           'Membuat latihan & evaluasi',
                           const Color(0xFFEA580C),
                           const Color(0xFFFFF7ED),
                           isDark),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       _buildBulletItem(
                           PhosphorIconsRegular.question,
                           'Menjawab pertanyaan Anda',
@@ -1162,7 +1080,7 @@ class _DiscussionPageChatRoomStudentState
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           Text(
             'Mulai dengan quick action',
@@ -1172,7 +1090,7 @@ class _DiscussionPageChatRoomStudentState
               color: isDark ? Colors.white70 : AppColors.textPrimaryLight,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           Row(
             children: [
@@ -1187,7 +1105,7 @@ class _DiscussionPageChatRoomStudentState
                   isDark: isDark,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: _buildQuickActionCard(
                   icon: PhosphorIconsRegular.lightbulb,
@@ -1199,7 +1117,7 @@ class _DiscussionPageChatRoomStudentState
                   isDark: isDark,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: _buildQuickActionCard(
                   icon: PhosphorIconsRegular.brain,
@@ -1211,7 +1129,7 @@ class _DiscussionPageChatRoomStudentState
                   isDark: isDark,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: _buildQuickActionCard(
                   icon: PhosphorIconsRegular.question,
@@ -1235,19 +1153,21 @@ class _DiscussionPageChatRoomStudentState
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             color: bgCircle,
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 12, color: iconColor),
+          child: Icon(icon, size: 10, color: iconColor),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
         Expanded(
           child: Text(
             text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.w500,
               color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
             ),
@@ -1268,14 +1188,14 @@ class _DiscussionPageChatRoomStudentState
   }) {
     return InkWell(
       onTap: () => _handleSend(prompt),
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isDark
               ? Colors.white.withValues(alpha: 0.04)
               : const Color(0xFFFAFAFA),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
           ),
@@ -1283,20 +1203,22 @@ class _DiscussionPageChatRoomStudentState
         child: Column(
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: iconColor, size: 16),
+              child: Icon(icon, color: iconColor, size: 14),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               title,
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : AppColors.textPrimaryLight,
               ),
@@ -1308,7 +1230,7 @@ class _DiscussionPageChatRoomStudentState
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 9,
+                fontSize: 8,
                 color: isDark
                     ? AppColors.textSecondaryDark
                     : AppColors.textSecondaryLight,
@@ -1424,8 +1346,8 @@ class _DiscussionPageChatRoomStudentState
                     width: 28,
                     height: 28,
                     margin: const EdgeInsets.only(left: 6, top: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFED7AA),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFED7AA),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
