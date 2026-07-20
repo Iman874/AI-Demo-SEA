@@ -1,5 +1,22 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 13:17
+Kategori: Refactor
+
+Judul:
+Redesign Filter Selector Kelas Menjadi Card Modern (Diskusi & Kuis)
+
+Detail:
+- Merombak total komponen "Pilih Kelas" di 4 halaman utama (`page_menu_discussion_student.dart`, `page_menu_quiz_student.dart`, `page_menu_discussion_teacher.dart`, `page_menu_quiz_teacher.dart`).
+- Mengubah bagian judul dan pilihan chip kelas melayang menjadi satu **Card Container Terpadu yang Modern** (sudut membulat 20px, border halus, bayangan lembut, header internal dengan aksen garis & badge jumlah kelas).
+- Pill chip kelas di dalam Card kini dilengkapi ikon chalkboard (`PhosphorIconsRegular.chalkboard`), gradient saat aktif, dan tint lembut `Color(0xFFF1F5F9)` saat tidak aktif.
+
+Dampak:
+- Antarmuka halaman Diskusi dan Kuis Siswa maupun Guru tampil jauh lebih rapi, terstruktur, dan modern tanpa elemen melayang yang tidak konsisten.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 09:36
 Kategori: Feature
 
