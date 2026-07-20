@@ -278,7 +278,7 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Navigasi Soal (Sticky)',
+                    'Navigasi Soal',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -792,12 +792,26 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                           const SizedBox(height: 20),
 
                           // Opsi Jawaban Pilihan Ganda
-                          const Text(
-                            'Pilih Jawaban:',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              Container(
+                                width: 3,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: AppColors.studentAccent,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Pilih Jawaban',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 10),
 
