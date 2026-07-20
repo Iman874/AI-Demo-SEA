@@ -2,26 +2,23 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\SchoolClass;
-use Illuminate\Support\Facades\Hash;
-use App\Models\DiscussionRoom;
+use App\Models\AnswerChoice;
 use App\Models\ChatRoomAI;
-use App\Models\DiscussionMessage;
-use App\Models\AIMessage;
-use App\Models\DiscussionStudent;
 use App\Models\DiscussionGroup;
-use App\Models\SummaryDiscussion;
-use App\Models\ResultUnderstanding;
-use App\Models\Quiz;
+use App\Models\DiscussionMessage;
+use App\Models\DiscussionRoom;
+use App\Models\DiscussionStudent;
 use App\Models\MaterialQuiz;
 use App\Models\Question;
-use App\Models\AnswerChoice;
 use App\Models\QuestionAnswerChoice;
+use App\Models\Quiz;
 use App\Models\QuizClass;
 use App\Models\QuizStudent;
 use App\Models\ResultQuiz;
+use App\Models\SchoolClass;
+use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -32,38 +29,37 @@ class DatabaseSeeder extends Seeder
     {
         // Create 6 users (including one teacher) and 30 students
         $teacher = User::firstOrCreate([
-            'email' => 'herman775@example.com'
+            'email' => 'herman775@example.com',
         ], [
             'name' => 'Herman Budi Santoso',
-                'password' => Hash::make('pw123'),
-            'role' => 'teacher'
+            'password' => Hash::make('pw123'),
+            'role' => 'teacher',
         ]);
-
 
         // 30 Indonesian-style students
         $studentNames = [
-            'Adi Santoso','Budi Hartono','Citra Dewi','Dewi Anggraini','Eka Putra','Fajar Nugroho','Gita Pratiwi','Hendra Kurniawan','Iwan Susanto','Joko Widodo',
-            'Kevin Pratama','Lina Marlina','Maya Sari','Nanda Wijaya','Oni Saputra','Putu Ardana','Rina Amelia','Sari Nurul','Teguh Prasetyo','Umi Kalsum',
-            'Vina Oktaviani','Wawan Setiawan','Xavier Gunawan','Yulia Rahma','Zulfan Maulana','Agus Salim','Bayu Adi','Candra Putri','Dian Kusuma','Edo Saputra'
+            'Adi Santoso', 'Budi Hartono', 'Citra Dewi', 'Dewi Anggraini', 'Eka Putra', 'Fajar Nugroho', 'Gita Pratiwi', 'Hendra Kurniawan', 'Iwan Susanto', 'Joko Widodo',
+            'Kevin Pratama', 'Lina Marlina', 'Maya Sari', 'Nanda Wijaya', 'Oni Saputra', 'Putu Ardana', 'Rina Amelia', 'Sari Nurul', 'Teguh Prasetyo', 'Umi Kalsum',
+            'Vina Oktaviani', 'Wawan Setiawan', 'Xavier Gunawan', 'Yulia Rahma', 'Zulfan Maulana', 'Agus Salim', 'Bayu Adi', 'Candra Putri', 'Dian Kusuma', 'Edo Saputra',
         ];
         $students = [];
         foreach ($studentNames as $i => $name) {
             // append 3 random digits to make email unique (e.g., adisantoso883@gmail.com)
             $rand = mt_rand(100, 999);
-            $email = strtolower(str_replace(' ', '.', $name)) . $rand . '@gmail.com';
+            $email = strtolower(str_replace(' ', '.', $name)).$rand.'@gmail.com';
             $s = User::firstOrCreate([
-                'email' => $email
+                'email' => $email,
             ], [
                 'name' => $name,
                 'password' => Hash::make('pw123'),
-                'role' => 'student'
+                'role' => 'student',
             ]);
             $students[] = $s;
         }
 
         // Create only one class: Basic Electronics
         $class = SchoolClass::firstOrCreate([
-            'code_class' => 'ELEC001'
+            'code_class' => 'ELEC001',
         ], [
             'name' => 'Basic Electronics',
             'description' => 'Introduction to Basic Electronics',
@@ -86,11 +82,11 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-       // Buat data seeder untuk Quiz
-       try {
+        // Buat data seeder untuk Quiz
+        try {
             // 1) Quiz dasar untuk kelas Basic Electronics
             $quiz = Quiz::firstOrCreate([
-                'title' => 'Quiz1'
+                'title' => 'Quiz1',
             ], [
                 'duration' => 45,
                 'created_by' => $teacher->id_user ?? $teacher->id ?? null,
@@ -329,7 +325,9 @@ TXT,
             // 5) Tandai seluruh siswa seakan sudah mengerjakan quiz
             foreach ($students as $stu) {
                 $uid = $stu->id_user ?? $stu->id ?? null;
-                if (!$uid) continue;
+                if (! $uid) {
+                    continue;
+                }
 
                 $result = ResultQuiz::firstOrCreate([
                     'fk_id_quiz' => $quiz->id_quiz,
@@ -344,7 +342,8 @@ TXT,
                 // Jika sudah pernah terisi, hapus jawaban lama pada pivot untuk result ini
                 try {
                     QuestionAnswerChoice::where('fk_id_resultquiz', $result->id_resultquiz)->delete();
-                } catch (\Throwable $_) {}
+                } catch (\Throwable $_) {
+                }
                 // Hapus juga detail lama di result_question bila ada agar idempotent
                 try {
                     if (\Illuminate\Support\Facades\Schema::hasTable('result_question')) {
@@ -352,7 +351,8 @@ TXT,
                             ->where('fk_id_resultquiz', $result->id_resultquiz)
                             ->delete();
                     }
-                } catch (\Throwable $_) {}
+                } catch (\Throwable $_) {
+                }
 
                 $totalScore = 0;
                 foreach ($createdQuestions as $bundle) {
@@ -364,13 +364,24 @@ TXT,
                     $selected = null;
                     $correct = null;
                     if ($pickCorrect) {
-                        foreach ($opts as $o) { if ($o['is_correct']) { $selected = $o; $correct = $o; break; } }
+                        foreach ($opts as $o) {
+                            if ($o['is_correct']) {
+                                $selected = $o;
+                                $correct = $o;
+                                break;
+                            }
+                        }
                     }
-                    if (!$selected) {
+                    if (! $selected) {
                         $selected = $opts[array_rand($opts)];
                     }
                     if ($correct === null) {
-                        foreach ($opts as $o) { if ($o['is_correct']) { $correct = $o; break; } }
+                        foreach ($opts as $o) {
+                            if ($o['is_correct']) {
+                                $correct = $o;
+                                break;
+                            }
+                        }
                     }
 
                     // Simpan jawaban siswa pada pivot (dengan fk_id_resultquiz)
@@ -381,8 +392,8 @@ TXT,
                         'fk_id_resultquiz' => $result->id_resultquiz,
                     ]);
 
-                    if (!empty($selected['is_correct'])) {
-                        $totalScore += (int)($qModel->point ?? 0);
+                    if (! empty($selected['is_correct'])) {
+                        $totalScore += (int) ($qModel->point ?? 0);
                     }
 
                     // Tulis juga ke tabel result_question agar endpoint detail dapat menyorot pilihan
@@ -393,13 +404,14 @@ TXT,
                                 'fk_id_question' => $qModel->id_question,
                                 'selected_choice_id' => $selected['id'] ?? null,
                                 'correct_choice_id' => $correct['id'] ?? null,
-                                'is_correct' => !empty($selected['is_correct']) ? 1 : 0,
-                                'point' => (int)($qModel->point ?? 0),
+                                'is_correct' => ! empty($selected['is_correct']) ? 1 : 0,
+                                'point' => (int) ($qModel->point ?? 0),
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ]);
                         }
-                    } catch (\Throwable $_) {}
+                    } catch (\Throwable $_) {
+                    }
                 }
 
                 $result->score = $totalScore;
@@ -445,23 +457,26 @@ TXT,
                         $mat2->save();
                     }
                 }
-            } catch (\Throwable $_) {}
+            } catch (\Throwable $_) {
+            }
 
             // 3) Bentuk 10 grup beranggotakan 3 mahasiswa (total 30) + teacher sebagai anggota pertama
             $numGroups = 10;
             $perGroup = 3;
             $studentPool = $students; // 30 siswa dari atas
             // urutkan stabil agar idempotent (gunakan email sebagai key)
-            usort($studentPool, function($a, $b) { return strcmp(($a->email ?? ''), ($b->email ?? '')); });
+            usort($studentPool, function ($a, $b) {
+                return strcmp(($a->email ?? ''), ($b->email ?? ''));
+            });
 
             $index = 0;
             for ($g = 1; $g <= $numGroups; $g++) {
                 // 3a) Buat ChatRoom AI per grup
                 $chat = ChatRoomAI::firstOrCreate([
-                    'title' => 'Diskusi1 - Group ' . $g,
+                    'title' => 'Diskusi1 - Group '.$g,
                     'fk_id_discussionroom' => $discussion->id_discussionroom,
                 ], [
-                    'description' => 'Chat AI untuk grup ' . $g,
+                    'description' => 'Chat AI untuk grup '.$g,
                     // chat_room_ai.status enum: ['active','inactive']
                     'status' => 'active',
                     'ai_model' => 'gemini',
@@ -484,7 +499,9 @@ TXT,
                 // 3d) Tambahkan mahasiswa sebagai anggota chat dan tulis mapping di discussion_groups
                 foreach ($members as $m) {
                     $uid = $m->id_user ?? $m->id ?? null;
-                    if (!$uid) continue;
+                    if (! $uid) {
+                        continue;
+                    }
                     DiscussionStudent::firstOrCreate([
                         'fk_id_chatroomai' => $chat->id_chatroomai,
                         'fk_id_user' => $uid,
@@ -513,22 +530,22 @@ TXT,
                         'fk_id_chatroomai' => $chat->id_chatroomai,
                         'fk_id_user' => $teacher->id_user ?? $teacher->id ?? null,
                         'role' => 'teacher',
-                        'content' => 'Selamat datang di Diskusi1 - Group ' . $g,
+                        'content' => 'Selamat datang di Diskusi1 - Group '.$g,
                     ], [
                         'content_type' => 'text',
                         'status' => 'sent',
                     ]);
-                } catch (\Throwable $_) {}
+                } catch (\Throwable $_) {
+                }
             }
         } catch (\Throwable $e) {
             // abaikan error minor untuk bagian diskusi
         }
 
-        // Tambahkan seeding ringkasan diskusi & hasil pemahaman (custom distribution)
+        // Seeding akun demo dev user (Guru & Siswa Demo)
         try {
-            $this->call(DiscussionResultSeeder::class);
+            $this->call(DevUserSeeder::class);
         } catch (\Throwable $_) {
-            // jangan gagalkan keseluruhan seeding bila terjadi error minor
         }
     }
 }
