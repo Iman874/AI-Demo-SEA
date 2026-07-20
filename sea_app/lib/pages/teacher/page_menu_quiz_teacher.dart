@@ -113,9 +113,8 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
               },
             ),
             
-            // ── Pilih Kuis (chip row, untuk materi) ─────────────────────
+            // ── Pilih Kuis (untuk materi) ───────────────────────────────
             if (quizzes.isNotEmpty) ...[
-              _buildSectionHeader('Pilih Kuis (untuk Materi)', quizzes.length, isDark, gradient),
               _buildMapChips(
                 isDark: isDark,
                 gradient: gradient,
@@ -123,6 +122,9 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                 idKey: 'id_quiz',
                 labelKey: 'title',
                 selectedId: selectedQuizId,
+                title: 'Pilih Kuis (untuk Materi)',
+                itemUnit: 'Kuis',
+                iconData: PhosphorIconsRegular.clipboardText,
                 onSelect: (val) async {
                   setState(() => selectedQuizId = val);
                   await prov.loadMaterials(quizId: val);
@@ -324,6 +326,8 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
     required String? selectedId,
     required void Function(String) onSelect,
     String title = 'Pilih Kelas',
+    String itemUnit = 'Kelas',
+    IconData iconData = PhosphorIconsRegular.chalkboard,
   }) {
     final accent = gradient.first;
 
@@ -386,7 +390,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${items.length} ${title.contains("Kelas") ? "Kelas" : "Item"}',
+                    '${items.length} $itemUnit',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -460,7 +464,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              PhosphorIconsRegular.chalkboard,
+                              iconData,
                               size: 14,
                               color: isSelected
                                   ? Colors.white
