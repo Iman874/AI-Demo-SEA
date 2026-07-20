@@ -1399,14 +1399,20 @@ class _DiscussionPageChatRoomStudentState
               decoration: InputDecoration(
                 hintText: 'Tanyakan sesuatu pada AI...',
                 hintStyle: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   color: isDark
                       ? AppColors.textSecondaryDark
                       : AppColors.textSecondaryLight,
                 ),
+                filled: false,
+                fillColor: Colors.transparent,
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
               ),
             ),
           ),

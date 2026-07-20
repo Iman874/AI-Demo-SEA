@@ -1,4 +1,22 @@
 ==================================================
+Tanggal : 2026-07-21
+Waktu   : 00:24
+Kategori: Fix
+
+Judul:
+Perbaikan Tampilan Floating Input Bar: Menghapus Outline Border Kotak Bawaan Theme
+
+Detail:
+- Memperbarui `DiscussionPageChatRoomStudent` di `sea_app/lib/pages/student/page_menu_discussion_chatroom_student.dart`:
+  - Mengatur `InputDecoration` pada `TextField` input bar melayang agar menonaktifkan outline border bawaan theme (`enabledBorder: InputBorder.none`, `focusedBorder: InputBorder.none`, `errorBorder: InputBorder.none`, `disabledBorder: InputBorder.none`, `filled: false`, `fillColor: Colors.transparent`).
+  - Menghilangkan garis bingkai kotak abu-abu/biru yang canggung di sekitar teks petunjuk *"Tanyakan sesuatu pada AI..."*, membuat seluruh kapsul input melayang tampil seamless, modern, dan menyatu sempurna.
+- Berhasil diverifikasi dengan `flutter analyze` (0 issue).
+
+Dampak:
+- Tampilan kartu input bar melayang kini sangat bersih, elegan, dan estetik sesuai standar antarmuka chat modern.
+==================================================
+
+==================================================
 Tanggal : 2026-07-20
 Waktu   : 21:03
 Kategori: Fix
