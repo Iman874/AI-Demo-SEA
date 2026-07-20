@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
+import '../../component/card/card_material.dart';
+import '../../models/material.dart';
 import '../../component/card/card_discussion.dart';
 import '../../models/discussion_room.dart';
 import '../../models/class.dart';
@@ -23,8 +25,11 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
   late String selectedClassId;
   // removed local/all-classes cache; we fetch classes as needed from API
   List<DiscussionRoom> _discussions = [];
+  List<MaterialPdf> _materials = [];
   bool _loading = true;
   String? _error;
+  String _sortType = 'terbaru';
+  String _materialFilter = 'semua';
 
   @override
   void initState() {
@@ -95,6 +100,16 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
   Future<void> _loadDiscussions() async {
     if (selectedClassId.isEmpty) return;
     try {
+      // Muat materi diskusi
+      try {
+        final matResp = await ApiService.getMaterials();
+        if (matResp.statusCode == 200) {
+          final body = jsonDecode(matResp.body);
+          final items = (body['data'] as List<dynamic>?) ?? [];
+          _materials = items.map((e) => MaterialPdfJson.fromJson(e as Map<String, dynamic>)).toList();
+        }
+      } catch (_) {}
+
       final resp = await ApiService.getDiscussions(classId: selectedClassId);
       if (resp.statusCode == 200) {
         final body = jsonDecode(resp.body);
@@ -143,40 +158,159 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
             _buildClassChips(isDark, gradient, accent),
             const SizedBox(height: 8),
 
-            // ── Diskusi Aktif ────────────────────────────────────────────
-            _buildSectionHeader('Diskusi Aktif', activeDiscussions.length, isDark, gradient),
-            CardDiscussionList(
-              discussions: activeDiscussions,
-              onViewDetails: (d) async {
-                await Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => DiscussionDetailStudentPage(discussion: d),
-                  ),
-                );
-                if (!mounted) return;
-                await _loadDiscussions();
-              },
-              buttonLabel: 'Masuk Diskusi',
-            ),
+            // ── Diskusi Aktif (Tersortir) ────────────────────────────────
+            () {
+              final sortedActive = List<DiscussionRoom>.from(activeDiscussions);
+              if (_sortType == 'abjad') {
+                sortedActive.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+              } else if (_sortType == 'z-a') {
+                sortedActive.sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+              } else {
+                sortedActive.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+              }
 
-            // ── Riwayat Diskusi Selesai ─────────────────────────────────
-            _buildSectionHeader(
-              'Riwayat Diskusi Selesai',
-              completedDiscussions.length,
-              isDark,
-              gradient,
-            ),
-            CardDiscussionList(
-              discussions: completedDiscussions,
-              onViewDetails: (d) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => DiscussionDetailStudentPage(discussion: d),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader('Diskusi Aktif', sortedActive.length, isDark, gradient),
+
+                  // Filter Urutan khusus Diskusi Aktif
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                    child: Row(
+                      children: [
+                        _buildSortChip(
+                          context,
+                          label: "Terbaru",
+                          isSelected: _sortType == 'terbaru',
+                          onTap: () => setState(() => _sortType = 'terbaru'),
+                          isDark: isDark,
+                          gradient: gradient,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildSortChip(
+                          context,
+                          label: "A-Z",
+                          isSelected: _sortType == 'abjad',
+                          onTap: () => setState(() => _sortType = 'abjad'),
+                          isDark: isDark,
+                          gradient: gradient,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildSortChip(
+                          context,
+                          label: "Z-A",
+                          isSelected: _sortType == 'z-a',
+                          onTap: () => setState(() => _sortType = 'z-a'),
+                          isDark: isDark,
+                          gradient: gradient,
+                        ),
+                      ],
+                    ),
                   ),
-                );
-              },
-              buttonLabel: 'Detail Diskusi',
+                  const SizedBox(height: 6),
+
+                  CardDiscussionList(
+                    discussions: sortedActive,
+                    onViewDetails: (d) async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DiscussionDetailStudentPage(discussion: d),
+                        ),
+                      );
+                      if (!mounted) return;
+                      await _loadDiscussions();
+                    },
+                    buttonLabel: 'Masuk Diskusi',
+                  ),
+                ],
+              );
+            }(),
+
+            // ── Dokumen Materi Diskusi (Selalu Tampil) ───────────────
+            _buildSectionHeader('Dokumen Materi Diskusi', _materials.length, isDark, gradient),
+
+            // Filter Chips khusus Materi Diskusi (Semua, PDF, Teks)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+              child: Row(
+                children: [
+                  _buildSortChip(
+                    context,
+                    label: "Semua",
+                    isSelected: _materialFilter == 'semua',
+                    onTap: () => setState(() => _materialFilter = 'semua'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSortChip(
+                    context,
+                    label: "Dokumen PDF",
+                    isSelected: _materialFilter == 'pdf',
+                    onTap: () => setState(() => _materialFilter = 'pdf'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSortChip(
+                    context,
+                    label: "Catatan Teks",
+                    isSelected: _materialFilter == 'teks',
+                    onTap: () => setState(() => _materialFilter = 'teks'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: 6),
+
+            () {
+              var filteredMats = List<MaterialPdf>.from(_materials);
+              if (_materialFilter == 'pdf') {
+                filteredMats = filteredMats.where((m) => m.type.toLowerCase() == 'pdf').toList();
+              } else if (_materialFilter == 'teks') {
+                filteredMats = filteredMats.where((m) => m.type.toLowerCase() != 'pdf').toList();
+              }
+              return CardMaterialList(materials: filteredMats);
+            }(),
+            const SizedBox(height: 8),
+
+            // ── Riwayat Diskusi Selesai (Tersortir) ─────────────────────
+            () {
+              final sortedCompleted = List<DiscussionRoom>.from(completedDiscussions);
+              if (_sortType == 'abjad') {
+                sortedCompleted.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+              } else if (_sortType == 'z-a') {
+                sortedCompleted.sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+              } else {
+                sortedCompleted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader(
+                    'Riwayat Diskusi Selesai',
+                    sortedCompleted.length,
+                    isDark,
+                    gradient,
+                  ),
+                  CardDiscussionList(
+                    discussions: sortedCompleted,
+                    onViewDetails: (d) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DiscussionDetailStudentPage(discussion: d),
+                        ),
+                      );
+                    },
+                    buttonLabel: 'Detail Diskusi',
+                  ),
+                ],
+              );
+            }(),
 
             const SizedBox(height: 100), // ruang untuk bottom nav
           ],
@@ -416,6 +550,43 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortChip(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required List<Color> gradient,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          gradient: isSelected ? LinearGradient(colors: gradient) : null,
+          color: isSelected ? null : (isDark ? AppColors.cardDark : Colors.white),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : (isDark ? AppColors.borderDark : AppColors.borderLight),
+            width: 1.2,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected
+                ? Colors.white
+                : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+          ),
         ),
       ),
     );

@@ -7,7 +7,12 @@ Judul:
 Fix Overflow pada UI Card Showcase & Komponen Card
 
 Detail:
-- Implementasi **Circular Score Progress Ring** (`CircularProgressIndicator` dengan `value: score / 100`, `strokeWidth: 3.5`, `strokeCap: StrokeCap.round`, background track 15% opacity, dan nilai "90" + sub-label "Nilai" di tengah) pada `card_quiz_result.dart`. Lingkaran ini secara otomatis memvisualisasikan kepenuhan nilai 0–100% persis sesuai desain referensi user.
+- Penataan ulang posisi & fungsi Filter Chips:
+  - Pada **Halaman Quiz** (Siswa & Guru), Filter Chips (**"Semua"**, **"Dokumen PDF"**, **"Catatan Teks"**) ditempatkan khusus di Seksi **Dokumen & Materi Pembelajaran Kuis** untuk memfilter jenis materi PDF atau Teks.
+  - Pada **Halaman Diskusi** (Siswa & Guru), Filter Chips (**"Terbaru"**, **"A-Z"**, **"Z-A"**) ditempatkan tepat di bawah Header **Ruang Diskusi Aktif** untuk mengurutkan ruang diskusi aktif secara dinamis.
+  - Pada **Seksi Dokumen Materi Diskusi** di Halaman Diskusi (Siswa & Guru), ditambahkan Filter Chips Materi (**"Semua"**, **"Dokumen PDF"**, **"Catatan Teks"**) untuk menyaring materi diskusi PDF/Teks.
+- Penambahan & integrasi Seksi **Dokumen & Materi Pembelajaran** (`CardMaterialList`) pada Halaman Quiz (Siswa & Guru) yang selalu di-render. Bila materi kosong, `CardMaterialList` me-render `_MaterialEmptyState` yang sangat cantik beserta tombol Tambah Materi Kuis (Guru), sehingga halaman tidak bolong / kosong melompong.
+- Implementasi **Circular Score Progress Ring** (`CircularProgressIndicator` dengan `value: score / 100`, `strokeWidth: 3.5`, `strokeCap: StrokeCap.round`, background track 15% opacity, dan nilai "90" + sub-label "Nilai" di tengah) pada `card_quiz_result.dart`.
 - Penggantian string ID mentah (`ID: q1`, `ID Analisis: u1`, dll) pada seluruh kartu sejenis (`card_quiz_result.dart`, `card_percentage_understanding.dart`, `card_answer_question_student.dart`, `card_conclusion_student.dart`) menjadi **Badge Chip Tag Berwarna** (seperti `[#Q1]`, `[REF #U1]`, `[#DQ1]`, `[#S1]`).
 - Total rewrite `card_material.dart` (`lib/component/card/card_material.dart`): mengganti layout lama yang hanya berupa kotak putih polos dan teks mentah `Belum ada materi yang dilampirkan` dengan tampilan UI modern & premium.
 - Menambahkan `_MaterialEmptyState` modern dengan ikon bulat `PhosphorIconsRegular.files`, judul bold, dan subteks informatif.

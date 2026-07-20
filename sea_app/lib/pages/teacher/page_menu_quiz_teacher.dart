@@ -25,6 +25,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
   String? selectedClassId;
   String? selectedQuizId;
   bool _loading = true;
+  String _materialFilter = 'semua';
 
   @override
   void initState() {
@@ -112,8 +113,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                 ensureQuizzesForClass(val);
               },
             ),
-            const SizedBox(height: 8),
-
+            
             // ── Pilih Kuis (chip row, untuk materi) ─────────────────────
             if (quizzes.isNotEmpty) ...[
               _buildSectionHeader('Pilih Kuis (untuk Materi)', quizzes.length, isDark, gradient),
@@ -133,18 +133,59 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
               const SizedBox(height: 4),
             ],
 
-            // ── Dokumen & Materi Kuis ──────────────────────────────────
-            if (prov.materials.isNotEmpty) ...[
-              _buildSectionHeader('Dokumen & Materi Kuis', prov.materials.length, isDark, gradient),
-              CardMaterialList(
-                materials: prov.materials.map((m) {
-                  return MaterialPdfJson.fromJson(m);
-                }).toList(),
+            // ── Dokumen & Materi Kuis (Selalu tampil agar tidak kosong bolong) ──
+            _buildSectionHeader('Dokumen & Materi Kuis', prov.materials.length, isDark, gradient),
+
+            // Filter Chips khusus Materi (Semua, PDF, Teks)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+              child: Row(
+                children: [
+                  _buildSortChip(
+                    context,
+                    label: "Semua",
+                    isSelected: _materialFilter == 'semua',
+                    onTap: () => setState(() => _materialFilter = 'semua'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSortChip(
+                    context,
+                    label: "Dokumen PDF",
+                    isSelected: _materialFilter == 'pdf',
+                    onTap: () => setState(() => _materialFilter = 'pdf'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSortChip(
+                    context,
+                    label: "Catatan Teks",
+                    isSelected: _materialFilter == 'teks',
+                    onTap: () => setState(() => _materialFilter = 'teks'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                ],
               ),
-            ],
+            ),
+            const SizedBox(height: 6),
+
+            () {
+              var filteredMats = prov.materials.map((m) => MaterialPdfJson.fromJson(m)).toList();
+              if (_materialFilter == 'pdf') {
+                filteredMats = filteredMats.where((m) => m.type.toLowerCase() == 'pdf').toList();
+              } else if (_materialFilter == 'teks') {
+                filteredMats = filteredMats.where((m) => m.type.toLowerCase() != 'pdf').toList();
+              }
+              return CardMaterialList(
+                materials: filteredMats,
+              );
+            }(),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               child: AppButton.primary(
                 label: 'Tambah Materi Kuis',
                 icon: PhosphorIconsRegular.upload,
@@ -164,6 +205,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                 },
               ),
             ),
+            const SizedBox(height: 12),
 
             // ── Daftar Kuis ──────────────────────────────────────────────
             _buildSectionHeader('Daftar Kuis', quizzes.length, isDark, gradient),
@@ -198,15 +240,15 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                 icon: PhosphorIconsRegular.clipboardText,
                 gradientColors: AppColors.teacherGradient,
                 onPressed: () async {
-                  final parentContext = context;
-                  final navigator = Navigator.of(parentContext);
-                  final quizProv = Provider.of<QuizProvider>(parentContext, listen: false);
+                  final navigator = Navigator.of(context);
+                  final quizProv = Provider.of<QuizProvider>(context, listen: false);
                   final id = await quizProv.createQuiz(title: 'Kuis Baru');
                   if (id != null) {
                     navigator.push(MaterialPageRoute(builder: (_) => PageMenuQuizEditorTeacher(quizId: id)));
                   } else {
-                    if (!mounted) return;
-                    AppNotification.show(context, 'Gagal membuat kuis baru.', isError: true);
+                    if (context.mounted) {
+                      AppNotification.show(context, 'Gagal membuat kuis baru.', isError: true);
+                    }
                   }
                 },
               ),
@@ -374,6 +416,43 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildSortChip(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required List<Color> gradient,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          gradient: isSelected ? LinearGradient(colors: gradient) : null,
+          color: isSelected ? null : (isDark ? AppColors.cardDark : Colors.white),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : (isDark ? AppColors.borderDark : AppColors.borderLight),
+            width: 1.2,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected
+                ? Colors.white
+                : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+          ),
+        ),
       ),
     );
   }

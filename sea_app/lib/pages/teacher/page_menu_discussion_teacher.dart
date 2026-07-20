@@ -27,6 +27,8 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
   List<DiscussionRoom> _discussions = [];
   List<MaterialPdf> _materials = [];
   String? selectedClassId;
+  String _sortType = 'terbaru';
+  String _materialFilter = 'semua';
 
   @override
   void initState() {
@@ -129,21 +131,74 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
             _buildClassChips(classItems, effectiveClassId, isDark, gradient),
             const SizedBox(height: 8),
 
-            // ── Ruang Diskusi Aktif ─────────────────────────────────
-            _buildSectionHeader('Ruang Diskusi Aktif', ongoingDiscussions.length, isDark, gradient),
-            CardDiscussionList(
-              discussions: ongoingDiscussions,
-              onEdit: (d) {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom),
-                ));
-              },
-              onDetails: (d) {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom),
-                ));
-              },
-            ),
+            // ── Ruang Diskusi Aktif (Tersortir) ─────────────────────
+            () {
+              final sortedOngoing = List<DiscussionRoom>.from(ongoingDiscussions);
+              if (_sortType == 'abjad') {
+                sortedOngoing.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+              } else if (_sortType == 'z-a') {
+                sortedOngoing.sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+              } else {
+                sortedOngoing.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader('Ruang Diskusi Aktif', sortedOngoing.length, isDark, gradient),
+
+                  // Filter Urutan khusus Diskusi Aktif
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                    child: Row(
+                      children: [
+                        _buildSortChip(
+                          context,
+                          label: "Terbaru",
+                          isSelected: _sortType == 'terbaru',
+                          onTap: () => setState(() => _sortType = 'terbaru'),
+                          isDark: isDark,
+                          gradient: gradient,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildSortChip(
+                          context,
+                          label: "A-Z",
+                          isSelected: _sortType == 'abjad',
+                          onTap: () => setState(() => _sortType = 'abjad'),
+                          isDark: isDark,
+                          gradient: gradient,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildSortChip(
+                          context,
+                          label: "Z-A",
+                          isSelected: _sortType == 'z-a',
+                          onTap: () => setState(() => _sortType = 'z-a'),
+                          isDark: isDark,
+                          gradient: gradient,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+
+                  CardDiscussionList(
+                    discussions: sortedOngoing,
+                    onEdit: (d) {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom),
+                      ));
+                    },
+                    onDetails: (d) {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => PageMenuDiscussionEditorTeacher(discussionId: d.idDiscussionRoom),
+                      ));
+                    },
+                  ),
+                ],
+              );
+            }(),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -161,22 +216,81 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
               ),
             ),
 
-            // ── Dokumen Materi Diskusi ──────────────────────────────
-            if (materials.isNotEmpty) ...[
-              _buildSectionHeader('Dokumen Materi Diskusi', materials.length, isDark, gradient),
-              CardMaterialList(materials: materials),
-            ],
+            // ── Dokumen Materi Diskusi (Selalu Tampil) ───────────────
+            _buildSectionHeader('Dokumen Materi Diskusi', materials.length, isDark, gradient),
 
-            // ── Riwayat Diskusi Selesai ────────────────────────────
-            _buildSectionHeader('Riwayat Diskusi Selesai', completedDiscussions.length, isDark, gradient),
-            CardDiscussionList(
-              discussions: completedDiscussions,
-              onDetails: (d) {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => PageMenuDiscussionDetailsTeacher(discussionId: d.idDiscussionRoom),
-                ));
-              },
+            // Filter Chips khusus Materi Diskusi (Semua, PDF, Teks)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+              child: Row(
+                children: [
+                  _buildSortChip(
+                    context,
+                    label: "Semua",
+                    isSelected: _materialFilter == 'semua',
+                    onTap: () => setState(() => _materialFilter = 'semua'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSortChip(
+                    context,
+                    label: "Dokumen PDF",
+                    isSelected: _materialFilter == 'pdf',
+                    onTap: () => setState(() => _materialFilter = 'pdf'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSortChip(
+                    context,
+                    label: "Catatan Teks",
+                    isSelected: _materialFilter == 'teks',
+                    onTap: () => setState(() => _materialFilter = 'teks'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: 6),
+
+            () {
+              var filteredMats = List<MaterialPdf>.from(materials);
+              if (_materialFilter == 'pdf') {
+                filteredMats = filteredMats.where((m) => m.type.toLowerCase() == 'pdf').toList();
+              } else if (_materialFilter == 'teks') {
+                filteredMats = filteredMats.where((m) => m.type.toLowerCase() != 'pdf').toList();
+              }
+              return CardMaterialList(materials: filteredMats);
+            }(),
+
+            // ── Riwayat Diskusi Selesai (Tersortir) ──────────────────
+            () {
+              final sortedCompleted = List<DiscussionRoom>.from(completedDiscussions);
+              if (_sortType == 'abjad') {
+                sortedCompleted.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+              } else if (_sortType == 'z-a') {
+                sortedCompleted.sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+              } else {
+                sortedCompleted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader('Riwayat Diskusi Selesai', sortedCompleted.length, isDark, gradient),
+                  CardDiscussionList(
+                    discussions: sortedCompleted,
+                    onDetails: (d) {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => PageMenuDiscussionDetailsTeacher(discussionId: d.idDiscussionRoom),
+                      ));
+                    },
+                  ),
+                ],
+              );
+            }(),
 
             const SizedBox(height: 100), // ruang untuk bottom nav
           ],
@@ -405,6 +519,43 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortChip(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required List<Color> gradient,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          gradient: isSelected ? LinearGradient(colors: gradient) : null,
+          color: isSelected ? null : (isDark ? AppColors.cardDark : Colors.white),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : (isDark ? AppColors.borderDark : AppColors.borderLight),
+            width: 1.2,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected
+                ? Colors.white
+                : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+          ),
         ),
       ),
     );

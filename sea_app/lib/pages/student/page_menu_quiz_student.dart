@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
+import '../../component/card/card_material.dart';
+import '../../models/material.dart';
 import '../../component/card/card_quiz.dart';
 import '../../models/quiz.dart';
 import '../../models/class.dart';
@@ -53,6 +55,8 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
   String? _error;
   List<Quiz> _activeQuizzes = [];
   List<Quiz> _completedQuizzes = [];
+  List<MaterialPdf> _materials = [];
+  String _materialFilter = 'semua';
 
   Future<void> _loadClasses() async {
     setState(() => _loading = true);
@@ -120,6 +124,58 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
             // ── Class chip selector ──────────────────────────────────────
             _buildSectionHeader('Pilih Kelas', studentClasses.length, isDark, gradient),
             _buildClassChips(isDark, gradient, accent),
+            const SizedBox(height: 8),
+
+            // ── Dokumen & Materi Pembelajaran Kuis (Selalu Tampil) ───────
+            _buildSectionHeader('Dokumen & Materi Pembelajaran', _materials.length, isDark, gradient),
+
+            // Filter Chips khusus Materi (Semua, PDF, Teks)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+              child: Row(
+                children: [
+                  _buildSortChip(
+                    context,
+                    label: "Semua",
+                    isSelected: _materialFilter == 'semua',
+                    onTap: () => setState(() => _materialFilter = 'semua'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSortChip(
+                    context,
+                    label: "Dokumen PDF",
+                    isSelected: _materialFilter == 'pdf',
+                    onTap: () => setState(() => _materialFilter = 'pdf'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildSortChip(
+                    context,
+                    label: "Catatan Teks",
+                    isSelected: _materialFilter == 'teks',
+                    onTap: () => setState(() => _materialFilter = 'teks'),
+                    isDark: isDark,
+                    gradient: gradient,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+
+            () {
+              var filteredMats = List<MaterialPdf>.from(_materials);
+              if (_materialFilter == 'pdf') {
+                filteredMats = filteredMats.where((m) => m.type.toLowerCase() == 'pdf').toList();
+              } else if (_materialFilter == 'teks') {
+                filteredMats = filteredMats.where((m) => m.type.toLowerCase() != 'pdf').toList();
+              }
+              return CardMaterialList(
+                materials: filteredMats,
+              );
+            }(),
             const SizedBox(height: 8),
 
             // ── Kuis Aktif ───────────────────────────────────────────────
@@ -500,8 +556,24 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
 
   Future<void> _loadQuizzesForClass(String classId) async {
     try {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final currentUserId = auth.user?.id;
+      final currentToken = auth.token;
+
       _activeQuizzes = [];
       _completedQuizzes = [];
+      _materials = [];
+
+      // Muat materi kuis/kelas jika API tersedia
+      try {
+        final matResp = await ApiService.getMaterials();
+        if (matResp.statusCode == 200) {
+          final body = jsonDecode(matResp.body);
+          final items = (body['data'] as List<dynamic>?) ?? [];
+          _materials = items.map((e) => MaterialPdfJson.fromJson(e as Map<String, dynamic>)).toList();
+        }
+      } catch (_) {}
+
       final resp = await ApiService.getQuizzes(classId: classId);
       if (resp.statusCode == 200) {
         final body = jsonDecode(resp.body);
@@ -531,9 +603,8 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
             updateAt: DateTime.tryParse(updatedAtStr) ?? DateTime.now(),
           );
           // Check if user has completed this quiz by querying result-quiz
-          final auth = Provider.of<AuthProvider>(context, listen: false);
           try {
-            final resResp = await ApiService.getQuizResults(userId: auth.user?.id, quizId: idQuiz, token: auth.token);
+            final resResp = await ApiService.getQuizResults(userId: currentUserId, quizId: idQuiz, token: currentToken);
             if (resResp.statusCode == 200) {
               final resBody = jsonDecode(resResp.body);
               final resItems = (resBody['data'] as List<dynamic>?) ?? [];
@@ -553,5 +624,42 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
     } catch (e) {
       // ignore
     }
+  }
+
+  Widget _buildSortChip(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required bool isDark,
+    required List<Color> gradient,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          gradient: isSelected ? LinearGradient(colors: gradient) : null,
+          color: isSelected ? null : (isDark ? AppColors.cardDark : Colors.white),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : (isDark ? AppColors.borderDark : AppColors.borderLight),
+            width: 1.2,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected
+                ? Colors.white
+                : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+          ),
+        ),
+      ),
+    );
   }
 }
