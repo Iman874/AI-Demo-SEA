@@ -1,5 +1,25 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 13:41
+Kategori: Refactor
+
+Judul:
+Rombak Total Card Pilih Kelas & Pilih Kuis 100% Presisi Referensi Gambar
+
+Detail:
+- Merombak total komponen Card "Pilih Kelas" dan "Pilih Kuis" di 4 halaman (`page_menu_quiz_student.dart`, `page_menu_quiz_teacher.dart`, `page_menu_discussion_student.dart`, `page_menu_discussion_teacher.dart`) agar 100% presisi dengan desain referensi gambar.
+- **Card Container**: Menggunakan container putih beradius 24px dengan bayangan lembut, border `#F1F5F9`.
+- **Header Internal Card**: Menampilkan ikon lingkaran dengan latar tint lembut (`#E8F0FE`), judul tebal 15px, subtitle penjelasan 12px, serta pill badge jumlah item di sebelah kanan.
+- **Kartu Pilihan Kelas**: Setiap kelas kini ditampilkan sebagai kartu persegi vertikal modern (`105px` x `92px`) dengan ikon buku `bookOpen` besar 24px di atas dan nama kelas di bawah.
+- **Kartu Action Kuis (Guru)**: Menampilkan kartu horizontal action (`215px` x `92px`) berisi ikon kotak plus-circle di kiri, judul "Buat Kuis Baru", subjudul kuis terpilih, dan ikon panah kanan `caretRight`.
+- **Header Seksi Eksternal**: Diperbarui dengan ikon lingkaran (`folderOpen`, `chatsCircle`), judul, subtitle, dan pill count badge.
+
+Dampak:
+- Tampilan UI halaman Kuis dan Diskusi Siswa/Guru kini 100% identik dengan gambar referensi, memberikan kesan premium dan modern.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 13:17
 Kategori: Refactor
 
