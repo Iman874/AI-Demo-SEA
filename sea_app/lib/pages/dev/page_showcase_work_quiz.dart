@@ -277,84 +277,165 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
               ],
             ),
           ),
-          SizedBox(
-            height: 38,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              scrollDirection: Axis.horizontal,
-              itemCount: totalQuestions,
-              separatorBuilder: (context, index) => const SizedBox(width: 8),
-              itemBuilder: (context, idx) {
-                final qItem = questions[idx];
-                final isAnswered = answers.containsKey(qItem.idQuestion);
-                final isCurrent = idx == currentIndex;
-
-                return InkWell(
-                  onTap: () => onSelect(idx),
-                  borderRadius: BorderRadius.circular(10),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 38,
-                    height: 38,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: isCurrent
-                          ? AppColors.studentAccent
-                          : (isAnswered
-                              ? AppColors.success.withValues(alpha: 0.15)
-                              : (isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC))),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isCurrent
-                            ? AppColors.studentAccent
-                            : (isAnswered ? AppColors.success : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0))),
-                        width: isCurrent ? 2 : 1,
-                      ),
-                      boxShadow: isCurrent
-                          ? [
-                              BoxShadow(
-                                color: AppColors.studentAccent.withValues(alpha: 0.30),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              )
-                            ]
-                          : null,
+          totalQuestions > 20
+              ? SizedBox(
+                  height: 135,
+                  child: GridView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 6,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      childAspectRatio: 1.0,
                     ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Text(
-                          '${idx + 1}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
+                    itemCount: totalQuestions,
+                    itemBuilder: (context, idx) {
+                      final qItem = questions[idx];
+                      final isAnswered = answers.containsKey(qItem.idQuestion);
+                      final isCurrent = idx == currentIndex;
+
+                      return InkWell(
+                        onTap: () => onSelect(idx),
+                        borderRadius: BorderRadius.circular(10),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
                             color: isCurrent
-                                ? Colors.white
+                                ? AppColors.studentAccent
                                 : (isAnswered
-                                    ? AppColors.success
-                                    : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                                    ? AppColors.success.withValues(alpha: 0.15)
+                                    : (isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC))),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isCurrent
+                                  ? AppColors.studentAccent
+                                  : (isAnswered ? AppColors.success : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0))),
+                              width: isCurrent ? 2 : 1,
+                            ),
+                            boxShadow: isCurrent
+                                ? [
+                                    BoxShadow(
+                                      color: AppColors.studentAccent.withValues(alpha: 0.30),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    )
+                                  ]
+                                : null,
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Text(
+                                '${idx + 1}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: isCurrent
+                                      ? Colors.white
+                                      : (isAnswered
+                                          ? AppColors.success
+                                          : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                                ),
+                              ),
+                              if (isAnswered && !isCurrent)
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: Container(
+                                    width: 5,
+                                    height: 5,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.success,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                        if (isAnswered && !isCurrent)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: Container(
-                              width: 5,
-                              height: 5,
-                              decoration: const BoxDecoration(
-                                color: AppColors.success,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          ),
+                )
+              : SizedBox(
+                  height: 38,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: totalQuestions,
+                    separatorBuilder: (context, index) => const SizedBox(width: 8),
+                    itemBuilder: (context, idx) {
+                      final qItem = questions[idx];
+                      final isAnswered = answers.containsKey(qItem.idQuestion);
+                      final isCurrent = idx == currentIndex;
+
+                      return InkWell(
+                        onTap: () => onSelect(idx),
+                        borderRadius: BorderRadius.circular(10),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 38,
+                          height: 38,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: isCurrent
+                                ? AppColors.studentAccent
+                                : (isAnswered
+                                    ? AppColors.success.withValues(alpha: 0.15)
+                                    : (isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC))),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isCurrent
+                                  ? AppColors.studentAccent
+                                  : (isAnswered ? AppColors.success : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0))),
+                              width: isCurrent ? 2 : 1,
+                            ),
+                            boxShadow: isCurrent
+                                ? [
+                                    BoxShadow(
+                                      color: AppColors.studentAccent.withValues(alpha: 0.30),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    )
+                                  ]
+                                : null,
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Text(
+                                '${idx + 1}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: isCurrent
+                                      ? Colors.white
+                                      : (isAnswered
+                                          ? AppColors.success
+                                          : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                                ),
+                              ),
+                              if (isAnswered && !isCurrent)
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: Container(
+                                    width: 5,
+                                    height: 5,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.success,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
