@@ -102,6 +102,14 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> setDevModeUser(User user, String token) async {
+    _token = token;
+    _user = user;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
+    notifyListeners();
+  }
+
   Future<void> logout() async {
     _token = null;
     _user = null;

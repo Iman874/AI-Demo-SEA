@@ -9,6 +9,8 @@ import '../theme/app_colors.dart';
 import 'connection_config_page.dart';
 import 'page_choice_user.dart';
 import 'page_showcase_cards.dart';
+import 'dev/page_showcase_work_quiz.dart';
+import '../component/window/window_dev_switch_user.dart';
 
 import '../component/window/window_view_list_class.dart';
 import '../component/window/window_add_class.dart';
@@ -135,18 +137,53 @@ class _PageSettingsState extends State<PageSettings> {
               ),
 
               AppSpacing.hXxl,
-              _SectionTitle(title: 'Showcase Komponen Card (UI Gallery)'),
+              _SectionTitle(title: 'Fitur Pengembang & Showcase UI'),
               AppSpacing.hSm,
               _SettingsCard(
                 children: [
                   _SettingsTile(
+                    icon: PhosphorIconsRegular.userSwitch,
+                    iconColor: AppColors.teacherAccent,
+                    title: 'Pindah Akun Instant (Dev Switch User)',
+                    subtitle: 'Beralih peran Guru/Siswa seeder backend instan',
+                    onTap: () async {
+                      final didSwitch = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => const WindowDevSwitchUser(),
+                      );
+                      if (didSwitch == true) {
+                        if (!context.mounted) return;
+                        AppNotification.show(
+                          context,
+                          'Berhasil beralih akun!',
+                          isError: false,
+                        );
+                      }
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
                     icon: PhosphorIconsRegular.cards,
-                    title: 'Showcase Komponen Card',
+                    title: 'Showcase Komponen Card (UI Gallery)',
                     subtitle: 'Uji & lihat galeri seluruh 9 komponen Card',
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const PageShowcaseCards(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.exam,
+                    iconColor: AppColors.studentAccent,
+                    title: 'Showcase Pengerjaan Kuis (Siswa)',
+                    subtitle: 'Pratinjau tampilan & alur pengerjaan kuis siswa',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PageShowcaseWorkQuiz(),
                         ),
                       );
                     },
