@@ -390,11 +390,17 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
             ),
           ),
           const SizedBox(height: 10),
-          LinearProgressIndicator(
-            value: completionRatio,
-            minHeight: 3,
-            backgroundColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.studentAccent),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: completionRatio,
+                minHeight: 4,
+                backgroundColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.studentAccent),
+              ),
+            ),
           ),
         ],
       ),
