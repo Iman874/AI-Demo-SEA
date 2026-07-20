@@ -13,6 +13,8 @@ import 'dev/page_showcase_work_quiz.dart';
 import '../component/window/window_dev_switch_user.dart';
 import 'teacher/page_menu_home_teacher.dart';
 import 'student/page_menu_home_student.dart';
+import 'student/page_menu_quiz_result_student.dart';
+import 'teacher/page_menu_quiz_result_teacher.dart';
 
 import '../component/window/window_view_list_class.dart';
 import '../component/window/window_add_class.dart';
@@ -201,6 +203,78 @@ class _PageSettingsState extends State<PageSettings> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const PageShowcaseWorkQuiz(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.chartBar,
+                    iconColor: AppColors.studentAccent,
+                    title: 'Showcase Hasil Kuis (Siswa)',
+                    subtitle: 'Pratinjau tampilan evaluasi & pembahasan kuis siswa',
+                    onTap: () {
+                      final mockQuestions = [
+                        Question(
+                          idQuestion: 'q1',
+                          number: 1,
+                          question: 'Manakah dari berikut ini yang merupakan bahasa pemrograman strongly-typed?',
+                          poin: 50,
+                          fkIdQuiz: 'mock_quiz_id',
+                          answerChoices: [
+                            AnswerQuestion(idAnswerChoice: 'c1', content: 'JavaScript', isCorrect: false, createAt: DateTime.now(), updateAt: DateTime.now()),
+                            AnswerQuestion(idAnswerChoice: 'c2', content: 'Python', isCorrect: false, createAt: DateTime.now(), updateAt: DateTime.now()),
+                            AnswerQuestion(idAnswerChoice: 'c3', content: 'Dart', isCorrect: true, createAt: DateTime.now(), updateAt: DateTime.now()),
+                            AnswerQuestion(idAnswerChoice: 'c4', content: 'PHP', isCorrect: false, createAt: DateTime.now(), updateAt: DateTime.now()),
+                          ],
+                          createAt: DateTime.now(),
+                          updateAt: DateTime.now(),
+                        ),
+                        Question(
+                          idQuestion: 'q2',
+                          number: 2,
+                          question: 'Di Flutter, widget apa yang digunakan untuk membuat layout baris secara horizontal?',
+                          poin: 50,
+                          fkIdQuiz: 'mock_quiz_id',
+                          answerChoices: [
+                            AnswerQuestion(idAnswerChoice: 'c5', content: 'Column', isCorrect: false, createAt: DateTime.now(), updateAt: DateTime.now()),
+                            AnswerQuestion(idAnswerChoice: 'c6', content: 'Row', isCorrect: true, createAt: DateTime.now(), updateAt: DateTime.now()),
+                            AnswerQuestion(idAnswerChoice: 'c7', content: 'Stack', isCorrect: false, createAt: DateTime.now(), updateAt: DateTime.now()),
+                            AnswerQuestion(idAnswerChoice: 'c8', content: 'ListView', isCorrect: false, createAt: DateTime.now(), updateAt: DateTime.now()),
+                          ],
+                          createAt: DateTime.now(),
+                          updateAt: DateTime.now(),
+                        ),
+                      ];
+                      final mockAnswers = {
+                        'q1': 'c3', // Benar
+                        'q2': 'c5', // Salah
+                      };
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => PageMenuQuizResultStudent(
+                            questions: mockQuestions,
+                            answers: mockAnswers,
+                            score: 50,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 56, endIndent: 16),
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.chartLineUp,
+                    iconColor: AppColors.teacherAccent,
+                    title: 'Showcase Rekap Nilai Kuis (Guru)',
+                    subtitle: 'Pratinjau rekapitulasi nilai kuis kelas guru',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PageMenuQuizResultTeacher(
+                            quizId: 'mock_quiz_1',
+                            title: 'Kuis Evaluasi Pemrograman Dart',
+                            classId: 'mock_class_1',
+                          ),
                         ),
                       );
                     },
