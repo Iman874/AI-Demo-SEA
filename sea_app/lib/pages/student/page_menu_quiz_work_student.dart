@@ -3,7 +3,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../component/window/window_message.dart';
+import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
+import '../../theme/app_colors.dart';
+import '../../component/ui/app_button.dart';
+import '../../component/window/window_confirmation.dart';
 import '../../utils/app_logger.dart';
 
 import '../../models/question.dart';
@@ -189,22 +192,43 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) return Center(child: Text('Error: $_error'));
+    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_error != null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(PhosphorIconsRegular.wifiSlash, size: 48, color: AppColors.error),
+              const SizedBox(height: 16),
+              Text('Gagal memuat kuis: $_error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _fetchQuestions,
+                child: const Text('Coba Lagi'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final q = _questions.isNotEmpty ? _questions[_currentIndex] : null;
+    final selectedChoice = q != null ? _answers[q.idQuestion] : null;
 
     return WillPopScope(
       onWillPop: () async {
-        // Show confirmation via WindowMessage
         final parentContext = context;
         final navigator = Navigator.of(parentContext);
-        final confirm = await showDialog<bool>(context: navigator.context, builder: (_) => WindowMessage(
-            message: 'Are you sure you want to leave the quiz? Leaving will end the quiz and your answers will be submitted. This action cannot be undone.',
-            onOk: () {
-              navigator.pop(true);
-            },
-          ));
+        final confirm = await showDialog<bool>(
+          context: navigator.context,
+          builder: (_) => WindowConfirmation(
+            message: 'Apakah kamu yakin ingin meninggalkan kuis? Meninggalkan kuis akan mengirimkan semua jawaban yang telah kamu isi.',
+            onConfirm: () => Navigator.of(context).pop(true),
+            onCancel: () => Navigator.of(context).pop(false),
+          ),
+        );
         if (confirm == true) {
           AppLogger.i('User confirmed exit; submitting quiz');
           await _submitQuiz(auto: true);
@@ -212,194 +236,387 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
         }
         return false;
       },
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          body: Column(
+      child: Scaffold(
+        backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        appBar: AppBar(
+          backgroundColor: isDark ? AppColors.cardDark : Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(PhosphorIconsRegular.arrowLeft),
+            onPressed: () async {
+              final confirm = await showModalBottomSheet<bool>(
+                context: context,
+                builder: (bc) => Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.cardDark : Colors.white,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(PhosphorIconsRegular.warningOctagon, color: AppColors.error, size: 40),
+                      const SizedBox(height: 14),
+                      const Text(
+                        'Keluar Kuis?',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Kuis akan langsung dikumpulkan jika kamu keluar sekarang.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppButton.secondary(
+                              label: 'Batal',
+                              onPressed: () => Navigator.of(bc).pop(false),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: AppButton.primary(
+                              label: 'Keluar',
+                              gradientColors: AppColors.studentGradient,
+                              onPressed: () => Navigator.of(bc).pop(true),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+              if (confirm == true) {
+                await _submitQuiz(auto: true);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              }
+            },
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // top header
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                color: const Color(0xFFD97B43),
-                child: Center(
-                  child: Text('Student Quiz', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white)),
+              Text(
+                widget.title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                 ),
               ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(18.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 8),
-                        Text('Question Numbers', style: Theme.of(context).textTheme.titleMedium),
-                        const SizedBox(height: 12),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6)],
-                          ),
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: List.generate(_questions.length, (i) {
-                              final id = _questions[i].idQuestion;
-                              final answered = _answers.containsKey(id);
-                              return InkWell(
-                                onTap: () => _gotoQuestion(i),
-                                child: Container(
-                                  width: 46,
-                                  height: 46,
-                                  decoration: BoxDecoration(
-                                    color: i == _currentIndex
-                                        ? Colors.green
-                                        : answered
-                                            ? Colors.green.shade100
-                                            : Theme.of(context).colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Center(child: Text('${i + 1}')),
-                                ),
-                              );
-                            }),
-                          ),
-                        ),
-
-                        const SizedBox(height: 18),
-
-                        // Question box with overlapping timer chip
-                        Text('Question', style: Theme.of(context).textTheme.titleMedium),
-                        const SizedBox(height: 8),
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8, offset: const Offset(0, 6)),
-                                ],
-                              ),
-                              padding: const EdgeInsets.all(18),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (q != null) ...[
-                                    Text('${q.number}. ${q.question}', style: const TextStyle(fontSize: 14)),
-                                    const SizedBox(height: 12),
-                                    Column(
-                                      children: q.answerChoices.map((c) {
-                                        return InkWell(
-                                          onTap: () => _selectAnswer(q.idQuestion, c.idAnswerChoice),
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 6.0),
-                                            child: Row(
-                                              children: [
-                                                Radio<String>(
-                                                  value: c.idAnswerChoice,
-                                                  groupValue: _answers[q.idQuestion],
-                                                  onChanged: (val) => _selectAnswer(q.idQuestion, val ?? ''),
-                                                ),
-                                                Expanded(child: Text(c.content)),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ] else
-                                    const SizedBox.shrink(),
-                                ],
-                              ),
-                            ),
-
-                            // Timer chip positioned top-right (overlapping)
-                            Positioned(
-                              right: 0,
-                              top: -40,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 6, offset: const Offset(0, 4))],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Image.asset('assets/icon/clock_icon.png', width: 18, height: 18),
-                                    const SizedBox(width: 8),
-                                    Text(_formatTime(_remainingSeconds), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        // Prev / Next buttons below the card
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).disabledColor,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                                onPressed: _currentIndex > 0 ? () => _gotoQuestion(_currentIndex - 1) : null,
-                                child: const Text('Previous Question', style: TextStyle(color: Colors.white)),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.primary,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                                onPressed: _currentIndex < _questions.length - 1 ? () => _gotoQuestion(_currentIndex + 1) : null,
-                                child: const Text('Next Question', style: TextStyle(color: Colors.white)),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 18),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, padding: const EdgeInsets.symmetric(vertical: 14)),
-                            onPressed: () async {
-                              final parentContext = context;
-                              final navigator = Navigator.of(parentContext);
-                              final confirm = await showDialog<bool>(context: parentContext, builder: (_) => WindowMessage(
-                                    message: 'Are you sure you want to end the quiz? Your answers will be submitted and the quiz cannot be retaken.',
-                                    onOk: () { navigator.pop(true); },
-                                  ));
-                                  if (confirm == true) await _submitQuiz();
-                            },
-                            child: const Text('End Quiz', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
+              Text(
+                'Soal ${_currentIndex + 1} dari ${_questions.length}',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                 ),
               ),
             ],
           ),
+          actions: [
+            // Timer Widget
+            Container(
+              margin: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(PhosphorIconsRegular.timer, size: 16, color: AppColors.error),
+                  const SizedBox(width: 4),
+                  Text(
+                    _formatTime(_remainingSeconds),
+                    style: const TextStyle(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
+        body: q == null
+            ? const Center(child: Text('Tidak ada pertanyaan.'))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top Indicator Panel
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.cardDark : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.studentAccent.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'Soal #${q.number}',
+                              style: const TextStyle(
+                                color: AppColors.studentAccent,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.success.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '${q.poin} Poin',
+                              style: const TextStyle(
+                                color: AppColors.success,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Teks Soal Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.cardDark : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        q.question,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          height: 1.4,
+                          color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Opsi Jawaban Pilihan Ganda
+                    const Text(
+                      'Pilih Jawaban:',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    ...q.answerChoices.map((c) {
+                      final isSelected = selectedChoice == c.idAnswerChoice;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: InkWell(
+                          onTap: () => _selectAnswer(q.idQuestion, c.idAnswerChoice),
+                          borderRadius: BorderRadius.circular(12),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.studentAccent.withValues(alpha: isDark ? 0.25 : 0.10)
+                                  : (isDark ? AppColors.cardDark : Colors.white),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.studentAccent
+                                    : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isSelected ? AppColors.studentAccent : Colors.transparent,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.studentAccent
+                                          : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                                    ),
+                                  ),
+                                  child: isSelected
+                                      ? const Icon(Icons.check, size: 16, color: Colors.white)
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    c.content,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+
+                    const SizedBox(height: 20),
+
+                    // Tombol Navigasi Soal Bottom
+                    Row(
+                      children: [
+                        if (_currentIndex > 0)
+                          Expanded(
+                            child: AppButton.secondary(
+                              label: 'Sebelumnya',
+                              icon: PhosphorIconsRegular.arrowLeft,
+                              onPressed: () => _gotoQuestion(_currentIndex - 1),
+                            ),
+                          ),
+                        if (_currentIndex > 0) const SizedBox(width: 12),
+                        if (_currentIndex < _questions.length - 1)
+                          Expanded(
+                            child: AppButton.primary(
+                              label: 'Selanjutnya',
+                              icon: PhosphorIconsRegular.arrowRight,
+                              gradientColors: AppColors.studentGradient,
+                              onPressed: () => _gotoQuestion(_currentIndex + 1),
+                            ),
+                          )
+                        else
+                          Expanded(
+                            child: AppButton.primary(
+                              label: 'Selesaikan Kuis',
+                              icon: PhosphorIconsRegular.checkCircle,
+                              gradientColors: AppColors.studentGradient,
+                              onPressed: () async {
+                                final res = await showDialog<bool>(
+                                  context: context,
+                                  builder: (dialogContext) => WindowConfirmation(
+                                    message: 'Apakah kamu yakin ingin mengumpulkan kuis ini? Jawaban tidak dapat diubah kembali.',
+                                    onConfirm: () => Navigator.of(dialogContext).pop(true),
+                                    onCancel: () => Navigator.of(dialogContext).pop(false),
+                                  ),
+                                );
+                                if (res == true) {
+                                  await _submitQuiz();
+                                }
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Grid Navigasi Nomor Soal
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.cardDark : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Navigasi Nomor Soal:',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: List.generate(_questions.length, (idx) {
+                              final qItem = _questions[idx];
+                              final isAnswered = _answers.containsKey(qItem.idQuestion);
+                              final isCurrent = idx == _currentIndex;
+
+                              return InkWell(
+                                onTap: () => _gotoQuestion(idx),
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: isCurrent
+                                        ? AppColors.studentAccent
+                                        : (isAnswered
+                                            ? AppColors.success.withValues(alpha: 0.20)
+                                            : (isDark ? AppColors.backgroundDark : Colors.grey.shade100)),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: isCurrent
+                                          ? AppColors.studentAccent
+                                          : (isAnswered ? AppColors.success : Colors.grey.shade300),
+                                      width: isCurrent ? 2 : 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '${idx + 1}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: isCurrent
+                                          ? Colors.white
+                                          : (isAnswered
+                                              ? AppColors.success
+                                              : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight)),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
   }
