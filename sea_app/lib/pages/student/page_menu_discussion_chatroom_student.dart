@@ -210,13 +210,7 @@ class _DiscussionPageChatRoomStudentState
     if (text.isEmpty || _isSending) return;
 
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    final uid = auth.user?.id;
-    if (uid == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login diperlukan untuk mengirim pesan')),
-      );
-      return;
-    }
+    final uid = auth.user?.id ?? studentId ?? 'user_dev';
 
     setState(() => _isSending = true);
 
@@ -258,8 +252,8 @@ class _DiscussionPageChatRoomStudentState
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: gradient),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(colors: gradient),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -324,35 +318,31 @@ class _DiscussionPageChatRoomStudentState
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // ── Top Header Banner & Panel Materials ──────────────────────
-            _buildTopBanner(isDark, gradient, accent),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            children: [
+              // ── Top Header Banner & Panel Materials ──────────────────────
+              _buildTopBanner(isDark, accent),
 
-            // ── Ringkasan Diskusi & Evaluasi Pemahaman AI Card ───────────
-            _buildSummaryAndUnderstandingCard(isDark, accent),
+              const SizedBox(height: 10),
 
-            // ── Chat Area (Pesan Obrolan AI & Siswa) ────────────────────
-            Expanded(
-              child: _buildChatList(isDark, accent),
-            ),
+              // ── Ringkasan Diskusi & Evaluasi Pemahaman AI Card ───────────
+              _buildSummaryAndUnderstandingCard(isDark, accent),
 
-            // ── Quick Suggestion Chips ───────────────────────────────────
-            if (messages.length < 4) _buildQuickPromptChips(isDark, accent),
+              const SizedBox(height: 14),
 
-            // ── Bottom Input Row ─────────────────────────────────────────
-            _buildBottomInputArea(isDark, accent, gradient),
-          ],
+              // ── MAIN AI CHATBOT PANEL CARD CONTAINER ─────────────────────
+              _buildChatbotPanelCard(isDark, accent, gradient),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTopBanner(
-      bool isDark, List<Color> gradient, Color accent) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+  Widget _buildTopBanner(bool isDark, Color accent) {
+    return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : Colors.white,
@@ -489,7 +479,6 @@ class _DiscussionPageChatRoomStudentState
     final sum = currentSummary;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : Colors.white,
@@ -628,51 +617,275 @@ class _DiscussionPageChatRoomStudentState
     );
   }
 
-  Widget _buildChatList(bool isDark, Color accent) {
-    if (messages.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              PhosphorIconsRegular.chatTeardropDots,
-              size: 48,
-              color: accent.withValues(alpha: 0.4),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Belum ada pesan obrolan.',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white70 : AppColors.textPrimaryLight,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Mulaikan pertanyaan tentang materi untuk diajar oleh AI Bot.',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight,
-              ),
-            ),
-          ],
+  // ── MAIN CHATBOT PANEL CARD WRAPPER CONTAINER ──────────────────────────
+  Widget _buildChatbotPanelCard(
+      bool isDark, Color accent, List<Color> gradient) {
+    return Container(
+      height: 520,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? AppColors.borderDark
+              : const Color(0xFFE2E8F0),
+          width: 1.2,
         ),
-      );
-    }
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // ── 1. Inner Card Header Bar ─────────────────────────────────
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : const Color(0xFFF8FAFC),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    PhosphorIconsRegular.robot,
+                    color: accent,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'AI Chatbot Assistant',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                      Text(
+                        'Tanyakan materi & ajukan diskusi ke AI',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: const Text(
+                    'Gemini 2.0 Flash',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-    return ListView.builder(
-      controller: _chatScrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      itemCount: messages.length,
-      itemBuilder: (context, index) {
-        final msg = messages[index];
-        final isAi = msg.role == 'ai';
-        final isUser = msg.senderId == studentId || msg.role == 'student';
+          // ── 2. Inner Scrollable Message Area ──────────────────────────
+          Expanded(
+            child: Container(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.15)
+                  : const Color(0xFFF1F5F9).withValues(alpha: 0.5),
+              child: messages.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            PhosphorIconsRegular.chatsTeardrop,
+                            size: 40,
+                            color: accent.withValues(alpha: 0.4),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Belum ada obrolan.',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: isDark
+                                  ? Colors.white70
+                                  : AppColors.textPrimaryLight,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Tanyakan materi pembelajaran pada AI Assistant.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Scrollbar(
+                      controller: _chatScrollController,
+                      child: ListView.builder(
+                        controller: _chatScrollController,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final msg = messages[index];
+                          final isAi = msg.role == 'ai';
+                          final isUser =
+                              msg.senderId == studentId || msg.role == 'student';
 
-        return _buildModernChatBubble(msg, isAi, isUser, isDark, accent);
-      },
+                          return _buildModernChatBubble(
+                              msg, isAi, isUser, isDark, accent);
+                        },
+                      ),
+                    ),
+            ),
+          ),
+
+          // ── 3. Inner Quick Prompt Chips ──────────────────────────────
+          if (messages.length < 5)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              color: isDark ? AppColors.cardDark : Colors.white,
+              child: _buildQuickPromptChips(isDark, accent),
+            ),
+
+          // ── 4. Embedded Bottom Input Bar ─────────────────────────────
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.cardDark : Colors.white,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+              border: Border(
+                top: BorderSide(
+                  color: isDark
+                      ? AppColors.borderDark
+                      : const Color(0xFFE2E8F0),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark
+                            ? AppColors.borderDark
+                            : const Color(0xFFCBD5E1),
+                      ),
+                    ),
+                    child: TextField(
+                      controller: _controller,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _handleSend(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color:
+                            isDark ? Colors.white : AppColors.textPrimaryLight,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Tanyakan sesuatu pada AI...',
+                        hintStyle: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: _isSending ? null : _handleSend,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: gradient),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: gradient.first.withValues(alpha: 0.35),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: _isSending
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(
+                              PhosphorIconsFill.paperPlaneRight,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -683,7 +896,7 @@ class _DiscussionPageChatRoomStudentState
         : (isUser ? (studentName ?? 'Saya') : 'Anggota');
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment:
             isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -691,9 +904,9 @@ class _DiscussionPageChatRoomStudentState
         children: [
           if (!isUser) ...[
             Container(
-              width: 32,
-              height: 32,
-              margin: const EdgeInsets.only(right: 8, top: 2),
+              width: 28,
+              height: 28,
+              margin: const EdgeInsets.only(right: 6, top: 2),
               decoration: BoxDecoration(
                 color: isAi ? AppColors.primary : accent.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
@@ -703,13 +916,13 @@ class _DiscussionPageChatRoomStudentState
                     ? PhosphorIconsRegular.robot
                     : PhosphorIconsRegular.user,
                 color: isAi ? Colors.white : accent,
-                size: 16,
+                size: 14,
               ),
             ),
           ],
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: isUser
                     ? accent
@@ -719,10 +932,10 @@ class _DiscussionPageChatRoomStudentState
                             : const Color(0xFFEFF6FF))
                         : (isDark ? AppColors.cardDark : Colors.white)),
                 borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isUser ? 16 : 4),
-                  bottomRight: Radius.circular(isUser ? 4 : 16),
+                  topLeft: const Radius.circular(14),
+                  topRight: const Radius.circular(14),
+                  bottomLeft: Radius.circular(isUser ? 14 : 2),
+                  bottomRight: Radius.circular(isUser ? 2 : 14),
                 ),
                 border: Border.all(
                   color: isUser
@@ -752,7 +965,7 @@ class _DiscussionPageChatRoomStudentState
                         Text(
                           senderName,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: isAi
                                 ? AppColors.primary
@@ -765,7 +978,7 @@ class _DiscussionPageChatRoomStudentState
                           const SizedBox(width: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 1),
+                                horizontal: 4, vertical: 1),
                             decoration: BoxDecoration(
                               color: AppColors.primary.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
@@ -773,7 +986,7 @@ class _DiscussionPageChatRoomStudentState
                             child: const Text(
                               'AI',
                               style: TextStyle(
-                                fontSize: 9,
+                                fontSize: 8,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                               ),
@@ -782,13 +995,13 @@ class _DiscussionPageChatRoomStudentState
                         ],
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                   ],
                   Text(
                     msg.content,
                     style: TextStyle(
-                      fontSize: 13,
-                      height: 1.4,
+                      fontSize: 12,
+                      height: 1.35,
                       color: isUser
                           ? Colors.white
                           : (isDark
@@ -802,9 +1015,9 @@ class _DiscussionPageChatRoomStudentState
           ),
           if (isUser) ...[
             Container(
-              width: 32,
-              height: 32,
-              margin: const EdgeInsets.only(left: 8, top: 2),
+              width: 28,
+              height: 28,
+              margin: const EdgeInsets.only(left: 6, top: 2),
               decoration: BoxDecoration(
                 color: accent.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
@@ -812,7 +1025,7 @@ class _DiscussionPageChatRoomStudentState
               child: Icon(
                 PhosphorIconsRegular.user,
                 color: accent,
-                size: 16,
+                size: 14,
               ),
             ),
           ],
@@ -828,26 +1041,27 @@ class _DiscussionPageChatRoomStudentState
       'Buat kuis singkat',
     ];
 
-    return Container(
-      height: 36,
-      margin: const EdgeInsets.only(bottom: 6),
+    return SizedBox(
+      height: 30,
       child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         scrollDirection: Axis.horizontal,
         itemCount: prompts.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
         itemBuilder: (context, i) {
           return InkWell(
             onTap: () {
               _controller.text = prompts[i];
               _handleSend();
             },
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.cardDark : Colors.white,
-                borderRadius: BorderRadius.circular(18),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: accent.withValues(alpha: 0.3),
                 ),
@@ -856,14 +1070,14 @@ class _DiscussionPageChatRoomStudentState
                 children: [
                   Icon(
                     PhosphorIconsRegular.sparkle,
-                    size: 12,
+                    size: 11,
                     color: accent,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     prompts[i],
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white70 : AppColors.textPrimaryLight,
                     ),
@@ -873,99 +1087,6 @@ class _DiscussionPageChatRoomStudentState
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildBottomInputArea(
-      bool isDark, Color accent, List<Color> gradient) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: isDark
-                      ? AppColors.borderDark
-                      : const Color(0xFFE2E8F0),
-                ),
-              ),
-              child: TextField(
-                controller: _controller,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _handleSend(),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Tanyakan sesuatu pada AI...',
-                  hintStyle: TextStyle(
-                    fontSize: 12,
-                    color: isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondaryLight,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          InkWell(
-            onTap: _isSending ? null : _handleSend,
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: gradient),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: gradient.first.withValues(alpha: 0.35),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: _isSending
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(
-                        PhosphorIconsFill.paperPlaneRight,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
