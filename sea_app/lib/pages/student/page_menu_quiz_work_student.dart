@@ -396,6 +396,139 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
     );
   }
 
+  Widget _buildBottomQuizControls({
+    required int currentIndex,
+    required int totalQuestions,
+    required bool isDark,
+    required VoidCallback onPrevious,
+    required VoidCallback onNext,
+    required VoidCallback onSubmit,
+  }) {
+    final isLast = currentIndex == totalQuestions - 1;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Tombol Sebelumnya
+          if (currentIndex > 0)
+            Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onPrevious,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.studentAccent.withValues(alpha: isDark ? 0.15 : 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColors.studentAccent.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          PhosphorIconsRegular.caretLeft,
+                          size: 18,
+                          color: AppColors.studentAccent,
+                        ),
+                        const SizedBox(width: 4),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Sebelumnya',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? AppColors.textPrimaryDark : AppColors.studentAccent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          if (currentIndex > 0) const SizedBox(width: 12),
+
+          // Tombol Selanjutnya / Selesaikan Kuis
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: isLast ? onSubmit : onNext,
+                borderRadius: BorderRadius.circular(14),
+                child: Ink(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    gradient: isLast
+                        ? const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                          )
+                        : const LinearGradient(
+                            colors: AppColors.studentGradient,
+                          ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isLast ? const Color(0xFF10B981) : AppColors.studentAccent).withValues(alpha: 0.30),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          isLast ? 'Selesaikan Kuis' : 'Selanjutnya',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        isLast ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.caretRight,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -522,6 +655,33 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
             ),
           ],
         ),
+        bottomNavigationBar: q == null
+            ? null
+            : SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: _buildBottomQuizControls(
+                    currentIndex: _currentIndex,
+                    totalQuestions: _questions.length,
+                    isDark: isDark,
+                    onPrevious: () => _gotoQuestion(_currentIndex - 1),
+                    onNext: () => _gotoQuestion(_currentIndex + 1),
+                    onSubmit: () async {
+                      final res = await showDialog<bool>(
+                        context: context,
+                        builder: (dialogContext) => WindowConfirmation(
+                          message: 'Apakah kamu yakin ingin mengumpulkan kuis ini? Jawaban tidak dapat diubah kembali.',
+                          onConfirm: () => Navigator.of(dialogContext).pop(true),
+                          onCancel: () => Navigator.of(dialogContext).pop(false),
+                        ),
+                      );
+                      if (res == true) {
+                        await _submitQuiz();
+                      }
+                    },
+                  ),
+                ),
+              ),
         body: q == null
             ? const Center(child: Text('Tidak ada pertanyaan.'))
             : SingleChildScrollView(
@@ -745,53 +905,6 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                         ),
                       );
                     }),
-
-                    const SizedBox(height: 20),
-
-                    // Tombol Navigasi Soal Bottom
-                    Row(
-                      children: [
-                        if (_currentIndex > 0)
-                          Expanded(
-                            child: AppButton.secondary(
-                              label: 'Sebelumnya',
-                              icon: PhosphorIconsRegular.arrowLeft,
-                              onPressed: () => _gotoQuestion(_currentIndex - 1),
-                            ),
-                          ),
-                        if (_currentIndex > 0) const SizedBox(width: 12),
-                        if (_currentIndex < _questions.length - 1)
-                          Expanded(
-                            child: AppButton.primary(
-                              label: 'Selanjutnya',
-                              icon: PhosphorIconsRegular.arrowRight,
-                              gradientColors: AppColors.studentGradient,
-                              onPressed: () => _gotoQuestion(_currentIndex + 1),
-                            ),
-                          )
-                        else
-                          Expanded(
-                            child: AppButton.primary(
-                              label: 'Selesaikan Kuis',
-                              icon: PhosphorIconsRegular.checkCircle,
-                              gradientColors: AppColors.studentGradient,
-                              onPressed: () async {
-                                final res = await showDialog<bool>(
-                                  context: context,
-                                  builder: (dialogContext) => WindowConfirmation(
-                                    message: 'Apakah kamu yakin ingin mengumpulkan kuis ini? Jawaban tidak dapat diubah kembali.',
-                                    onConfirm: () => Navigator.of(dialogContext).pop(true),
-                                    onCancel: () => Navigator.of(dialogContext).pop(false),
-                                  ),
-                                );
-                                if (res == true) {
-                                  await _submitQuiz();
-                                }
-                              },
-                            ),
-                          ),
-                      ],
-                    ),
                     const SizedBox(height: 16),
                   ],
                 ),

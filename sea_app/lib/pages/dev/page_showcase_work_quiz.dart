@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../theme/app_colors.dart';
-import '../../component/ui/app_button.dart';
 import '../../component/window/window_confirmation.dart';
 import '../../models/question.dart';
 import '../../models/answer_question.dart';
@@ -363,6 +362,139 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
     );
   }
 
+  Widget _buildBottomQuizControls({
+    required int currentIndex,
+    required int totalQuestions,
+    required bool isDark,
+    required VoidCallback onPrevious,
+    required VoidCallback onNext,
+    required VoidCallback onSubmit,
+  }) {
+    final isLast = currentIndex == totalQuestions - 1;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Tombol Sebelumnya
+          if (currentIndex > 0)
+            Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onPrevious,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.studentAccent.withValues(alpha: isDark ? 0.15 : 0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColors.studentAccent.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          PhosphorIconsRegular.caretLeft,
+                          size: 18,
+                          color: AppColors.studentAccent,
+                        ),
+                        const SizedBox(width: 4),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Sebelumnya',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? AppColors.textPrimaryDark : AppColors.studentAccent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          if (currentIndex > 0) const SizedBox(width: 12),
+
+          // Tombol Selanjutnya / Selesaikan Kuis
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: isLast ? onSubmit : onNext,
+                borderRadius: BorderRadius.circular(14),
+                child: Ink(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    gradient: isLast
+                        ? const LinearGradient(
+                            colors: [Color(0xFF10B981), Color(0xFF059669)],
+                          )
+                        : const LinearGradient(
+                            colors: AppColors.studentGradient,
+                          ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isLast ? const Color(0xFF10B981) : AppColors.studentAccent).withValues(alpha: 0.30),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          isLast ? 'Selesaikan Kuis' : 'Selanjutnya',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        isLast ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.caretRight,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -394,6 +526,31 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: _buildBottomQuizControls(
+            currentIndex: _currentIndex,
+            totalQuestions: _demoQuestions.length,
+            isDark: isDark,
+            onPrevious: () => setState(() => _currentIndex--),
+            onNext: () => setState(() => _currentIndex++),
+            onSubmit: () async {
+              final res = await showDialog<bool>(
+                context: context,
+                builder: (dialogContext) => WindowConfirmation(
+                  message: 'Apakah kamu yakin ingin mengumpulkan kuis demo ini?',
+                  onConfirm: () => Navigator.of(dialogContext).pop(true),
+                  onCancel: () => Navigator.of(dialogContext).pop(false),
+                ),
+              );
+              if (res == true) {
+                _submitQuizDemo();
+              }
+            },
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -620,57 +777,6 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
                 ),
               );
             }),
-
-            const SizedBox(height: 20),
-
-            // Tombol Navigasi Soal Bottom
-            Row(
-              children: [
-                if (_currentIndex > 0)
-                  Expanded(
-                    child: AppButton.secondary(
-                      label: 'Sebelumnya',
-                      icon: PhosphorIconsRegular.arrowLeft,
-                      onPressed: () {
-                        setState(() => _currentIndex--);
-                      },
-                    ),
-                  ),
-                if (_currentIndex > 0) const SizedBox(width: 12),
-                if (_currentIndex < _demoQuestions.length - 1)
-                  Expanded(
-                    child: AppButton.primary(
-                      label: 'Selanjutnya',
-                      icon: PhosphorIconsRegular.arrowRight,
-                      gradientColors: AppColors.studentGradient,
-                      onPressed: () {
-                        setState(() => _currentIndex++);
-                      },
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: AppButton.primary(
-                      label: 'Selesaikan Kuis',
-                      icon: PhosphorIconsRegular.checkCircle,
-                      gradientColors: AppColors.studentGradient,
-                      onPressed: () async {
-                        final res = await showDialog<bool>(
-                          context: context,
-                          builder: (dialogContext) => WindowConfirmation(
-                            message: 'Apakah kamu yakin ingin mengumpulkan kuis demo ini?',
-                            onConfirm: () => Navigator.of(dialogContext).pop(true),
-                            onCancel: () => Navigator.of(dialogContext).pop(false),
-                          ),
-                        );
-                        if (res == true) {
-                          _submitQuizDemo();
-                        }
-                      },
-                    ),
-                  ),
-              ],
-            ),
             const SizedBox(height: 16),
           ],
         ),
