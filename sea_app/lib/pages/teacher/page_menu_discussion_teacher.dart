@@ -481,7 +481,7 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
             )
           else
             SizedBox(
-              height: 98,
+              height: 102,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: classItems.length,
@@ -499,8 +499,8 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                       borderRadius: BorderRadius.circular(18),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        width: 105,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        width: 115,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                         decoration: BoxDecoration(
                           gradient: isSelected ? LinearGradient(colors: gradient) : null,
                           color: isSelected
@@ -528,7 +528,7 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                           children: [
                             Icon(
                               PhosphorIconsRegular.bookOpen,
-                              size: 22,
+                              size: 24,
                               color: isSelected
                                   ? Colors.white
                                   : (isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B)),
@@ -542,7 +542,7 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 11.5,
+                                    fontSize: 11,
                                     height: 1.15,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                                     color: isSelected

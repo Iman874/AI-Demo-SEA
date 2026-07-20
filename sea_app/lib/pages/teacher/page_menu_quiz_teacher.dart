@@ -455,7 +455,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
             )
           else
             SizedBox(
-              height: 98,
+              height: isQuizSelector ? 68 : 102,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: items.length,
@@ -466,16 +466,17 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                   final isSelected = id == selectedId;
 
                   if (isQuizSelector) {
+                    final isSingle = items.length == 1;
                     // Quiz Action Card Style (Presisi Referensi Image)
-                    return Padding(
-                      padding: EdgeInsets.only(right: i < items.length - 1 ? 10 : 0),
+                    return Container(
+                      width: isSingle ? (MediaQuery.of(context).size.width - 68) : 220,
+                      margin: EdgeInsets.only(right: i < items.length - 1 ? 10 : 0),
                       child: InkWell(
                         onTap: () => onSelect(id),
                         borderRadius: BorderRadius.circular(18),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          width: 215,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
                             gradient: isSelected ? LinearGradient(colors: gradient) : null,
                             color: isSelected
@@ -512,7 +513,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                                   color: isSelected ? Colors.white : accent,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 14),
                               Expanded(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -521,7 +522,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                                     Text(
                                       'Buat Kuis Baru',
                                       style: TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.bold,
                                         color: isSelected ? Colors.white : (isDark ? AppColors.textPrimaryDark : const Color(0xFF0F172A)),
                                       ),
@@ -532,7 +533,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 12,
                                         color: isSelected ? Colors.white70 : const Color(0xFF64748B),
                                       ),
                                     ),
@@ -541,7 +542,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                               ),
                               Icon(
                                 PhosphorIconsRegular.caretRight,
-                                size: 18,
+                                size: 20,
                                 color: isSelected ? Colors.white : const Color(0xFF94A3B8),
                               ),
                             ],
@@ -559,8 +560,8 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                       borderRadius: BorderRadius.circular(18),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        width: 105,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        width: 115,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                         decoration: BoxDecoration(
                           gradient: isSelected ? LinearGradient(colors: gradient) : null,
                           color: isSelected
@@ -588,7 +589,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                           children: [
                             Icon(
                               PhosphorIconsRegular.bookOpen,
-                              size: 22,
+                              size: 24,
                               color: isSelected
                                   ? Colors.white
                                   : (isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B)),
@@ -602,7 +603,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 11.5,
+                                    fontSize: 11,
                                     height: 1.15,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                                     color: isSelected
