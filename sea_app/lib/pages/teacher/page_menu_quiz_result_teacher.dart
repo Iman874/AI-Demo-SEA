@@ -251,7 +251,15 @@ class _PageMenuQuizResultTeacherState extends State<PageMenuQuizResultTeacher> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Answer from ${ans['name']}", style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 13)),
+                        Expanded(
+                          child: Text(
+                            "Answer from ${ans['name']}",
+                            style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 13),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         TextButton(
                           onPressed: () {},
                           child: const Text("View Details"),
