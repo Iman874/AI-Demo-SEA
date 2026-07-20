@@ -14,10 +14,8 @@ import '../component/window/window_dev_switch_user.dart';
 import 'teacher/page_menu_home_teacher.dart';
 import 'student/page_menu_home_student.dart';
 import 'student/page_menu_quiz_result_student.dart';
-import 'student/page_menu_discussion_student.dart';
 import 'student/page_menu_discussion_chatroom_student.dart';
 import 'teacher/page_menu_quiz_result_teacher.dart';
-import 'teacher/page_menu_discussion_teacher.dart';
 import '../models/discussion_room.dart';
 
 import '../component/window/window_view_list_class.dart';
@@ -283,21 +281,6 @@ class _PageSettingsState extends State<PageSettings> {
                       );
                     },
                   ),
-                  const Divider(height: 1, indent: 56, endIndent: 16),
-                  _SettingsTile(
-                    icon: PhosphorIconsRegular.chats,
-                    iconColor: AppColors.studentAccent,
-                    title: 'Showcase Forum Diskusi (Siswa)',
-                    subtitle: 'Pratinjau daftar & grup diskusi siswa',
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const PageMenuDiscussionStudent(),
-                        ),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1, indent: 56, endIndent: 16),
                   _SettingsTile(
                     icon: PhosphorIconsRegular.robot,
                     iconColor: AppColors.studentAccent,
@@ -322,20 +305,6 @@ class _PageSettingsState extends State<PageSettings> {
                           builder: (_) => DiscussionPageChatRoomStudent(
                             discussion: mockDiscussion,
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1, indent: 56, endIndent: 16),
-                  _SettingsTile(
-                    icon: PhosphorIconsRegular.chatCircleText,
-                    iconColor: AppColors.teacherAccent,
-                    title: 'Showcase Kelola Diskusi (Guru)',
-                    subtitle: 'Pratinjau manajemen & pembagian kelompok diskusi guru',
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const PageMenuDiscussionTeacher(),
                         ),
                       );
                     },
