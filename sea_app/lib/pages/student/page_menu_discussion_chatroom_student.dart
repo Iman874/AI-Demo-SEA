@@ -37,7 +37,7 @@ class _DiscussionPageChatRoomStudentState
   String? understandingResult;
   bool _isSending = false;
   bool _showMaterials = false;
-  bool _showFloatingSummaryCard = false;
+  bool _showProgressCard = false;
 
   SummaryDiscussion? get currentSummary {
     final idx = summaries.indexWhere((s) => s.fkIdChatroomAi == chatRoom.id);
@@ -249,7 +249,7 @@ class _DiscussionPageChatRoomStudentState
       backgroundColor: isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC),
       body: Stack(
         children: [
-          // ── Top Gradient Glow ───────────────────────────────────────────
+          // ── Top Background Glow Gradient ───────────────────────────────
           Positioned(
             top: -50,
             right: -50,
@@ -274,21 +274,34 @@ class _DiscussionPageChatRoomStudentState
                 // ── Top Header Navigation Bar ───────────────────────────────
                 _buildTopAppBar(isDark, accent),
 
+                // ── Sub-Header Floating Bar (Left Progress Icon & Right Student Summary Button)
+                _buildSubHeaderFloatingActions(isDark, accent),
+
                 // ── Main Scrollable Body Content ────────────────────────────
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: Column(
                       children: [
-                        // 1. Progress Materi Card (Tetap di Atas Sesuai Permintaan)
-                        _buildProgressMateriCard(isDark, accent),
+                        // Collapsible Progress Card (Opens when Left Progress Icon is tapped)
+                        AnimatedCrossFade(
+                          duration: const Duration(milliseconds: 250),
+                          crossFadeState: _showProgressCard
+                              ? CrossFadeState.showSecond
+                              : CrossFadeState.showFirst,
+                          firstChild: const SizedBox.shrink(),
+                          secondChild: Column(
+                            children: [
+                              _buildProgressMateriCard(isDark, accent),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
+                        ),
 
-                        const SizedBox(height: 12),
-
-                        // 2. Card Utama: Main AI Chatbot Assistant Container
+                        // Card Utama: Main AI Chatbot Assistant Container
                         _buildMainChatbotContainer(isDark, accent),
 
-                        const SizedBox(height: 120), // Extra space for floating elements
+                        const SizedBox(height: 80), // Extra space for floating input
                       ],
                     ),
                   ),
@@ -296,22 +309,6 @@ class _DiscussionPageChatRoomStudentState
               ],
             ),
           ),
-
-          // ── FLOATING RINGKASAN & EVALUASI AI CHIP (Option 3 Floating Style) ─
-          Positioned(
-            right: 16,
-            bottom: 76,
-            child: _buildFloatingSummaryChip(isDark),
-          ),
-
-          // ── Floating Expanded Summary Overlay Modal ─────────────────────
-          if (_showFloatingSummaryCard)
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 130,
-              child: _buildFloatingSummaryCardModal(isDark, accent),
-            ),
 
           // ── Bottom Floating Input Bar ────────────────────────────────────
           Positioned(
@@ -441,7 +438,7 @@ class _DiscussionPageChatRoomStudentState
           ),
           const SizedBox(width: 8),
 
-          // Toggle Materials Button Icon Top Right
+          // Toggle Materials PDF Button Icon Top Right
           InkWell(
             onTap: () => setState(() => _showMaterials = !_showMaterials),
             borderRadius: BorderRadius.circular(14),
@@ -486,7 +483,189 @@ class _DiscussionPageChatRoomStudentState
     );
   }
 
-  // ── Card Progress Materi (Tetap di Atas Sesuai Instruktur User) ─────────────
+  // ── Sub-Header Floating Action Bar (Left Progress Icon & Right Student Summary Button)
+  Widget _buildSubHeaderFloatingActions(bool isDark, Color accent) {
+    final total = materials.isNotEmpty ? materials.length : 12;
+    final done = messages.isNotEmpty ? (messages.length > total ? total : (messages.length ~/ 2)) : 0;
+    final sum = currentSummary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // 📙 Floating Icon Progress Materi (Sebelah Kiri)
+              InkWell(
+                onTap: () =>
+                    setState(() => _showProgressCard = !_showProgressCard),
+                borderRadius: BorderRadius.circular(14),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _showProgressCard
+                        ? const Color(0xFFEA580C)
+                        : (isDark
+                            ? const Color(0xFF431407)
+                            : const Color(0xFFFFF7ED)),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: const Color(0xFFFDBA74).withValues(alpha: 0.6),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFEA580C).withValues(alpha: 0.15),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        PhosphorIconsRegular.bookOpen,
+                        size: 15,
+                        color: _showProgressCard
+                            ? Colors.white
+                            : const Color(0xFFEA580C),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Progress ($done/$total)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: _showProgressCard
+                              ? Colors.white
+                              : const Color(0xFFEA580C),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        _showProgressCard
+                            ? PhosphorIconsRegular.caretUp
+                            : PhosphorIconsRegular.caretDown,
+                        size: 12,
+                        color: _showProgressCard
+                            ? Colors.white
+                            : const Color(0xFFEA580C),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ✏️ Floating Tombol Ringkasan Siswa (Sebelah Kanan - Lebih di Atas!)
+              InkWell(
+                onTap: () async {
+                  await showDialog(
+                    context: context,
+                    builder: (context) => WindowAddSummary(
+                      summaries: summaries,
+                      chatRoomId: chatRoom.id,
+                      userId: studentId ?? '',
+                      initialContent: currentSummary?.content,
+                    ),
+                  );
+                  if (!mounted) return;
+                  await _loadPersistedSummaries();
+                },
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF9333EA), Color(0xFFA855F7)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF9333EA).withValues(alpha: 0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        PhosphorIconsRegular.pencilSimple,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        sum != null ? 'Edit Evaluasi Saya' : '+ Isi Evaluasi Saya',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          if (_showMaterials && materials.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.cardDark : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Column(
+                children: materials
+                    .map((m) => Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.04)
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(PhosphorIconsRegular.filePdf,
+                                  color: Color(0xFFEA580C), size: 14),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  m.title,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : AppColors.textPrimaryLight,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ── Card Progress Materi (Ditampilkan saat Icon Progress Kiri Ditekan) ─────
   Widget _buildProgressMateriCard(bool isDark, Color accent) {
     final total = materials.isNotEmpty ? materials.length : 12;
     final done = messages.isNotEmpty ? (messages.length > total ? total : (messages.length ~/ 2)) : 0;
@@ -508,342 +687,106 @@ class _DiscussionPageChatRoomStudentState
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          Row(
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF7ED),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              PhosphorIconsRegular.bookOpen,
+              color: Color(0xFFEA580C),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Progress Materi Pembelajaran',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  done == 0
+                      ? 'Belum ada materi yang dibahas'
+                      : '$done dari $total materi telah dibahas',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : const Color(0xFFF1F5F9),
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Color(0xFFEA580C)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            width: 1,
+            height: 40,
+            color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF7ED),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  PhosphorIconsRegular.bookOpen,
-                  color: Color(0xFFEA580C),
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              RichText(
+                text: TextSpan(
                   children: [
-                    Text(
-                      'Progress Materi',
-                      style: TextStyle(
-                        fontSize: 14,
+                    TextSpan(
+                      text: '$done ',
+                      style: const TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                        color: Color(0xFFEA580C),
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      done == 0
-                          ? 'Belum ada materi yang dibahas'
-                          : '$done dari $total materi telah dibahas',
+                    TextSpan(
+                      text: '/ $total',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 13,
                         color: isDark
                             ? AppColors.textSecondaryDark
                             : AppColors.textSecondaryLight,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 6,
-                        backgroundColor: isDark
-                            ? Colors.white.withValues(alpha: 0.1)
-                            : const Color(0xFFF1F5F9),
-                        valueColor:
-                            const AlwaysStoppedAnimation<Color>(Color(0xFFEA580C)),
-                      ),
-                    ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Container(
-                width: 1,
-                height: 40,
-                color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '$done ',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFFEA580C),
-                          ),
-                        ),
-                        TextSpan(
-                          text: '/ $total',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark
-                                ? AppColors.textSecondaryDark
-                                : AppColors.textSecondaryLight,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Materi selesai',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          if (_showMaterials && materials.isNotEmpty) ...[
-            const Divider(height: 20),
-            Column(
-              children: materials
-                  .map((m) => Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.04)
-                              : const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(PhosphorIconsRegular.filePdf,
-                                color: Color(0xFFEA580C), size: 16),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                m.title,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? Colors.white
-                                      : AppColors.textPrimaryLight,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ))
-                  .toList(),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  // ── FLOATING RINGKASAN & EVALUASI AI CHIP (Option 3 Floating Style) ───────
-  Widget _buildFloatingSummaryChip(bool isDark) {
-    final sum = currentSummary;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _showFloatingSummaryCard = !_showFloatingSummaryCard;
-          });
-        },
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF9333EA), Color(0xFFA855F7)],
-            ),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF9333EA).withValues(alpha: 0.4),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                PhosphorIconsRegular.sparkle,
-                color: Colors.white,
-                size: 16,
-              ),
-              const SizedBox(width: 6),
+              const SizedBox(height: 2),
               Text(
-                understandingResult != null
-                    ? 'Evaluasi: $understandingResult'
-                    : (sum != null ? 'Lihat Ringkasan' : '+ Ringkasan AI'),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                'Materi selesai',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
                 ),
               ),
-              const SizedBox(width: 4),
-              Icon(
-                _showFloatingSummaryCard
-                    ? PhosphorIconsRegular.caretDown
-                    : PhosphorIconsRegular.caretUp,
-                color: Colors.white,
-                size: 14,
-              ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── FLOATING EXPANDED SUMMARY OVERLAY CARD MODAL ─────────────────────────
-  Widget _buildFloatingSummaryCardModal(bool isDark, Color accent) {
-    final sum = currentSummary;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFD8B4FE).withValues(alpha: 0.6),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF3E8FF),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      PhosphorIconsRegular.sparkle,
-                      color: Color(0xFF9333EA),
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Ringkasan & Evaluasi AI',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                    ),
-                  ),
-                ],
-              ),
-              InkWell(
-                onTap: () => setState(() => _showFloatingSummaryCard = false),
-                child: const Icon(PhosphorIconsRegular.x, size: 18),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            sum != null ? sum.content : 'Belum ada ringkasan percakapan yang dibuat.',
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
-            ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          if (understandingResult != null) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(PhosphorIconsRegular.checkCircle,
-                      size: 12, color: AppColors.success),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Evaluasi AI: $understandingResult',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.success,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                setState(() => _showFloatingSummaryCard = false);
-                await showDialog(
-                  context: context,
-                  builder: (context) => WindowAddSummary(
-                    summaries: summaries,
-                    chatRoomId: chatRoom.id,
-                    userId: studentId ?? '',
-                    initialContent: currentSummary?.content,
-                  ),
-                );
-                if (!mounted) return;
-                await _loadPersistedSummaries();
-              },
-              icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 14),
-              label: Text(sum == null ? 'Buat Ringkasan' : 'Edit Ringkasan'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9333EA),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
           ),
         ],
       ),
@@ -852,6 +795,8 @@ class _DiscussionPageChatRoomStudentState
 
   // ── Card Utama: Main AI Chatbot Container ──────────────────────────────────
   Widget _buildMainChatbotContainer(bool isDark, Color accent) {
+    final sum = currentSummary;
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : Colors.white,
@@ -870,6 +815,7 @@ class _DiscussionPageChatRoomStudentState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header Inside Chatbot Card
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -941,6 +887,54 @@ class _DiscussionPageChatRoomStudentState
               ],
             ),
           ),
+
+          // Optional Student Evaluation Summary Banner inside Chatbot Panel (if student filled it)
+          if (sum != null)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E8FF).withValues(alpha: isDark ? 0.2 : 0.6),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFD8B4FE).withValues(alpha: 0.5),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(PhosphorIconsRegular.pencilSimple,
+                      size: 14, color: Color(0xFF9333EA)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Evaluasi Siswa: ${sum.content}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        if (understandingResult != null)
+                          Text(
+                            'Tingkat Pemahaman AI: $understandingResult',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.success,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           const Divider(height: 1),
           if (messages.isEmpty)
             _buildEmptyStateContent(isDark, accent)

@@ -1,5 +1,26 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 21:00
+Kategori: Feature
+
+Judul:
+Penyesuaian Tata Letak Chat Room: Floating Icon Progress Materi di Kiri & Floating Tombol Evaluasi Siswa di Kanan Atas
+
+Detail:
+- Memperbarui `DiscussionPageChatRoomStudent` di `sea_app/lib/pages/student/page_menu_discussion_chatroom_student.dart`:
+  1. **Floating Progress Icon (Sebelah Kiri)**: Mengubah kartu *Progress Materi* menjadi ikon buku oranye melayang (`Progress (0/12)`) yang diletakkan di sebelah kiri sub-header. Mengklik ikon ini akan memunculkan/menyembunyikan kartu detail progress secara fleksibel.
+  2. **Floating Tombol Evaluasi Siswa (Sebelah Kanan - Lebih di Atas)**:
+     - Meletakkan tombol evaluasi melayang di posisi kanan atas sub-header (bukan di bawah dekat input bar).
+     - Memperjelas tujuan fitur: **`+ Isi Evaluasi Saya`** / **`Edit Evaluasi Saya`** (ikon pensil `PhosphorIconsRegular.pencilSimple`), di mana siswa sendiri yang mengisi ringkasan & evaluasi pembelajaran setelah bertanya/berdiskusi dengan AI.
+  3. **Visual Banner Evaluasi Siswa**: Jika siswa telah mengisi evaluasi, rangkuman evaluasi & tingkat pemahaman AI ditampilkan secara bersih di bagian atas panel obrolan chatbot.
+- Berhasil diverifikasi dengan `flutter analyze` (0 issue).
+
+Dampak:
+- Antarmuka chat room kini sangat intuitif, rapi, dan menyoroti peran aktif siswa dalam mengisi evaluasi mandiri.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 20:55
 Kategori: Feature
 
