@@ -1,5 +1,26 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 19:46
+Kategori: Bug
+
+Judul:
+Perbaikan Exception "No Material widget found" & Overflow di Halaman Forum Diskusi & Kuis
+
+Detail:
+- Menyelesaikan exception runtime Flutter `No Material widget found` pada metode helper `_buildSortChip` di halaman-halaman berikut:
+  1. `page_menu_discussion_teacher.dart` (baris 645)
+  2. `page_menu_discussion_student.dart` (baris 662)
+  3. `page_menu_quiz_teacher.dart` (baris 627)
+  4. `page_menu_quiz_student.dart` (baris 729)
+- Penyebab: Penggunaan `InkWell` secara langsung tanpa pembungkus widget `Material` di leluhur lokal terdekatnya.
+- Solusi: Membungkus widget `InkWell` dengan `Material(color: Colors.transparent)` agar efek ripple splash `InkWell` memiliki konteks `Material` yang sah.
+
+Dampak:
+- Halaman forum diskusi guru/siswa dan kuis kini dapat dibuka tanpa crash exception runtime, serta transisi penekanan chip filter berjalan mulus.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 18:27
 Kategori: Feature
 

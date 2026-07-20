@@ -667,28 +667,31 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
     required bool isDark,
     required List<Color> gradient,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: isSelected ? gradient.first : (isDark ? AppColors.cardDark : Colors.white),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? Colors.transparent : (isDark ? AppColors.borderDark : AppColors.borderLight),
-            width: 1.2,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? gradient.first : (isDark ? AppColors.cardDark : Colors.white),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : (isDark ? AppColors.borderDark : AppColors.borderLight),
+              width: 1.2,
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected
-                ? Colors.white
-                : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+            ),
           ),
         ),
       ),
