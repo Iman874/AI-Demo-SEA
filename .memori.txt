@@ -1,5 +1,46 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 16:40
+Kategori: Decision
+
+Judul:
+Keputusan Refactoring Backend v1.0.1 — 8 Task dalam 17-24 Jam
+
+Detail:
+- User menyetujui plan refactoring backend dengan versi 1.0.1.
+- Plan disimpan di `plan/2026-07-20-backend-refactor-v1.0.1/` dengan 8 task files.
+- Task 1-5 bisa dikerjakan paralel, Task 6-8 sequential.
+- Flutter client TIDAK diubah — hanya backend.
+- Scope TIDAK mencakup: API versioning, rate limiting, soft deletes, testing, API docs.
+
+Dampak:
+- Backend akan naik dari skor 3.8/10 ke target 7+/10 setelah refactoring.
+- Breaking change di response format — Flutter client perlu update parsing di sesi berikutnya.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
+Waktu   : 15:30
+Kategori: Architecture
+
+Judul:
+Analisa Lengkap Backend — Temuan Arsitektural & Rencana Refactoring
+
+Detail:
+- Melakukan analisa menyeluruh terhadap seluruh backend (9 controllers, 19 models, 20+ migrations, 35+ API endpoints).
+- File analisa disimpan di `backend/temp/`: ANALISA_BACKEND.md, TREE_STRUKTUR.md, RELASI_TABEL.md, API_ENDPOINTS.md, ANALISA_MODELS.md.
+- Temuan KRITIS: (1) Tabel `question_answer_choices` overloaded (pivot + jawaban siswa + benar/salah), (2) GeminiController = God Object (742 baris, 8+ tanggung jawab), (3) Tidak ada Auth Middleware (semua endpoint terbuka), (4) 18 dari 19 model tidak punya relationship definition, (5) env() dipanggil langsung di controller (akan gagal jika config:cache).
+- Temuan PENTING: Duplicated auth logic di 4+ tempat, raw DB queries tanpa model, silent error swallowing, response format tidak konsisten, code_class generation bug, prompt AI di-paste berulang di 4 lokasi.
+- Skor kualitas backend: 3.8/10 (Keamanan 3, Arsitektur 4, Skema DB 4, Code Quality 5, Maintainability 4).
+- Skor UI Flutter: 8.5/10 (sudah melalui modernisasi besar-besaran).
+
+Dampak:
+- Rencana refactoring bertahap 6 minggu: Prioritas 1 (auth middleware, refactor GeminiController, GeminiApiService, config API key, model relationships), Prioritas 2 (pisahkan overloaded table, UNIQUE constraints, API Resource, pagination), Prioritas 3 (API versioning, rate limiting, soft deletes).
+- Backend membutuhkan perombakan signifikan sebelum bisa di-scale atau di-production.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 14:37
 Kategori: Config
 
