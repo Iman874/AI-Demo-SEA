@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'page_choice_user.dart';
 import 'connection_config_page.dart';
+import 'student/page_menu_home_student.dart';
+import 'teacher/page_menu_home_teacher.dart';
+import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -62,9 +66,23 @@ class SplashScreenState extends State<SplashScreen>
           onConfigured: () async {
             await ApiService.checkConnection();
             if (!mounted) return;
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => ChoiceUserPage()),
-            );
+            final auth = Provider.of<AuthProvider>(context, listen: false);
+            if (auth.token != null && auth.user != null) {
+              final role = auth.user!.role;
+              if (role == 'teacher') {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const MenuHomeTeacher()),
+                );
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const MenuHomeStudent()),
+                );
+              }
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const ChoiceUserPage()),
+              );
+            }
           },
         ),
       ),

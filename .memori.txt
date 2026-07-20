@@ -1,5 +1,29 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 21:03
+Kategori: Fix
+
+Judul:
+Perbaikan Persistensi Data Login & Navigasi Auto-Login pada SplashScreen
+
+Detail:
+- **Persistensi Data User (`user_data`)**:
+  - Mengupdate `AuthProvider` (`sea_app/lib/providers/auth_provider.dart`) untuk menyimpan data profil `User` ke `SharedPreferences` (dengan kunci `user_data`) saat `login()`, `fetchUser()`, maupun `setDevModeUser()`.
+  - Pada `loadToken()`, data `auth_token` dan JSON `user_data` dibaca dari `SharedPreferences` secara langsung sehingga objek `_user` & `_token` sudah langsung tersedia saat aplikasi diluncurkan (bahkan sebelum panggilan API selesai/saat luring).
+- **Auto-Login Gate pada `SplashScreen`**:
+  - Memperbarui `SplashScreenState` (`sea_app/lib/pages/splashscreen.dart`) setelah sekuens animasi splashscreen selesai.
+  - Memeriksa apakah `auth.token != null` dan `auth.user != null`:
+    - Jika user telah login sebagai **Teacher** (`role == 'teacher'`), langsung mengarahkan pengguna ke `MenuHomeTeacher()`.
+    - Jika user telah login sebagai **Student** (`role == 'student'`), langsung mengarahkan pengguna ke `MenuHomeStudent()`.
+    - Jika belum login, barulah mengarahkan ke `ChoiceUserPage()`.
+- Berhasil diverifikasi dengan `flutter analyze` (0 issue).
+
+Dampak:
+- Pengguna tidak lagi perlu login berulang kali setiap kali aplikasi dibuka. Sesi pengguna tersimpan permanen dan otomatis masuk ke beranda.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 21:00
 Kategori: Feature
 

@@ -24,10 +24,26 @@ class AuthProvider extends ChangeNotifier {
   Future<void> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('auth_token');
+    final userStr = prefs.getString('user_data');
+    if (userStr != null && userStr.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(userStr);
+        _user = User.fromJson(Map<String, dynamic>.from(decoded));
+      } catch (e) {
+        // ignore parse error
+      }
+    }
     if (_token != null) {
       await fetchUser();
     }
     notifyListeners();
+  }
+
+  Future<void> _saveUserToPrefs(User user) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_data', jsonEncode(user.toJson()));
+    } catch (_) {}
   }
 
   Future<bool> register({required String name, required String email, required String password, required String role}) async {
@@ -92,9 +108,9 @@ class AuthProvider extends ChangeNotifier {
       AppLogger.i('FetchUser response', 'status=${resp.statusCode} body=${resp.body}');
       if (resp.statusCode == 200) {
         final data = jsonDecode(resp.body);
-        // assume API returns user object directly or under 'data'
         final userJson = data['user'] ?? data['data'] ?? data;
-  _user = User.fromJson(Map<String, dynamic>.from(userJson));
+        _user = User.fromJson(Map<String, dynamic>.from(userJson));
+        await _saveUserToPrefs(_user!);
         notifyListeners();
       }
     } catch (e) {
@@ -107,6 +123,7 @@ class AuthProvider extends ChangeNotifier {
     _user = user;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', token);
+    await _saveUserToPrefs(user);
     notifyListeners();
   }
 
@@ -115,6 +132,7 @@ class AuthProvider extends ChangeNotifier {
     _user = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
+    await prefs.remove('user_data');
     notifyListeners();
   }
 }
