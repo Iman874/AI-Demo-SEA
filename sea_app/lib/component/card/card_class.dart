@@ -14,18 +14,58 @@ class CardClassList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (classes.isEmpty) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final accent = Theme.of(context).colorScheme.primary;
+
       return Container(
+        width: double.infinity,
         margin: EdgeInsets.symmetric(
           horizontal: AppSpacing.horizontalPadding,
           vertical: AppSpacing.sm,
         ),
-        padding: const EdgeInsets.all(24),
-        decoration: AppDecorations.card(context),
-        child: Center(
-          child: Text(
-            "Belum ada kelas tersedia",
-            style: AppTextStyles.bodySm(context),
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : Colors.white,
+          borderRadius: AppDecorations.borderRadiusLg,
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 62,
+              height: 62,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                PhosphorIconsRegular.chalkboardTeacher,
+                color: accent,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Belum Ada Kelas',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Daftar kelas pembelajaran Anda akan tampil di sini',
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       );
     }
