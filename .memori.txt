@@ -1,4 +1,113 @@
 ==================================================
+Tanggal : 2026-07-20
+Waktu   : 08:54
+Kategori: Bug
+
+Judul:
+Fix Overflow pada UI Card Showcase & Komponen Card
+
+Detail:
+- Implementasi **Circular Score Progress Ring** (`CircularProgressIndicator` dengan `value: score / 100`, `strokeWidth: 3.5`, `strokeCap: StrokeCap.round`, background track 15% opacity, dan nilai "90" + sub-label "Nilai" di tengah) pada `card_quiz_result.dart`. Lingkaran ini secara otomatis memvisualisasikan kepenuhan nilai 0–100% persis sesuai desain referensi user.
+- Penggantian string ID mentah (`ID: q1`, `ID Analisis: u1`, dll) pada seluruh kartu sejenis (`card_quiz_result.dart`, `card_percentage_understanding.dart`, `card_answer_question_student.dart`, `card_conclusion_student.dart`) menjadi **Badge Chip Tag Berwarna** (seperti `[#Q1]`, `[REF #U1]`, `[#DQ1]`, `[#S1]`).
+- Total rewrite `card_material.dart` (`lib/component/card/card_material.dart`): mengganti layout lama yang hanya berupa kotak putih polos dan teks mentah `Belum ada materi yang dilampirkan` dengan tampilan UI modern & premium.
+- Menambahkan `_MaterialEmptyState` modern dengan ikon bulat `PhosphorIconsRegular.files`, judul bold, dan subteks informatif.
+- Menampilkan item materi dengan **Inner Vertical Accent Pill** (Merah untuk PDF, Biru untuk Teks), Type Icon Box 44px, badge tipe (`[DOKUMEN PDF]` / `[CATATAN TEKS]`), badge tanggal upload, dan action button bottom `Buka Dokumen PDF` / `Baca Catatan Materi` + `arrowRight`.
+- Total rewrite `card_quiz_result.dart`: mengganti tampilan kaku string raw dengan Score Badge Bulat (berwarna gradasi sesuai tingkat nilai: Emerald Green ≥85, Blue ≥70, Amber ≥55, Red <55), status pill, format tanggal & waktu manusiawi (`20 Jul 2026 • 07:05`), durasi pengerjaan, animasi staggered, dan action button bottom `Lihat Detail Hasil Kuis`.
+- Total rewrite `card_answer_question_student.dart`: mengganti ListTile lama dengan Inner Accent Pill, User Icon Circle, teks pertanyaan 3-lines, dan action button bottom.
+- Total rewrite `card_conclusion_student.dart`: menampilkan Ringkasan AI dengan aksen warna ungu (`#8B5CF6`), robot badge, teks ringkasan, dan action button bottom.
+- Total rewrite `card_percentage_understanding.dart`: menampilkan indikator pemahaman AI dengan `LinearProgressIndicator`, persentase badge bulat, icon brain, dan warna progress otomatis.
+- Total rewrite `card_question.dart`: mengganti layout lama yang tidak menampilkan pertanyaan soal dan memiliki tombol silang merah melayang dengan tampilan UI yang sangat modern & bersih.
+- Redesain aksen indikator pada `card_discussion.dart` dan `card_quiz.dart` menjadi **Inner Vertical Accent Pill** (kapsul vertikal 4px x 44px dengan `BorderRadius.circular(4)`) di dalam padding kartu.
+- Perbaiki `RenderFlex overflow` pada `AppBar title` dan section title di `page_showcase_cards.dart`.
+- Perbaiki `RenderFlex overflow` pada `_buildShowcaseSection` di `page_showcase_cards.dart` dengan membungkus `Text(title)` dalam `Expanded` dan menambahkan `overflow: TextOverflow.ellipsis`.
+- Buat `Top Control Banner` di `page_showcase_cards.dart` menjadi layout responsif menggunakan `LayoutBuilder` & `Flex` (vertikal pada layar < 340px).
+- Perbaiki overflow pada `card_percentage_understanding.dart` dengan membungkus text `Type` dalam `Expanded`.
+- Perbaiki overflow pada `card_answer_question_student.dart` & `card_conclusion_student.dart` dengan mengganti `TextButton` trailing yang lebar menjadi `IconButton` (panah `chevron_right`) yang ringkas.
+- Perbaiki overflow pada `card_quiz_result.dart` dengan mengganti `ElevatedButton` di sebelah kanan `Column` menjadi `IconButton` panah yang responsif di layar HP kecil.
+
+Dampak:
+- Tampilan `PageShowcaseCards` dan seluruh komponen Card bebas dari overflow di berbagai ukuran layar HP/Device.
+- `flutter analyze`: 0 issues found.
+==================================================
+==================================================
+Tanggal : 2026-07-20
+Waktu   : 08:47
+Kategori: Feature
+
+Judul:
+Pengembangan UI Card Showcase di Mode Pengembang (Developer Mode)
+
+Detail:
+- Membuat halaman galeri komponen baru `PageShowcaseCards` (`sea_app/lib/pages/page_showcase_cards.dart`).
+- Menampilkan 9 komponen Card secara interaktif:
+  1. `CardClassList` (`lib/component/card/card_class.dart`)
+  2. `CardQuizList` (`lib/component/card/card_quiz.dart`)
+  3. `CardDiscussionList` (`lib/component/card/card_discussion.dart`)
+  4. `CardMaterialList` (`lib/component/card/card_material.dart`)
+  5. `CardQuestionList` (`lib/component/card/card_question.dart`)
+  6. `CardQuizResultList` (`lib/component/card/card_quiz_result.dart`)
+  7. `CardAnswerQuestionStudent` (`lib/component/card/card_answer_question_student.dart`)
+  8. `CardConclusionStudent` (`lib/component/card/card_conclusion_student.dart`)
+  9. `CardPercentageUnderstanding` (`lib/component/card/card_percentage_understanding.dart`)
+- Dilengkapi dengan filter toggle state ("Populated Data" vs "Empty State") untuk memudahkan pengujian UI.
+- Semua tombol action pada card terhubung dengan `AppNotification.show()` toast/snackbar.
+- Menambahkan tile menu "Showcase Komponen Card" pada `PageSettings` (`sea_app/lib/pages/page_settings.dart`) di bawah section Mode Pengembang (`_isDeveloperMode`).
+
+Dampak:
+- Developer dapat memeriksa seluruh komponen kartu aplikasi di satu tempat dalam mode pengembang.
+- `flutter analyze`: 0 issues found pada file baru & file settings.
+==================================================
+==================================================
+Tanggal : 2026-07-20
+Waktu   : 01:00
+Kategori: Feature
+
+Judul:
+Modernisasi Halaman Quiz & Diskusi Room (Siswa & Guru)
+
+Detail:
+- Ganti DropdownButtonFormField kelas → horizontal chip scroll row (AnimatedContainer, gradient saat selected, shadow glow).
+- Tambah `_buildSectionHeader()`: gradient accent bar 4px kiri + judul bold + count badge pill di kanan.
+- Upgrade `CardQuizList` & `CardDiscussionList`: left accent bar gradient (IntrinsicHeight+Row), empty state premium (ikon bulat + teks), action button full-width di bawah card (bukan icon 38px).
+- Tambah `_DiscussionBadge` dengan dot/icon + `_QuizBadge` dengan pill kecil.
+- Tambah `RefreshIndicator` (pull-to-refresh) di semua 4 halaman.
+- Tambah `_buildErrorCard()`: ikon WiFi off + pesan + tombol "Coba Lagi" gradient.
+- Bottom padding `SizedBox(height: 100)` agar konten tidak tertutup bottom nav.
+- Hapus `SafeArea` berlebih di `page_menu_discussion_teacher.dart`.
+- Teacher Quiz: dropdown kuis kedua → chip row juga.
+
+File diubah:
+- `sea_app/lib/component/card/card_quiz.dart` (full rewrite, API tidak berubah)
+- `sea_app/lib/component/card/card_discussion.dart` (full rewrite, API tidak berubah)
+- `sea_app/lib/pages/student/page_menu_quiz_student.dart`
+- `sea_app/lib/pages/student/page_menu_discussion_student.dart`
+- `sea_app/lib/pages/teacher/page_menu_quiz_teacher.dart`
+- `sea_app/lib/pages/teacher/page_menu_discussion_teacher.dart`
+
+Dampak:
+- Semua 4 halaman tampil lebih modern & konsisten dengan dashboard.
+- flutter analyze: tidak ada error baru (2 info use_build_context_synchronously sudah ada sebelumnya).
+- API/logic tidak berubah, hanya UI layer.
+==================================================
+==================================================
+Tanggal : 2026-07-20
+Waktu   : 00:13
+Kategori: Bug
+
+Judul:
+Fix Bug Bottom Navigation "Card Kedua" di Halaman Panduan
+
+Detail:
+- Penyebab: `PageGuide` menggunakan `Scaffold` + `SafeArea` sendiri di dalamnya, padahal sudah di-host dalam `Scaffold` utama dengan `extendBody: true`.
+- `SafeArea` dalam nested `Scaffold` menambahkan padding bawah ekstra (setara tinggi system bottom inset / bottom nav) sehingga muncul ruang kosong seperti "card kedua" di area bottom navigation, yang tidak terjadi di halaman lain.
+- Fix: Hapus `Scaffold` dan `SafeArea` dari `PageGuide`. Cukup gunakan `Padding + Column` biasa, karena `SafeArea` dan `Scaffold` sudah disediakan oleh halaman induk.
+- File: `page_guide.dart`
+- Verifikasi: flutter analyze 15 issues (sama dengan baseline, tidak ada issue baru dari perubahan ini)
+
+Dampak:
+- Halaman Panduan kini memiliki tampilan bottom navigation yang konsisten dengan halaman lain — tidak ada lagi "card kedua" yang menonjol di bawah.
+==================================================
+==================================================
 Tanggal : 2026-07-19
 Waktu   : 23:13
 Kategori: Refactor

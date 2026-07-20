@@ -79,15 +79,12 @@ class _PageGuideState extends State<PageGuide> {
 
     final list = entries[_role] ?? entries['student']!;
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Segmented Control (Role Selector)
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Segmented Control (Role Selector)
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
@@ -252,8 +249,6 @@ class _PageGuideState extends State<PageGuide> {
               ),
             ],
           ),
-        ),
-      ),
-    );
+        );
   }
 }

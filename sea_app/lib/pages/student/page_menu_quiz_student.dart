@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
 import '../../component/card/card_quiz.dart';
 import '../../models/quiz.dart';
-// imports for quiz_student and user removed: this page is API-only and no longer uses local dummy data
 import '../../models/class.dart';
-// user_class removed
 import '../../services/api_service.dart';
 import 'page_menu_quiz_work_student.dart';
 import '../../models/question.dart';
@@ -14,6 +12,7 @@ import 'dart:convert';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../component/state/skeleton_loading.dart';
+import '../../theme/app_colors.dart';
 
 class PageMenuQuizStudent extends StatefulWidget {
   const PageMenuQuizStudent({super.key});
@@ -94,224 +93,406 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const SkeletonListContent();
-    if (_error != null) return Center(child: Text('Error: $_error'));
-  // Quizzes loaded from server for the selected class
-  final activeQuizzes = _activeQuizzes;
-  final completedQuizzes = _completedQuizzes;
-
-    final hasClass = studentClasses.isNotEmpty;
-    final dropdownValue = hasClass && studentClasses.any((c) => c.idClass == selectedClassId)
-        ? selectedClassId
-        : (hasClass ? studentClasses.first.idClass : null);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeQuizzes = _activeQuizzes;
+    final completedQuizzes = _completedQuizzes;
+    const gradient = AppColors.studentGradient;
+    const accent = AppColors.studentAccent;
 
-    return SafeArea(
+    if (_error != null) {
+      return _buildErrorCard(_error!, isDark, accent, gradient);
+    }
+
+    return RefreshIndicator(
+      color: accent,
+      backgroundColor: isDark ? AppColors.cardDark : Colors.white,
+      onRefresh: _loadClasses,
       child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Dropdown kelas yang diikuti student
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-                child: Text(
-                  "Pilih Kelas",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-                      width: 1,
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+
+            // ── Class chip selector ──────────────────────────────────────
+            _buildSectionHeader('Pilih Kelas', studentClasses.length, isDark, gradient),
+            _buildClassChips(isDark, gradient, accent),
+            const SizedBox(height: 8),
+
+            // ── Kuis Aktif ───────────────────────────────────────────────
+            _buildSectionHeader('Kuis Aktif Kelas', activeQuizzes.length, isDark, gradient),
+            CardQuizList(
+              quizzes: activeQuizzes,
+              onViewResult: (quiz) async {
+                final navigator = Navigator.of(context);
+                final didFinish = await navigator.push(
+                  MaterialPageRoute(
+                    builder: (_) => PageMenuQuizWorkStudent(
+                      quizId: quiz.idQuiz,
+                      title: quiz.title,
+                      duration: quiz.duration,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
                   ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButtonFormField<String>(
-                      value: dropdownValue,
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                        border: InputBorder.none,
-                        prefixIcon: Icon(
-                          PhosphorIconsRegular.graduationCap,
-                          color: isDark ? Colors.white38 : const Color(0xFF64748B),
+                );
+                if (didFinish == true) {
+                  if (!mounted) return;
+                  await _loadQuizzesForClass(selectedClassId);
+                  if (mounted) setState(() {});
+                }
+              },
+              buttonLabel: 'Mulai Kuis',
+            ),
+
+            // ── Kuis Selesai ─────────────────────────────────────────────
+            _buildSectionHeader('Kuis Selesai', completedQuizzes.length, isDark, gradient),
+            CardQuizList(
+              quizzes: completedQuizzes,
+              onViewResult: (quiz) async {
+                final navigator = Navigator.of(context);
+                final auth = Provider.of<AuthProvider>(context, listen: false);
+                final token = auth.token;
+                try {
+                  final detailResp = await ApiService.getQuizResultDetails(
+                    userId: auth.user?.id ?? '',
+                    quizId: quiz.idQuiz,
+                    token: token,
+                  );
+                  if (detailResp.statusCode == 200) {
+                    final body = jsonDecode(detailResp.body);
+                    final data = body['data'] ?? {};
+                    final perQ = (data['per_question'] as List<dynamic>?) ?? [];
+                    final summary = data['summary'] ?? data;
+                    final qResp = await ApiService.getQuizQuestions(quizId: quiz.idQuiz);
+                    List<dynamic> qItems = [];
+                    if (qResp.statusCode == 200) {
+                      final qb = jsonDecode(qResp.body);
+                      qItems = (qb['data'] as List<dynamic>?) ?? [];
+                    }
+                    final questions = qItems.map((e) {
+                      final choices = (e['choices'] as List<dynamic>?)
+                              ?.map((c) => AnswerQuestion(
+                                    idAnswerChoice: (c['id'] ?? '').toString(),
+                                    content: (c['content'] ?? '').toString(),
+                                    isCorrect: false,
+                                    createAt: DateTime.now(),
+                                    updateAt: DateTime.now(),
+                                  ))
+                              .toList() ??
+                          [];
+                      return Question(
+                        idQuestion: (e['id_question'] ?? '').toString(),
+                        number: (e['number'] ?? 0) as int,
+                        question: (e['question_text'] ?? '').toString(),
+                        poin: (e['point'] ?? 0) as int,
+                        fkIdQuiz: quiz.idQuiz,
+                        fkIdMaterial: e['fk_id_material']?.toString(),
+                        answerChoices: choices,
+                        createAt: DateTime.now(),
+                        updateAt: DateTime.now(),
+                      );
+                    }).toList();
+                    final answers = <String, String>{};
+                    for (var pq in perQ) {
+                      final qid = (pq['question_id'] ?? '').toString();
+                      final sel = (pq['selected_choice_id'] ?? '')?.toString() ?? '';
+                      if (qid.isNotEmpty && sel.isNotEmpty) answers[qid] = sel;
+                    }
+                    final score = (summary['score'] is int)
+                        ? summary['score'] as int
+                        : int.tryParse((summary['score'] ?? '').toString()) ?? 0;
+                    if (!mounted) return;
+                    await navigator.push(
+                      MaterialPageRoute(
+                        builder: (_) => PageMenuQuizResultStudent(
+                          questions: questions,
+                          answers: answers,
+                          score: score,
+                          perQuestion: perQ,
                         ),
                       ),
-                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                      style: TextStyle(
-                        color: isDark ? Colors.white : const Color(0xFF0F172A),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      items: hasClass
-                          ? studentClasses.map((c) {
-                              return DropdownMenuItem(
-                                value: c.idClass,
-                                child: Text(c.name),
-                              );
-                            }).toList()
-                          : [],
-                      onChanged: hasClass
-                          ? (val) async {
-                              if (val != null) {
-                                setState(() => selectedClassId = val);
-                                await _loadQuizzesForClass(val);
-                                if (mounted) setState(() {});
-                              }
-                            }
-                          : null,
-                      hint: const Text("Tidak ada kelas tersedia", style: TextStyle(fontSize: 14)),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Active Quizzes
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-                child: Text(
-                  "Kuis Aktif Kelas",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  ),
-                ),
-              ),
-              CardQuizList(
-                quizzes: activeQuizzes,
-                onViewResult: (quiz) async {
-                  final navigator = Navigator.of(context);
-                  final didFinish = await navigator.push(MaterialPageRoute(builder: (_) => PageMenuQuizWorkStudent(
-                    quizId: quiz.idQuiz,
-                    title: quiz.title,
-                    duration: quiz.duration,
-                  )));
-                  if (didFinish == true) {
+                    );
+                  } else {
                     if (!mounted) return;
-                    await _loadQuizzesForClass(selectedClassId);
-                    if (mounted) setState(() {});
-                  }
-                },
-                buttonLabel: "Mulai Kuis",
-              ),
-              const SizedBox(height: 12),
-
-              // Completed Quizzes
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-                child: Text(
-                  "Kuis Selesai",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  ),
-                ),
-              ),
-              CardQuizList(
-                quizzes: completedQuizzes,
-                onViewResult: (quiz) async {
-                  // fetch detailed result and questions, then navigate to result page
-                  final navigator = Navigator.of(context);
-                  final auth = Provider.of<AuthProvider>(context, listen: false);
-                  final token = auth.token;
-                  try {
-                    final detailResp = await ApiService.getQuizResultDetails(userId: auth.user?.id ?? '', quizId: quiz.idQuiz, token: token);
-                    if (detailResp.statusCode == 200) {
-                      final body = jsonDecode(detailResp.body);
-                      final data = body['data'] ?? {};
-                      final perQ = (data['per_question'] as List<dynamic>?) ?? [];
-                      final summary = data['summary'] ?? data;
-
-                      // fetch questions to obtain choices content
-                      final qResp = await ApiService.getQuizQuestions(quizId: quiz.idQuiz);
-                      List<dynamic> qItems = [];
-                      if (qResp.statusCode == 200) {
-                        final qb = jsonDecode(qResp.body);
-                        qItems = (qb['data'] as List<dynamic>?) ?? [];
-                      }
-
-                      // build Question objects similar to work page
-                      final questions = qItems.map((e) {
-                        final choices = (e['choices'] as List<dynamic>?)?.map((c) => AnswerQuestion(
-                              idAnswerChoice: (c['id'] ?? '').toString(),
-                              content: (c['content'] ?? '').toString(),
-                              isCorrect: false,
-                              createAt: DateTime.now(),
-                              updateAt: DateTime.now(),
-                            )).toList() ?? [];
-                        return Question(
-                          idQuestion: (e['id_question'] ?? '').toString(),
-                          number: (e['number'] ?? 0) as int,
-                          question: (e['question_text'] ?? '').toString(),
-                          poin: (e['point'] ?? 0) as int,
-                          fkIdQuiz: quiz.idQuiz,
-                          fkIdMaterial: e['fk_id_material']?.toString(),
-                          answerChoices: choices,
-                          createAt: DateTime.now(),
-                          updateAt: DateTime.now(),
-                        );
-                      }).toList();
-
-                      // build answers map from per_question
-                      final answers = <String, String>{};
-                      for (var pq in perQ) {
-                        final qid = (pq['question_id'] ?? '').toString();
-                        final sel = (pq['selected_choice_id'] ?? '')?.toString() ?? '';
-                        if (qid.isNotEmpty && sel.isNotEmpty) answers[qid] = sel;
-                      }
-
-                      final score = (summary['score'] is int) ? summary['score'] as int : int.tryParse((summary['score'] ?? '').toString()) ?? 0;
-
-                      if (!mounted) return;
-                      await navigator.push(MaterialPageRoute(builder: (_) => PageMenuQuizResultStudent(
-                        questions: questions,
-                        answers: answers,
-                        score: score,
-                        perQuestion: perQ,
-                      )));
-                    } else {
-                      // fallback: show simple message
-                      if (!mounted) return;
-                      await showDialog(context: navigator.context, builder: (_) => AlertDialog(
+                    await showDialog(
+                      context: navigator.context,
+                      builder: (_) => AlertDialog(
                         title: const Text('Error'),
-                        content: Text('Could not load quiz result (status ${detailResp.statusCode})'),
-                        actions: [TextButton(onPressed: () => Navigator.of(navigator.context).pop(), child: const Text('OK'))],
-                      ));
-                    }
-                  } catch (e) {
-                    if (!mounted) return;
-                    await showDialog(context: navigator.context, builder: (_) => AlertDialog(
+                        content: Text(
+                            'Could not load quiz result (status ${detailResp.statusCode})'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(navigator.context).pop(),
+                            child: const Text('OK'),
+                          )
+                        ],
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (!mounted) return;
+                  await showDialog(
+                    context: navigator.context,
+                    builder: (_) => AlertDialog(
                       title: const Text('Error'),
                       content: Text(e.toString()),
-                      actions: [TextButton(onPressed: () => Navigator.of(navigator.context).pop(), child: const Text('OK'))],
-                    ));
-                  }
-                },
-                buttonLabel: "View Quiz Results",
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(navigator.context).pop(),
+                          child: const Text('OK'),
+                        )
+                      ],
+                    ),
+                  );
+                }
+              },
+              buttonLabel: 'Lihat Hasil',
+            ),
+
+            const SizedBox(height: 100), // ruang untuk bottom nav
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Section header: accent bar + judul + count badge ──────────────────────
+  Widget _buildSectionHeader(
+    String title,
+    int count,
+    bool isDark,
+    List<Color> gradient,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: gradient,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
-              const SizedBox(height: 24),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: gradient.first.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '$count',
+              style: TextStyle(
+                color: gradient.first,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Horizontal chip row untuk pilih kelas ─────────────────────────────────
+  Widget _buildClassChips(
+    bool isDark,
+    List<Color> gradient,
+    Color accent,
+  ) {
+    if (studentClasses.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                PhosphorIconsRegular.graduationCap,
+                color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Tidak ada kelas tersedia',
+                style: TextStyle(
+                  color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                  fontSize: 13,
+                ),
+              ),
             ],
           ),
+        ),
+      );
+    }
+    return SizedBox(
+      height: 38,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        itemCount: studentClasses.length,
+        itemBuilder: (_, i) {
+          final c = studentClasses[i];
+          final isSelected = c.idClass == selectedClassId;
+          return Padding(
+            padding: EdgeInsets.only(
+              right: i < studentClasses.length - 1 ? 8 : 0,
+            ),
+            child: GestureDetector(
+              onTap: () async {
+                if (isSelected) return;
+                setState(() => selectedClassId = c.idClass);
+                await _loadQuizzesForClass(c.idClass);
+                if (mounted) setState(() {});
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? LinearGradient(colors: gradient)
+                      : null,
+                  color: isSelected
+                      ? null
+                      : (isDark ? AppColors.cardDark : Colors.white),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.transparent
+                        : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                    width: 1.5,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: gradient.first.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  c.name,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ── Error card dengan tombol retry ────────────────────────────────────────
+  Widget _buildErrorCard(
+    String error,
+    bool isDark,
+    Color accent,
+    List<Color> gradient,
+  ) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.wifi_off_rounded,
+                color: AppColors.error,
+                size: 30,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Gagal Memuat Data',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: _loadClasses,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: gradient),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: gradient.first.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  'Coba Lagi',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

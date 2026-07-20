@@ -57,6 +57,8 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
     final prov = Provider.of<QuizProvider>(context);
     final classes = prov.classes;
     final quizzes = prov.quizzes;
+    const gradient = AppColors.teacherGradient;
+    const accent = AppColors.teacherAccent;
 
     void ensureQuizzesForClass(String? classId) async {
       if (classId != null) {
@@ -72,157 +74,68 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
       }
     }
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18),
+    return RefreshIndicator(
+      color: accent,
+      backgroundColor: isDark ? AppColors.cardDark : Colors.white,
+      onRefresh: () async {
+        final ok = await prov.loadClasses();
+        if (ok && prov.classes.isNotEmpty) {
+          selectedClassId ??= prov.classes.first['id_class'].toString();
+          await prov.loadQuizzes(classId: selectedClassId);
+          if (prov.quizzes.isNotEmpty) {
+            selectedQuizId ??= prov.quizzes.first['id_quiz']?.toString() ?? prov.quizzes.first['id']?.toString();
+            await prov.loadMaterials(quizId: selectedQuizId);
+          }
+        }
+        if (mounted) setState(() {});
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Pilih Kelas
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-              child: Text(
-                "Pilih Kelas",
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButtonFormField<String>(
-                    value: selectedClassId,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      border: InputBorder.none,
-                      prefixIcon: Icon(
-                        PhosphorIconsRegular.graduationCap,
-                        color: isDark ? Colors.white38 : const Color(0xFF64748B),
-                      ),
-                    ),
-                    dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    items: classes.map((c) {
-                      return DropdownMenuItem(
-                        value: c['id_class']?.toString() ?? '',
-                        child: Text(c['name']?.toString() ?? ''),
-                      );
-                    }).toList(),
-                    onChanged: (val) async {
-                      if (val != null) {
-                        setState(() => selectedClassId = val);
-                        ensureQuizzesForClass(val);
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
-            // Dropdown Pilih Kuis Aktif
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 6),
-              child: Text(
-                "Pilih Kuis Aktif",
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                ),
-              ),
+            // ── Pilih Kelas (chip row) ─────────────────────────────────
+            _buildSectionHeader('Pilih Kelas', classes.length, isDark, gradient),
+            _buildMapChips(
+              isDark: isDark,
+              gradient: gradient,
+              items: classes,
+              idKey: 'id_class',
+              labelKey: 'name',
+              selectedId: selectedClassId,
+              onSelect: (val) async {
+                setState(() => selectedClassId = val);
+                ensureQuizzesForClass(val);
+              },
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButtonFormField<String>(
-                    value: selectedQuizId,
-                    decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      border: InputBorder.none,
-                      prefixIcon: Icon(
-                        PhosphorIconsRegular.checkCircle,
-                        color: isDark ? Colors.white38 : const Color(0xFF64748B),
-                      ),
-                    ),
-                    dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    items: quizzes.map((q) {
-                      final qId = q['id_quiz']?.toString() ?? q['id']?.toString() ?? '';
-                      return DropdownMenuItem(
-                        value: qId,
-                        child: Text(q['title']?.toString() ?? ''),
-                      );
-                    }).toList(),
-                    onChanged: (val) async {
-                      if (val != null) {
-                        setState(() => selectedQuizId = val);
-                        await prov.loadMaterials(quizId: val);
-                        if (mounted) setState(() {});
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
-            // Materi Kuis
+            // ── Pilih Kuis (chip row, untuk materi) ─────────────────────
+            if (quizzes.isNotEmpty) ...[
+              _buildSectionHeader('Pilih Kuis (untuk Materi)', quizzes.length, isDark, gradient),
+              _buildMapChips(
+                isDark: isDark,
+                gradient: gradient,
+                items: quizzes,
+                idKey: 'id_quiz',
+                labelKey: 'title',
+                selectedId: selectedQuizId,
+                onSelect: (val) async {
+                  setState(() => selectedQuizId = val);
+                  await prov.loadMaterials(quizId: val);
+                  if (mounted) setState(() {});
+                },
+              ),
+              const SizedBox(height: 4),
+            ],
+
+            // ── Dokumen & Materi Kuis ──────────────────────────────────
             if (prov.materials.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
-                child: Text(
-                  "Dokumen & Materi Kuis",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  ),
-                ),
-              ),
+              _buildSectionHeader('Dokumen & Materi Kuis', prov.materials.length, isDark, gradient),
               CardMaterialList(
                 materials: prov.materials.map((m) {
                   return MaterialPdfJson.fromJson(m);
@@ -233,7 +146,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               child: AppButton.primary(
-                label: "Tambah Materi Kuis",
+                label: 'Tambah Materi Kuis',
                 icon: PhosphorIconsRegular.upload,
                 gradientColors: AppColors.teacherGradient,
                 onPressed: () async {
@@ -251,20 +164,9 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                 },
               ),
             ),
-            const SizedBox(height: 12),
 
-            // Daftar Kuis
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
-              child: Text(
-                "Daftar Kuis",
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                ),
-              ),
-            ),
+            // ── Daftar Kuis ──────────────────────────────────────────────
+            _buildSectionHeader('Daftar Kuis', quizzes.length, isDark, gradient),
             CardQuizList(
               quizzes: quizzes.map((q) {
                 return Quiz(
@@ -292,7 +194,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               child: AppButton.primary(
-                label: "Buat Kuis Baru",
+                label: 'Buat Kuis Baru',
                 icon: PhosphorIconsRegular.clipboardText,
                 gradientColors: AppColors.teacherGradient,
                 onPressed: () async {
@@ -309,8 +211,169 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
                 },
               ),
             ),
+
+            const SizedBox(height: 100), // ruang untuk bottom nav
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Section header: accent bar + judul + count badge ────────────────────
+  Widget _buildSectionHeader(
+    String title,
+    int count,
+    bool isDark,
+    List<Color> gradient,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: gradient,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: gradient.first.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '$count',
+              style: TextStyle(
+                color: gradient.first,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Chip row untuk List<Map<String,dynamic>> (kelas & kuis guru) ────────
+  Widget _buildMapChips({
+    required bool isDark,
+    required List<Color> gradient,
+    required List<Map<String, dynamic>> items,
+    required String idKey,
+    required String labelKey,
+    required String? selectedId,
+    required void Function(String) onSelect,
+  }) {
+    if (items.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                PhosphorIconsRegular.graduationCap,
+                color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Tidak ada data tersedia',
+                style: TextStyle(
+                  color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return SizedBox(
+      height: 38,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        itemCount: items.length,
+        itemBuilder: (_, i) {
+          final item = items[i];
+          final id = item[idKey]?.toString() ?? item['id']?.toString() ?? '';
+          final label = item[labelKey]?.toString() ?? '';
+          final isSelected = id == selectedId;
+          return Padding(
+            padding: EdgeInsets.only(right: i < items.length - 1 ? 8 : 0),
+            child: GestureDetector(
+              onTap: () {
+                if (isSelected) return;
+                onSelect(id);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+                decoration: BoxDecoration(
+                  gradient: isSelected ? LinearGradient(colors: gradient) : null,
+                  color: isSelected
+                      ? null
+                      : (isDark ? AppColors.cardDark : Colors.white),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.transparent
+                        : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                    width: 1.5,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: gradient.first.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -8,6 +8,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_colors.dart';
 import 'connection_config_page.dart';
 import 'page_choice_user.dart';
+import 'page_showcase_cards.dart';
 
 import '../component/window/window_view_list_class.dart';
 import '../component/window/window_add_class.dart';
@@ -127,6 +128,26 @@ class _PageSettingsState extends State<PageSettings> {
                         context,
                         'Gagal! Terjadi kesalahan sistem pada sampel demo.',
                         isError: true,
+                      );
+                    },
+                  ),
+                ],
+              ),
+
+              AppSpacing.hXxl,
+              _SectionTitle(title: 'Showcase Komponen Card (UI Gallery)'),
+              AppSpacing.hSm,
+              _SettingsCard(
+                children: [
+                  _SettingsTile(
+                    icon: PhosphorIconsRegular.cards,
+                    title: 'Showcase Komponen Card',
+                    subtitle: 'Uji & lihat galeri seluruh 9 komponen Card',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PageShowcaseCards(),
+                        ),
                       );
                     },
                   ),
