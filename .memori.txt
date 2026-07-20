@@ -1,5 +1,21 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 13:44
+Kategori: Bug
+
+Judul:
+Perbaikan RenderFlex Overflow 2.0px pada Kartu Pilihan Kelas
+
+Detail:
+- Memperbaiki `RenderFlex overflowed by 2.0 pixels on the bottom` pada kartu persegi pilihan kelas di 4 halaman (`page_menu_quiz_student.dart`, `page_menu_quiz_teacher.dart`, `page_menu_discussion_student.dart`, `page_menu_discussion_teacher.dart`).
+- Mengatur `height: 98` pada container ListView, menyesuaikan padding vertikal `AnimatedContainer` menjadi `EdgeInsets.symmetric(horizontal: 10, vertical: 8)`, serta membungkus nama kelas dengan `Expanded` + `Center` (maxLines: 2, height: 1.15).
+
+Dampak:
+- Tidak ada lagi pesan error overflow striped bar pada bagian bawah kartu pilihan kelas pada berbagai resolusi layar.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 13:41
 Kategori: Refactor
 
