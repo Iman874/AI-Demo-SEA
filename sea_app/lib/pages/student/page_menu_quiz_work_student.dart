@@ -442,8 +442,12 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                     ),
                     const SizedBox(height: 10),
 
-                    ...q.answerChoices.map((c) {
+                    ...q.answerChoices.asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final c = entry.value;
                       final isSelected = selectedChoice == c.idAnswerChoice;
+                      final letter = String.fromCharCode(65 + idx); // A, B, C, D...
+
                       return Container(
                         margin: const EdgeInsets.only(bottom: 10),
                         child: InkWell(
@@ -467,11 +471,12 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                             child: Row(
                               children: [
                                 Container(
-                                  width: 24,
-                                  height: 24,
+                                  width: 28,
+                                  height: 28,
+                                  alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: isSelected ? AppColors.studentAccent : Colors.transparent,
+                                    color: isSelected ? AppColors.studentAccent : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100),
                                     border: Border.all(
                                       color: isSelected
                                           ? AppColors.studentAccent
@@ -480,7 +485,14 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                                   ),
                                   child: isSelected
                                       ? const Icon(Icons.check, size: 16, color: Colors.white)
-                                      : null,
+                                      : Text(
+                                          letter,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                                          ),
+                                        ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
