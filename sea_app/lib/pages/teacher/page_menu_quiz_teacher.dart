@@ -99,8 +99,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
           children: [
             const SizedBox(height: 8),
 
-            // ── Pilih Kelas (chip row) ─────────────────────────────────
-            _buildSectionHeader('Pilih Kelas', classes.length, isDark, gradient),
+            // ── Pilih Kelas Card ───────────────────────────────────────
             _buildMapChips(
               isDark: isDark,
               gradient: gradient,
@@ -315,7 +314,7 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
     );
   }
 
-  // ── Chip row untuk List<Map<String,dynamic>> (kelas & kuis guru) ────────
+  // ── Card Selector Modern untuk List<Map<String,dynamic>> ────────────────
   Widget _buildMapChips({
     required bool isDark,
     required List<Color> gradient,
@@ -324,98 +323,171 @@ class _PageMenuQuizTeacherState extends State<PageMenuQuizTeacher> {
     required String labelKey,
     required String? selectedId,
     required void Function(String) onSelect,
+    String title = 'Pilih Kelas',
   }) {
-    if (items.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.cardDark : Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+    final accent = gradient.first;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 3,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: gradient,
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${items.length} ${title.contains("Kelas") ? "Kelas" : "Item"}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: accent,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Row(
-            children: [
-              Icon(
-                PhosphorIconsRegular.graduationCap,
-                color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
-                size: 18,
-              ),
-              const SizedBox(width: 10),
-              Text(
+
+          const SizedBox(height: 12),
+
+          if (items.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text(
                 'Tidak ada data tersedia',
                 style: TextStyle(
                   color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
-                  fontSize: 13,
+                  fontSize: 12,
                 ),
               ),
-            ],
-          ),
-        ),
-      );
-    }
-    return SizedBox(
-      height: 38,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        itemCount: items.length,
-        itemBuilder: (_, i) {
-          final item = items[i];
-          final id = item[idKey]?.toString() ?? item['id']?.toString() ?? '';
-          final label = item[labelKey]?.toString() ?? '';
-          final isSelected = id == selectedId;
-          return Padding(
-            padding: EdgeInsets.only(right: i < items.length - 1 ? 8 : 0),
-            child: GestureDetector(
-              onTap: () {
-                if (isSelected) return;
-                onSelect(id);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-                decoration: BoxDecoration(
-                  gradient: isSelected ? LinearGradient(colors: gradient) : null,
-                  color: isSelected
-                      ? null
-                      : (isDark ? AppColors.cardDark : Colors.white),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected
-                        ? Colors.transparent
-                        : (isDark ? AppColors.borderDark : AppColors.borderLight),
-                    width: 1.5,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: gradient.first.withValues(alpha: 0.25),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+            )
+          else
+            SizedBox(
+              height: 38,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: items.length,
+                itemBuilder: (_, i) {
+                  final item = items[i];
+                  final id = item[idKey]?.toString() ?? item['id']?.toString() ?? '';
+                  final label = item[labelKey]?.toString() ?? '';
+                  final isSelected = id == selectedId;
+                  return Padding(
+                    padding: EdgeInsets.only(right: i < items.length - 1 ? 8 : 0),
+                    child: InkWell(
+                      onTap: () {
+                        if (isSelected) return;
+                        onSelect(id);
+                      },
+                      borderRadius: BorderRadius.circular(14),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: isSelected ? LinearGradient(colors: gradient) : null,
+                          color: isSelected
+                              ? null
+                              : (isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFF1F5F9)),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.transparent
+                                : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0)),
+                            width: 1,
                           ),
-                        ]
-                      : null,
-                ),
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected
-                        ? Colors.white
-                        : (isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight),
-                  ),
-                ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: gradient.first.withValues(alpha: 0.25),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              PhosphorIconsRegular.chalkboard,
+                              size: 14,
+                              color: isSelected
+                                  ? Colors.white
+                                  : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark
+                                        ? AppColors.textSecondaryDark
+                                        : AppColors.textSecondaryLight),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-          );
-        },
+        ],
       ),
     );
   }
