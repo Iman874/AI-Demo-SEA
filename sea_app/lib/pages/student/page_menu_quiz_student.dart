@@ -488,7 +488,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
             )
           else
             SizedBox(
-              height: 92,
+              height: 98,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: studentClasses.length,
@@ -510,7 +510,7 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         width: 105,
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         decoration: BoxDecoration(
                           gradient: isSelected ? LinearGradient(colors: gradient) : null,
                           color: isSelected
@@ -538,23 +538,28 @@ class _PageMenuQuizStudentState extends State<PageMenuQuizStudent> {
                           children: [
                             Icon(
                               PhosphorIconsRegular.bookOpen,
-                              size: 24,
+                              size: 22,
                               color: isSelected
                                   ? Colors.white
                                   : (isDark ? AppColors.textSecondaryDark : const Color(0xFF64748B)),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              c.name,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                color: isSelected
-                                    ? Colors.white
-                                    : (isDark ? AppColors.textPrimaryDark : const Color(0xFF334155)),
+                            const SizedBox(height: 6),
+                            Expanded(
+                              child: Center(
+                                child: Text(
+                                  c.name,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    height: 1.15,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : (isDark ? AppColors.textPrimaryDark : const Color(0xFF334155)),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
