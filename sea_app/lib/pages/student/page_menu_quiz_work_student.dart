@@ -251,7 +251,6 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : Colors.white,
         border: Border(
@@ -262,66 +261,60 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppColors.studentAccent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.studentAccent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        PhosphorIconsRegular.listNumbers,
+                        size: 14,
+                        color: AppColors.studentAccent,
+                      ),
                     ),
-                    child: const Icon(
-                      PhosphorIconsRegular.listNumbers,
-                      size: 16,
+                    const SizedBox(width: 8),
+                    Text(
+                      'Navigasi Soal',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.studentAccent.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$answeredCount dari $totalQuestions Terjawab',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
                       color: AppColors.studentAccent,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Navigasi Soal',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.studentAccent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  '$answeredCount dari $totalQuestions Terjawab',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.studentAccent,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: completionRatio,
-              minHeight: 4,
-              backgroundColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.studentAccent),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
           SizedBox(
-            height: 40,
+            height: 38,
             child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
               itemCount: totalQuestions,
               separatorBuilder: (context, index) => const SizedBox(width: 8),
@@ -335,26 +328,26 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                   borderRadius: BorderRadius.circular(10),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    width: 40,
-                    height: 40,
+                    width: 38,
+                    height: 38,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: isCurrent
                           ? AppColors.studentAccent
                           : (isAnswered
                               ? AppColors.success.withValues(alpha: 0.15)
-                              : (isDark ? AppColors.backgroundDark : Colors.grey.shade100)),
+                              : (isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC))),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isCurrent
                             ? AppColors.studentAccent
-                            : (isAnswered ? AppColors.success : (isDark ? AppColors.borderDark : AppColors.borderLight)),
+                            : (isAnswered ? AppColors.success : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0))),
                         width: isCurrent ? 2 : 1,
                       ),
                       boxShadow: isCurrent
                           ? [
                               BoxShadow(
-                                color: AppColors.studentAccent.withValues(alpha: 0.35),
+                                color: AppColors.studentAccent.withValues(alpha: 0.30),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               )
@@ -395,6 +388,13 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                 );
               },
             ),
+          ),
+          const SizedBox(height: 10),
+          LinearProgressIndicator(
+            value: completionRatio,
+            minHeight: 3,
+            backgroundColor: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.studentAccent),
           ),
         ],
       ),
