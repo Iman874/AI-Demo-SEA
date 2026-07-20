@@ -1,5 +1,23 @@
 ==================================================
 Tanggal : 2026-07-21
+Waktu   : 00:28
+Kategori: Fix
+
+Judul:
+Perbaikan Anomali Header Ganda pada Halaman Forum Diskusi Guru & Siswa
+
+Detail:
+- Memperbarui `PageMenuDiscussionTeacher` (`sea_app/lib/pages/teacher/page_menu_discussion_teacher.dart`) dan `DiscussionPageStudent` (`sea_app/lib/pages/student/page_menu_discussion_student.dart`):
+  - Menghapus pengecekan `if (canPop)` yang tidak disengaja membungkus halaman dalam `Scaffold` tambahan dengan `AppBar` bertuliskan *"Kelola Forum Diskusi (Guru)"* / *"Forum Diskusi Siswa"*.
+  - Menghilangkan anomali tumpukan dua header (header gelap bawaan tab `Discussion Room` + header putih transparan bawaan AppBar), sehingga antarmuka halaman diskusi kembali bersih, rapi, dan konsisten.
+- Berhasil diverifikasi dengan `flutter analyze` (0 issue).
+
+Dampak:
+- Halaman forum diskusi guru dan siswa kini bebas dari tumpukan header anomali.
+==================================================
+
+==================================================
+Tanggal : 2026-07-21
 Waktu   : 00:24
 Kategori: Fix
 

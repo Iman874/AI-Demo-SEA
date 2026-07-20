@@ -113,7 +113,6 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
         ? selectedClassId
         : (classItems.isNotEmpty ? classItems.first.idClass : null);
 
-    final canPop = ModalRoute.of(context)?.canPop ?? false;
     final content = RefreshIndicator(
       color: accent,
       backgroundColor: isDark ? AppColors.cardDark : Colors.white,
@@ -310,19 +309,6 @@ class _PageMenuDiscussionTeacherState extends State<PageMenuDiscussionTeacher> {
         ),
       ),
     );
-
-    if (canPop) {
-      return Scaffold(
-        backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-        appBar: AppBar(
-          title: const Text('Kelola Forum Diskusi (Guru)'),
-          backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-        ),
-        body: content,
-      );
-    }
 
     return content;
   }

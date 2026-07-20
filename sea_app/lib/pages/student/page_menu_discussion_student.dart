@@ -140,7 +140,6 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
       return _buildErrorCard(_error!, isDark, accent, gradient);
     }
 
-    final canPop = ModalRoute.of(context)?.canPop ?? false;
     final content = RefreshIndicator(
       color: accent,
       backgroundColor: isDark ? AppColors.cardDark : Colors.white,
@@ -342,19 +341,6 @@ class _PageMenuDiscussionStudentState extends State<PageMenuDiscussionStudent> {
         ),
       ),
     );
-
-    if (canPop) {
-      return Scaffold(
-        backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-        appBar: AppBar(
-          title: const Text('Forum Diskusi Siswa'),
-          backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-        ),
-        body: content,
-      );
-    }
 
     return content;
   }
