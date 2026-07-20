@@ -1,5 +1,23 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 18:02
+Kategori: Feature
+
+Judul:
+Pembuatan Dokumentasi Lengkap (README.md, README_ID.md, README_EN.md, how_to_run.md) & Direktori Preview
+
+Detail:
+- Menyusun dokumen `how_to_run.md` yang memuat panduan komprehensif instalasi backend Laravel 11 dan client Flutter 3.22+, konfigurasi environment (`.env` & Gemini API key), pohon hirarki navigasi halaman (Screen Tree Hierarchy), daftar lengkap 24 berkas halaman beserta preview map, perintah pengujian, serta petunjuk troubleshooting.
+- Menyusun `README_ID.md` (Bahasa Indonesia) dan `README_EN.md` (Bahasa Inggris) yang mencakup highlight fitur, tech stack, arsitektur backend & frontend, serta diagram pohon hirarki halaman lengkap.
+- Memperbarui `README.md` utama di root repositori menjadi berkas pengarah multi-bahasa yang memuat diagram hirarki halaman, petunjuk quick start, dan tautan dokumen terkait mengikuti format standar repositori referensi.
+- Membuat direktori `preview/` di root proyek yang memuat aset tangkapan layar antarmuka aplikasi.
+
+Dampak:
+- Struktur dokumentasi proyek menjadi sangat rapi, intuitif, dan profesional dengan dukungan Bahasa Indonesia dan Bahasa Inggris yang siap dipublikasikan atau di-review oleh pihak eksternal.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 16:40
 Kategori: Decision
 
