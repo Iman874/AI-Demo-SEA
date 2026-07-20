@@ -36,6 +36,10 @@ class _DiscussionPageChatRoomStudentState
   List<SummaryDiscussion> summaries = [];
   String? understandingResult;
   bool _isSending = false;
+
+  // Option 1: Collapsed by default flags
+  bool _showProgressCard = false;
+  bool _showSummaryCard = false;
   bool _showMaterials = false;
 
   SummaryDiscussion? get currentSummary {
@@ -248,7 +252,7 @@ class _DiscussionPageChatRoomStudentState
       backgroundColor: isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC),
       body: Stack(
         children: [
-          // ── Background Glow Gradient Effect ─────────────────────────────
+          // ── Top Gradient Glow ───────────────────────────────────────────
           Positioned(
             top: -50,
             right: -50,
@@ -270,29 +274,51 @@ class _DiscussionPageChatRoomStudentState
           SafeArea(
             child: Column(
               children: [
-                // ── Top Header Navigation Bar ───────────────────────────────
+                // ── Top Header Navigation & Quick Badges Bar ───────────────
                 _buildTopAppBar(isDark, accent),
 
                 // ── Main Scrollable Body Content ────────────────────────────
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: Column(
                       children: [
-                        // 1. Card: Progress Materi
-                        _buildProgressMateriCard(isDark, accent),
+                        // 1. Collapsible Card: Progress Materi
+                        AnimatedCrossFade(
+                          duration: const Duration(milliseconds: 250),
+                          crossFadeState: _showProgressCard
+                              ? CrossFadeState.showSecond
+                              : CrossFadeState.showFirst,
+                          firstChild: const SizedBox.shrink(),
+                          secondChild: Column(
+                            children: [
+                              const SizedBox(height: 8),
+                              _buildProgressMateriCard(isDark, accent),
+                            ],
+                          ),
+                        ),
 
-                        const SizedBox(height: 12),
+                        // 2. Collapsible Card: Ringkasan & Evaluasi AI
+                        AnimatedCrossFade(
+                          duration: const Duration(milliseconds: 250),
+                          crossFadeState: _showSummaryCard
+                              ? CrossFadeState.showSecond
+                              : CrossFadeState.showFirst,
+                          firstChild: const SizedBox.shrink(),
+                          secondChild: Column(
+                            children: [
+                              const SizedBox(height: 8),
+                              _buildSummaryCard(isDark, accent),
+                            ],
+                          ),
+                        ),
 
-                        // 2. Card: Ringkasan & Evaluasi AI
-                        _buildSummaryCard(isDark, accent),
+                        const SizedBox(height: 10),
 
-                        const SizedBox(height: 14),
-
-                        // 3. Card: Main AI Chatbot Assistant Container
+                        // 3. Card Utama: Main AI Chatbot Assistant Container
                         _buildMainChatbotContainer(isDark, accent),
 
-                        const SizedBox(height: 80), // extra space for floating bar
+                        const SizedBox(height: 80), // Space for floating bar
                       ],
                     ),
                   ),
@@ -313,146 +339,333 @@ class _DiscussionPageChatRoomStudentState
     );
   }
 
-  // ── Top Navigation Bar Widget ───────────────────────────────────────────
+  // ── Top Navigation Bar & Collapsed Action Badges ─────────────────────────
   Widget _buildTopAppBar(bool isDark, Color accent) {
     final canPop = ModalRoute.of(context)?.canPop ?? false;
+    final total = materials.isNotEmpty ? materials.length : 12;
+    final done = messages.isNotEmpty ? (messages.length > total ? total : (messages.length ~/ 2)) : 0;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
         children: [
-          if (canPop)
-            InkWell(
-              onTap: () => Navigator.of(context).pop(),
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                width: 40,
-                height: 40,
+          Row(
+            children: [
+              if (canPop)
+                InkWell(
+                  onTap: () => Navigator.of(context).pop(),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.cardDark : Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      PhosphorIconsRegular.arrowLeft,
+                      size: 20,
+                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                    ),
+                  ),
+                ),
+              if (canPop) const SizedBox(width: 10),
+
+              // Discussion Briefcase Icon
+              Container(
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.cardDark : Colors.white,
+                  gradient: const LinearGradient(colors: AppColors.studentGradient),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                      color: accent.withValues(alpha: 0.3),
                       blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
-                child: Icon(
-                  PhosphorIconsRegular.arrowLeft,
+                child: const Icon(
+                  PhosphorIconsRegular.briefcase,
+                  color: Colors.white,
                   size: 20,
-                  color: isDark ? Colors.white : AppColors.textPrimaryLight,
                 ),
               ),
-            ),
-          if (canPop) const SizedBox(width: 12),
+              const SizedBox(width: 10),
 
-          // Icon briefcase/discussion
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: AppColors.studentGradient),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: const Icon(
-              PhosphorIconsRegular.briefcase,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Title & Subtitle
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.discussion.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
+              // Title & Subtitle
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.discussion.tag.isNotEmpty
-                          ? widget.discussion.tag
-                          : 'Provider & State Management',
+                      widget.discussion.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: AppColors.success,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Text(
-                      'AI Assistant Aktif',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.success,
-                      ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            widget.discussion.tag.isNotEmpty
+                                ? widget.discussion.tag
+                                : 'Provider & State Management',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'AI Aktif',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
 
-          // Material Button Icon Top Right
-          InkWell(
-            onTap: () => setState(() => _showMaterials = !_showMaterials),
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              width: 40,
-              height: 40,
+          const SizedBox(height: 10),
+
+          // ── STICKY COLLAPSED ACTION BADGES ROW (Default Option 1) ───────
+          Row(
+            children: [
+              // 1. Badge Progress Materi (Soft Orange)
+              Expanded(
+                child: InkWell(
+                  onTap: () =>
+                      setState(() => _showProgressCard = !_showProgressCard),
+                  borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _showProgressCard
+                          ? const Color(0xFFEA580C)
+                          : (isDark
+                              ? const Color(0xFF431407)
+                              : const Color(0xFFFFF7ED)),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFFDBA74).withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          PhosphorIconsRegular.bookOpen,
+                          size: 14,
+                          color: _showProgressCard
+                              ? Colors.white
+                              : const Color(0xFFEA580C),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Progress ($done/$total)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: _showProgressCard
+                                ? Colors.white
+                                : const Color(0xFFEA580C),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          _showProgressCard
+                              ? PhosphorIconsRegular.caretUp
+                              : PhosphorIconsRegular.caretDown,
+                          size: 12,
+                          color: _showProgressCard
+                              ? Colors.white
+                              : const Color(0xFFEA580C),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // 2. Badge Ringkasan & Evaluasi AI (Soft Purple)
+              Expanded(
+                child: InkWell(
+                  onTap: () =>
+                      setState(() => _showSummaryCard = !_showSummaryCard),
+                  borderRadius: BorderRadius.circular(12),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _showSummaryCard
+                          ? const Color(0xFF9333EA)
+                          : (isDark
+                              ? const Color(0xFF3B0764)
+                              : const Color(0xFFF3E8FF)),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFD8B4FE).withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          PhosphorIconsRegular.sparkle,
+                          size: 14,
+                          color: _showSummaryCard
+                              ? Colors.white
+                              : const Color(0xFF9333EA),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          currentSummary != null ? 'Evaluasi AI' : '+ Ringkasan',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: _showSummaryCard
+                                ? Colors.white
+                                : const Color(0xFF9333EA),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          _showSummaryCard
+                              ? PhosphorIconsRegular.caretUp
+                              : PhosphorIconsRegular.caretDown,
+                          size: 12,
+                          color: _showSummaryCard
+                              ? Colors.white
+                              : const Color(0xFF9333EA),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // 3. Badge Toggle Materi PDF
+              InkWell(
+                onTap: () => setState(() => _showMaterials = !_showMaterials),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.cardDark : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: accent.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(PhosphorIconsRegular.fileText,
+                          size: 14, color: accent),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${materials.length}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          if (_showMaterials && materials.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.cardDark : Colors.white,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: accent.withValues(alpha: 0.3),
-                  width: 1,
+                  color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
-              child: Icon(
-                PhosphorIconsRegular.fileText,
-                color: accent,
-                size: 20,
+              child: Column(
+                children: materials
+                    .map((m) => Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.04)
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(PhosphorIconsRegular.filePdf,
+                                  color: Color(0xFFEA580C), size: 14),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  m.title,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : AppColors.textPrimaryLight,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ))
+                    .toList(),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -484,7 +697,6 @@ class _DiscussionPageChatRoomStudentState
         children: [
           Row(
             children: [
-              // Icon Container (Soft Pastel Orange)
               Container(
                 width: 44,
                 height: 44,
@@ -499,8 +711,6 @@ class _DiscussionPageChatRoomStudentState
                 ),
               ),
               const SizedBox(width: 12),
-
-              // Title & Progress Bar
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -541,7 +751,6 @@ class _DiscussionPageChatRoomStudentState
                   ],
                 ),
               ),
-
               const SizedBox(width: 16),
               Container(
                 width: 1,
@@ -549,8 +758,6 @@ class _DiscussionPageChatRoomStudentState
                 color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
               ),
               const SizedBox(width: 16),
-
-              // Right Counter Big Number
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -591,44 +798,6 @@ class _DiscussionPageChatRoomStudentState
               ),
             ],
           ),
-
-          if (_showMaterials && materials.isNotEmpty) ...[
-            const Divider(height: 20),
-            Column(
-              children: materials
-                  .map((m) => Container(
-                        margin: const EdgeInsets.only(top: 6),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.04)
-                              : const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(PhosphorIconsRegular.filePdf,
-                                color: Color(0xFFEA580C), size: 16),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                m.title,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? Colors.white
-                                      : AppColors.textPrimaryLight,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ))
-                  .toList(),
-            ),
-          ],
         ],
       ),
     );
@@ -656,7 +825,6 @@ class _DiscussionPageChatRoomStudentState
       ),
       child: Row(
         children: [
-          // Icon Container (Soft Pastel Purple)
           Container(
             width: 44,
             height: 44,
@@ -671,8 +839,6 @@ class _DiscussionPageChatRoomStudentState
             ),
           ),
           const SizedBox(width: 12),
-
-          // Title & Status
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -721,8 +887,6 @@ class _DiscussionPageChatRoomStudentState
             ),
           ),
           const SizedBox(width: 10),
-
-          // Action Button "+ Buat Ringkasan"
           InkWell(
             onTap: () async {
               await showDialog(
@@ -792,7 +956,6 @@ class _DiscussionPageChatRoomStudentState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header inside Card
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -860,10 +1023,7 @@ class _DiscussionPageChatRoomStudentState
               ],
             ),
           ),
-
           const Divider(height: 1),
-
-          // Dynamic Body: Empty State or Message List
           if (messages.isEmpty)
             _buildEmptyStateContent(isDark, accent)
           else
@@ -880,7 +1040,6 @@ class _DiscussionPageChatRoomStudentState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Inner Empty State Card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -894,7 +1053,6 @@ class _DiscussionPageChatRoomStudentState
             ),
             child: Row(
               children: [
-                // Mascot Graphic Area
                 Container(
                   width: 110,
                   height: 130,
@@ -946,8 +1104,6 @@ class _DiscussionPageChatRoomStudentState
                   ),
                 ),
                 const SizedBox(width: 16),
-
-                // Right Bullet Points
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1008,7 +1164,6 @@ class _DiscussionPageChatRoomStudentState
 
           const SizedBox(height: 16),
 
-          // Quick Action Header
           Text(
             'Mulai dengan quick action',
             style: TextStyle(
@@ -1019,7 +1174,6 @@ class _DiscussionPageChatRoomStudentState
           ),
           const SizedBox(height: 10),
 
-          // 4 Quick Action Cards Grid
           Row(
             children: [
               Expanded(
