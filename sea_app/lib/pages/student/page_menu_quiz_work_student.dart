@@ -251,12 +251,13 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
+          ),
         ),
       ),
       child: Column(
@@ -277,7 +278,7 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Navigasi Soal',
+                    'Navigasi Soal (Sticky)',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -407,124 +408,124 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
     final isLast = currentIndex == totalQuestions - 1;
 
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+      color: isDark ? AppColors.cardDark : Colors.white,
+      child: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : Colors.white,
+            border: Border(
+              top: BorderSide(
+                color: isDark ? AppColors.borderDark : const Color(0xFFF1F5F9),
+              ),
+            ),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Tombol Sebelumnya
-          if (currentIndex > 0)
-            Expanded(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onPrevious,
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(
-                      color: AppColors.studentAccent.withValues(alpha: isDark ? 0.15 : 0.08),
+          child: Row(
+            children: [
+              // Tombol Sebelumnya
+              if (currentIndex > 0)
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onPrevious,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.studentAccent.withValues(alpha: 0.25),
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.studentAccent.withValues(alpha: isDark ? 0.15 : 0.08),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.studentAccent.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              PhosphorIconsRegular.caretLeft,
+                              size: 18,
+                              color: AppColors.studentAccent,
+                            ),
+                            const SizedBox(width: 4),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Sebelumnya',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? AppColors.textPrimaryDark : AppColors.studentAccent,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          PhosphorIconsRegular.caretLeft,
-                          size: 18,
-                          color: AppColors.studentAccent,
-                        ),
-                        const SizedBox(width: 4),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Sebelumnya',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? AppColors.textPrimaryDark : AppColors.studentAccent,
+                  ),
+                ),
+
+              if (currentIndex > 0) const SizedBox(width: 12),
+
+              // Tombol Selanjutnya / Selesaikan Kuis
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: isLast ? onSubmit : onNext,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Ink(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        gradient: isLast
+                            ? const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              )
+                            : const LinearGradient(
+                                colors: AppColors.studentGradient,
+                              ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isLast ? const Color(0xFF10B981) : AppColors.studentAccent).withValues(alpha: 0.30),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              isLast ? 'Selesaikan Kuis' : 'Selanjutnya',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Icon(
+                            isLast ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.caretRight,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-
-          if (currentIndex > 0) const SizedBox(width: 12),
-
-          // Tombol Selanjutnya / Selesaikan Kuis
-          Expanded(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: isLast ? onSubmit : onNext,
-                borderRadius: BorderRadius.circular(14),
-                child: Ink(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    gradient: isLast
-                        ? const LinearGradient(
-                            colors: [Color(0xFF10B981), Color(0xFF059669)],
-                          )
-                        : const LinearGradient(
-                            colors: AppColors.studentGradient,
-                          ),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isLast ? const Color(0xFF10B981) : AppColors.studentAccent).withValues(alpha: 0.30),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          isLast ? 'Selesaikan Kuis' : 'Selanjutnya',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        isLast ? PhosphorIconsRegular.checkCircle : PhosphorIconsRegular.caretRight,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -657,257 +658,256 @@ class _PageMenuQuizWorkStudentState extends State<PageMenuQuizWorkStudent> {
         ),
         bottomNavigationBar: q == null
             ? null
-            : SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: _buildBottomQuizControls(
-                    currentIndex: _currentIndex,
-                    totalQuestions: _questions.length,
-                    isDark: isDark,
-                    onPrevious: () => _gotoQuestion(_currentIndex - 1),
-                    onNext: () => _gotoQuestion(_currentIndex + 1),
-                    onSubmit: () async {
-                      final res = await showDialog<bool>(
-                        context: context,
-                        builder: (dialogContext) => WindowConfirmation(
-                          message: 'Apakah kamu yakin ingin mengumpulkan kuis ini? Jawaban tidak dapat diubah kembali.',
-                          onConfirm: () => Navigator.of(dialogContext).pop(true),
-                          onCancel: () => Navigator.of(dialogContext).pop(false),
-                        ),
-                      );
-                      if (res == true) {
-                        await _submitQuiz();
-                      }
-                    },
-                  ),
-                ),
+            : _buildBottomQuizControls(
+                currentIndex: _currentIndex,
+                totalQuestions: _questions.length,
+                isDark: isDark,
+                onPrevious: () => _gotoQuestion(_currentIndex - 1),
+                onNext: () => _gotoQuestion(_currentIndex + 1),
+                onSubmit: () async {
+                  final res = await showDialog<bool>(
+                    context: context,
+                    builder: (dialogContext) => WindowConfirmation(
+                      message: 'Apakah kamu yakin ingin mengumpulkan kuis ini? Jawaban tidak dapat diubah kembali.',
+                      onConfirm: () => Navigator.of(dialogContext).pop(true),
+                      onCancel: () => Navigator.of(dialogContext).pop(false),
+                    ),
+                  );
+                  if (res == true) {
+                    await _submitQuiz();
+                  }
+                },
               ),
         body: q == null
             ? const Center(child: Text('Tidak ada pertanyaan.'))
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // TOP QUESTION NAVIGATION BAR
-                    _buildTopQuestionNavigation(
-                      totalQuestions: _questions.length,
-                      currentIndex: _currentIndex,
-                      answers: _answers,
-                      questions: _questions,
-                      isDark: isDark,
-                      onSelect: (idx) => _gotoQuestion(idx),
-                    ),
+            : Column(
+                children: [
+                  // STICKY TOP QUESTION NAVIGATION BAR
+                  _buildTopQuestionNavigation(
+                    totalQuestions: _questions.length,
+                    currentIndex: _currentIndex,
+                    answers: _answers,
+                    questions: _questions,
+                    isDark: isDark,
+                    onSelect: (idx) => _gotoQuestion(idx),
+                  ),
 
-                    const SizedBox(height: 16),
-
-                    // Teks Soal Card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.cardDark : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 4,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: AppColors.studentGradient,
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
+                          // Teks Soal Card (Pure White)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.cardDark : Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark ? AppColors.borderDark : const Color(0xFFE2E8F0),
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: AppColors.studentAccent.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
                                 ),
-                                child: Text(
-                                  '#SOAL ${q.number}',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.studentAccent,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: AppColors.success.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
                                   children: [
-                                    const Icon(PhosphorIconsRegular.star, size: 12, color: AppColors.success),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${q.poin} Poin',
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.success,
+                                    Container(
+                                      width: 4,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: AppColors.studentGradient,
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.studentAccent.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '#SOAL ${q.number}',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.studentAccent,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.success.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(PhosphorIconsRegular.star, size: 12, color: AppColors.success),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${q.poin} Poin',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.success,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            q.question,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              height: 1.5,
-                              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Opsi Jawaban Pilihan Ganda
-                    const Text(
-                      'Pilih Jawaban:',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-
-                    ...q.answerChoices.asMap().entries.map((entry) {
-                      final idx = entry.key;
-                      final c = entry.value;
-                      final isSelected = selectedChoice == c.idAnswerChoice;
-                      final letter = String.fromCharCode(65 + idx);
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        child: InkWell(
-                          onTap: () => _selectAnswer(q.idQuestion, c.idAnswerChoice),
-                          borderRadius: BorderRadius.circular(14),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.studentAccent.withValues(alpha: isDark ? 0.20 : 0.08)
-                                  : (isDark ? AppColors.cardDark : Colors.white),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.studentAccent
-                                    : (isDark ? AppColors.borderDark : AppColors.borderLight),
-                                width: isSelected ? 2 : 1,
-                              ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: AppColors.studentAccent.withValues(alpha: 0.15),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      )
-                                    ]
-                                  : null,
-                            ),
-                            child: Row(
-                              children: [
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  width: 32,
-                                  height: 32,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: isSelected
-                                        ? AppColors.studentAccent
-                                        : (isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF1F5F9)),
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? AppColors.studentAccent
-                                          : (isDark ? AppColors.borderDark : const Color(0xFFCBD5E1)),
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  child: isSelected
-                                      ? const Icon(Icons.check, size: 18, color: Colors.white)
-                                      : Text(
-                                          letter,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                                          ),
-                                        ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Text(
-                                    c.content,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                      height: 1.4,
-                                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-                                    ),
+                                const SizedBox(height: 14),
+                                Text(
+                                  q.question,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.5,
+                                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                                   ),
                                 ),
-                                if (isSelected)
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 8),
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.studentAccent.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: const Text(
-                                      'TERPILIH',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppColors.studentAccent,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ),
                               ],
                             ),
                           ),
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+
+                          const SizedBox(height: 20),
+
+                          // Opsi Jawaban Pilihan Ganda
+                          const Text(
+                            'Pilih Jawaban:',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          ...q.answerChoices.asMap().entries.map((entry) {
+                            final idx = entry.key;
+                            final c = entry.value;
+                            final isSelected = selectedChoice == c.idAnswerChoice;
+                            final letter = String.fromCharCode(65 + idx);
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              child: InkWell(
+                                onTap: () => _selectAnswer(q.idQuestion, c.idAnswerChoice),
+                                borderRadius: BorderRadius.circular(14),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? AppColors.studentAccent.withValues(alpha: isDark ? 0.20 : 0.08)
+                                        : (isDark ? AppColors.cardDark : Colors.white),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.studentAccent
+                                          : (isDark ? AppColors.borderDark : const Color(0xFFE2E8F0)),
+                                      width: isSelected ? 2 : 1,
+                                    ),
+                                    boxShadow: isSelected
+                                        ? [
+                                            BoxShadow(
+                                              color: AppColors.studentAccent.withValues(alpha: 0.15),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            )
+                                          ]
+                                        : null,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      AnimatedContainer(
+                                        duration: const Duration(milliseconds: 200),
+                                        width: 32,
+                                        height: 32,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: isSelected
+                                              ? AppColors.studentAccent
+                                              : (isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF1F5F9)),
+                                          border: Border.all(
+                                            color: isSelected
+                                                ? AppColors.studentAccent
+                                                : (isDark ? AppColors.borderDark : const Color(0xFFCBD5E1)),
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        child: isSelected
+                                            ? const Icon(Icons.check, size: 18, color: Colors.white)
+                                            : Text(
+                                                letter,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                                                ),
+                                              ),
+                                      ),
+                                      const SizedBox(width: 14),
+                                      Expanded(
+                                        child: Text(
+                                          c.content,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                            height: 1.4,
+                                            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                          ),
+                                        ),
+                                      ),
+                                      if (isSelected)
+                                        Container(
+                                          margin: const EdgeInsets.only(left: 8),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.studentAccent.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: const Text(
+                                            'TERPILIH',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w800,
+                                              color: AppColors.studentAccent,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
       ),
     );
