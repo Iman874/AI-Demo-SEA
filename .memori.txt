@@ -46,6 +46,7 @@ Detail:
 - Perbaiki overflow pada `card_percentage_understanding.dart` dengan membungkus text `Type` dalam `Expanded`.
 - Perbaiki overflow pada `card_answer_question_student.dart` & `card_conclusion_student.dart` dengan mengganti `TextButton` trailing yang lebar menjadi `IconButton` (panah `chevron_right`) yang ringkas.
 - Perbaiki overflow pada `card_quiz_result.dart` dengan mengganti `ElevatedButton` di sebelah kanan `Column` menjadi `IconButton` panah yang responsif di layar HP kecil.
+- Perbaiki lebar tampilan seluruh kartu kosong (Empty States) pada `CardQuizList`, `CardDiscussionList`, `CardMaterialList`, `CardAnswerQuestionStudent`, `CardConclusionStudent`, `CardPercentageUnderstanding`, dan `CardQuestionList` agar memanjang penuh (`width: double.infinity`) seperti kartu data populated.
 
 Dampak:
 - Tampilan `PageShowcaseCards` dan seluruh komponen Card bebas dari overflow di berbagai ukuran layar HP/Device.
