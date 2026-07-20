@@ -1,5 +1,22 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 14:29
+Kategori: Feature
+
+Judul:
+Pembuatan Dialog WindowViewQuestion untuk Detail Butir Soal Kuis
+
+Detail:
+- Membuat komponen dialog baru `WindowViewQuestion` di `sea_app/lib/component/window/window_view_question.dart` untuk menampilkan detail dari suatu pertanyaan kuis secara lengkap (nomor soal, poin, teks pertanyaan, materi pendukung terkait, serta daftar pilihan jawaban yang menonjolkan kunci jawaban benar secara estetis).
+- Menghubungkan aksi tombol "Lihat Detail Soal" pada `CardQuestionList` di halaman rekap nilai kuis guru (`page_menu_quiz_result_teacher.dart`).
+- Mengintegrasikan dialog detail soal tersebut pada halaman galeri kartu showcase kuis (`page_showcase_cards.dart`) agar dapat diuji secara instan oleh pengembang.
+
+Dampak:
+- Guru sekarang dapat melihat isi pertanyaan secara detail dari rekap nilai kuis tanpa harus membuka editor kuis, meningkatkan kenyamanan pengalaman pengguna.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 14:24
 Kategori: Feature
 
