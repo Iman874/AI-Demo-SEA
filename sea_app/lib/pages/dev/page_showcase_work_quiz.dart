@@ -235,18 +235,22 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
               Row(
                 children: [
                   Container(
-                    width: 3,
-                    height: 14,
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
+                      color: AppColors.studentAccent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      PhosphorIconsRegular.listNumbers,
+                      size: 16,
                       color: AppColors.studentAccent,
-                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Text(
                     'Navigasi Soal',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                     ),
@@ -663,14 +667,18 @@ class _PageShowcaseWorkQuizState extends State<PageShowcaseWorkQuiz> {
                   Row(
                     children: [
                       Container(
-                        width: 3,
-                        height: 14,
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
+                          color: AppColors.studentAccent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          PhosphorIconsRegular.listChecks,
+                          size: 16,
                           color: AppColors.studentAccent,
-                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       Text(
                         'Pilih Jawaban',
                         style: TextStyle(
