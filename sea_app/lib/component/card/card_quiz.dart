@@ -57,6 +57,7 @@ class _QuizEmptyState extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accent = Theme.of(context).colorScheme.primary;
     return Container(
+      width: double.infinity,
       margin: EdgeInsets.symmetric(
         horizontal: AppSpacing.horizontalPadding,
         vertical: AppSpacing.sm,
