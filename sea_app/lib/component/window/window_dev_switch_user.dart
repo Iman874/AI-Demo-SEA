@@ -189,12 +189,16 @@ class _WindowDevSwitchUserState extends State<WindowDevSwitchUser> {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(
-                                          acc['name']!,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                        Flexible(
+                                          child: Text(
+                                            acc['name']!,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 6),
