@@ -1,5 +1,21 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 13:46
+Kategori: Refactor
+
+Judul:
+Pengoptimalan Lebar Kartu Kelas (115px) & Kartu Kuis Full Width
+
+Detail:
+- **Kartu Kelas (Card 1)**: Memperlebar kartu dari `105px` menjadi `115px` dan mengatur `fontSize: 11` dengan `height: 1.15` sehingga kata panjang seperti "pemrograman" muat utuh dalam 1 baris tanpa terpotong `pemrograma` / `n` secara janggal.
+- **Kartu Kuis (Card 2)**: Jika hanya ada 1 kuis, tombol `Buat Kuis Baru` kini otomatis melebar penuh (*full-width*) mengisi seluruh ruang Card tanpa meninggalkan area putih kosong di sebelah kanan.
+
+Dampak:
+- Tampilan kartu kuis dan kelas tampil simetris, rapi, dan jauh lebih elegan.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 13:44
 Kategori: Bug
 
