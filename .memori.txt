@@ -1,5 +1,21 @@
 ==================================================
 Tanggal : 2026-07-20
+Waktu   : 14:37
+Kategori: Config
+
+Judul:
+Rilis Versi Aplikasi 1.0.4+5 dan Commit Final Perbaikan UI/UX Kuis
+
+Detail:
+- Memperbarui versi aplikasi Flutter di `pubspec.yaml` dari `1.0.3+4` menjadi `1.0.4+5`.
+- Melakukan komit git final untuk merekam seluruh perbaikan kualitas dan penambahan fitur showcase (penghapusan berkas legacy, modernisasi hasil kuis siswa & guru, integrasi pintasan dev mode, dan pembuatan dialog detail soal).
+
+Dampak:
+- Aplikasi resmi dinaikkan ke versi `1.0.4+5` dengan seluruh fitur modernisasi UI/UX kuis yang stabil dan siap diuji.
+==================================================
+
+==================================================
+Tanggal : 2026-07-20
 Waktu   : 14:29
 Kategori: Feature
 
