@@ -59,34 +59,47 @@ class SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
 
-    // Navigate ke connection config
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => ConnectionConfigPage(
-          onConfigured: () async {
-            await ApiService.checkConnection();
-            if (!mounted) return;
-            final auth = Provider.of<AuthProvider>(context, listen: false);
-            if (auth.token != null && auth.user != null) {
-              final role = auth.user!.role;
-              if (role == 'teacher') {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const MenuHomeTeacher()),
-                );
-              } else {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const MenuHomeStudent()),
-                );
-              }
-            } else {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    // 1. Jika pengguna sudah pernah login -> langsung masuk ke Beranda tanpa lewat konfigurasi server
+    if (auth.token != null && auth.user != null) {
+      final role = auth.user!.role;
+      if (role == 'teacher') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MenuHomeTeacher()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MenuHomeStudent()),
+        );
+      }
+      return;
+    }
+
+    // 2. Jika pengguna belum login, cek koneksi ke server API
+    final isConnected = await ApiService.checkConnection();
+    if (!mounted) return;
+
+    if (isConnected) {
+      // Koneksi OK -> ke pilihan login (ChoiceUserPage)
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const ChoiceUserPage()),
+      );
+    } else {
+      // Koneksi gagal / belum diatur -> ke ConnectionConfigPage
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => ConnectionConfigPage(
+            onConfigured: () async {
+              if (!mounted) return;
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => const ChoiceUserPage()),
               );
-            }
-          },
+            },
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override

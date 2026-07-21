@@ -1,5 +1,26 @@
 ==================================================
 Tanggal : 2026-07-21
+Waktu   : 12:31
+Kategori: Fix
+
+Judul:
+Perbaikan Alur SplashScreen: Auto-Login Langsung ke Beranda tanpa Melewati Halaman Konfigurasi Server
+
+Detail:
+- Memperbarui `_runSequence()` pada `SplashScreenState` (`sea_app/lib/pages/splashscreen.dart`):
+  1. **Pengecekan Utama**: Begitu animasi splash screen selesai, aplikasi langsung mengecek apakah `auth.token != null` && `auth.user != null`.
+  2. **Direct Home Bypass**: Jika pengguna sudah pernah login, aplikasi **langsung melompat ke Beranda** (`MenuHomeTeacher()` atau `MenuHomeStudent()`) tanpa membuka `ConnectionConfigPage` atau `ChoiceUserPage`.
+  3. **Fall-back untuk Pengguna Baru**: Hanya jika pengguna belum pernah login, aplikasi mengecek koneksi API (`ApiService.checkConnection()`):
+     - Jika terhubung: masuk ke `ChoiceUserPage()` (Pilihan Login).
+     - Jika gagal terhubung: masuk ke `ConnectionConfigPage()` untuk pengaturan host/port.
+- Berhasil diverifikasi dengan `flutter analyze` (0 issue).
+
+Dampak:
+- Pengguna yang sudah pernah login akan merasakan pengalaman pembukaan aplikasi yang sangat cepat, langsung menuju Beranda tanpa lagi disuguhi layar konfigurasi server.
+==================================================
+
+==================================================
+Tanggal : 2026-07-21
 Waktu   : 00:28
 Kategori: Fix
 
