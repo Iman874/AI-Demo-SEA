@@ -71,12 +71,20 @@ All UI screenshots and layout preview assets are located in the:
 
 > 🗂️ **`preview/`** folder (project root)
 
-| Interface Module | Dart File | Preview File |
-|---|---|---|
-| **UI Component Showcase** | `page_showcase_cards.dart` | `preview/sea-card-showcase.png` |
-| **Quiz Navigation & Work** | `page_menu_quiz_work_student.dart` | `preview/sea-quiz-navigation.png` |
-| **Quiz Results & Recap** | `page_menu_quiz_result_student.dart` / `page_menu_quiz_result_teacher.dart` | `preview/sea-quiz-results.png` |
-| **Complete Screen Map** | *All 24 Pages Listed in Docs* | See [`README_ID.md`](./README_ID.md) & [`README_EN.md`](./README_EN.md) |
+| Interface Module | Theme / Mode | Dart File | Preview File |
+|---|---|---|---|
+| **Student Dashboard (Mode Terang)** | Light Mode | `page_menu_home_student.dart` | [`preview/dashboard_siswa_light.jpeg`](./preview/dashboard_siswa_light.jpeg) |
+| **Student Dashboard (Mode Gelap)** | Dark Mode | `page_menu_home_student.dart` | [`preview/dashboard_siswa_dark.jpeg`](./preview/dashboard_siswa_dark.jpeg) |
+| **Teacher Dashboard (Mode Terang)** | Light Mode | `page_menu_home_teacher.dart` | [`preview/dashboard_guru_light.jpeg`](./preview/dashboard_guru_light.jpeg) |
+| **Teacher Dashboard (Mode Gelap)** | Dark Mode | `page_menu_home_teacher.dart` | [`preview/dashboard_guru_dark.jpeg`](./preview/dashboard_guru_dark.jpeg) |
+| **AI Chatbot Assistant Panel** | Light Mode | `page_menu_discussion_chatroom_student.dart` | [`preview/chat_room_ai_siswa_light.jpeg`](./preview/chat_room_ai_siswa_light.jpeg) |
+| **Student Discussion Forum** | Light Mode | `page_menu_discussion_student.dart` | [`preview/forum_diskusi_siswa_light.jpeg`](./preview/forum_diskusi_siswa_light.jpeg) |
+| **Student Quiz List** | Light Mode | `page_menu_quiz_student.dart` | [`preview/kuis_siswa_light.jpeg`](./preview/kuis_siswa_light.jpeg) |
+| **Student Quiz Work Sheet** | Light Mode | `page_showcase_work_quiz.dart` | [`preview/pengerjaan_kuis_siswa_light.jpeg`](./preview/pengerjaan_kuis_siswa_light.jpeg) |
+| **Student Quiz Results** | Light Mode | `page_menu_quiz_result_student.dart` | [`preview/hasil_kuis_siswa_light.jpeg`](./preview/hasil_kuis_siswa_light.jpeg) |
+| **Teacher Quiz Management** | Light Mode | `page_menu_quiz_teacher.dart` | [`preview/kelola_kuis_guru_light.jpeg`](./preview/kelola_kuis_guru_light.jpeg) |
+| **Teacher Grade Recap** | Light Mode | `page_menu_quiz_result_teacher.dart` | [`preview/rekap_nilai_kuis_guru_light.jpeg`](./preview/rekap_nilai_kuis_guru_light.jpeg) |
+| **User Onboarding Guide** | Light Mode | `page_guide.dart` | [`preview/panduan_penggunaan_light.jpeg`](./preview/panduan_penggunaan_light.jpeg) |
 
 ---
 

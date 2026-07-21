@@ -1,5 +1,33 @@
 ==================================================
 Tanggal : 2026-07-21
+Waktu   : 12:51
+Kategori: Note
+
+Judul:
+Pengorganisasian 12 Screenshot Preview Aplikasi & Pembaruan Dokumentasi README
+
+Detail:
+- Berhasil mengidentifikasi, memindahkan, dan menamai 12 berkas screenshot dari folder Downloads ke folder `preview/`:
+  1. `dashboard_guru_light.jpeg` (Dashboard Guru - Light Mode)
+  2. `dashboard_guru_dark.jpeg` (Dashboard Guru - Dark Mode)
+  3. `dashboard_siswa_light.jpeg` (Dashboard Siswa - Light Mode)
+  4. `dashboard_siswa_dark.jpeg` (Dashboard Siswa - Dark Mode)
+  5. `chat_room_ai_siswa_light.jpeg` (Ruang Obrolan AI Assistant Siswa)
+  6. `forum_diskusi_siswa_light.jpeg` (Forum Diskusi Siswa)
+  7. `kuis_siswa_light.jpeg` (Daftar Kuis Siswa)
+  8. `pengerjaan_kuis_siswa_light.jpeg` (Showcase Lembar Pengerjaan Kuis Siswa)
+  9. `hasil_kuis_siswa_light.jpeg` (Hasil & Evaluasi Kuis Siswa)
+  10. `kelola_kuis_guru_light.jpeg` (Manajemen Kuis Guru)
+  11. `rekap_nilai_kuis_guru_light.jpeg` (Rekap Nilai Kuis Guru)
+  12. `panduan_penggunaan_light.jpeg` (Panduan Penggunaan Siswa & Guru)
+- Memperbarui tabel galeri tangkapan layar pada `README.md`, `README_ID.md`, dan `README_EN.md` agar mengarahkan langsung ke berkas screenshot preview yang baru.
+
+Dampak:
+- Dokumentasi proyek menjadi sangat rapi, profesional, dan menyajikan pratinjau antarmuka secara lengkap (termasuk variasi Mode Gelap & Mode Terang pada Dashboard Siswa dan Guru).
+==================================================
+
+==================================================
+Tanggal : 2026-07-21
 Waktu   : 12:31
 Kategori: Fix
 

@@ -88,32 +88,20 @@ All user interface screenshots are located in the following directory:
 
 > 🗂️ **`preview/`** (project root)
 
-| Page Name | Dart File | Preview Screenshot File |
-|---|---|---|
-| **Splash Screen** | `splashscreen.dart` | `preview/sea-auth-splash.png` |
-| **API Connection Settings** | `connection_config_page.dart` | `preview/sea-auth-config.png` |
-| **Auth Mode Selection** | `page_choice_user.dart` | `preview/sea-auth-choice.png` |
-| **User Login** | `page_login_user.dart` | `preview/sea-auth-login.png` |
-| **User Registration** | `page_daftar_user.dart` | `preview/sea-auth-register.png` |
-| **User Guide** | `page_guide.dart` | `preview/sea-auth-guide.png` |
-| **Student Dashboard** | `page_menu_home_student.dart` | `preview/sea-student-home.png` |
-| **Student Quiz List** | `page_menu_quiz_student.dart` | `preview/sea-student-quiz-list.png` |
-| **Quiz Answer Sheet** | `page_menu_quiz_work_student.dart` | `preview/sea-quiz-navigation.png` |
-| **Student Quiz Results** | `page_menu_quiz_result_student.dart` | `preview/sea-quiz-results.png` |
-| **Student Discussions** | `page_menu_discussion_student.dart` | `preview/sea-student-discussion.png` |
-| **Discussion Details** | `page_menu_discussion_detail_student.dart` | `preview/sea-student-discussion-detail.png` |
-| **Chat Room & AI Summary** | `page_menu_discussion_chatroom_student.dart` | `preview/sea-student-chatroom.png` |
-| **Teacher Dashboard** | `page_menu_home_teacher.dart` | `preview/sea-teacher-home.png` |
-| **Teacher Quiz List** | `page_menu_quiz_teacher.dart` | `preview/sea-teacher-quiz-list.png` |
-| **Quiz Editor** | `page_menu_quiz_editor_teacher.dart` | `preview/sea-teacher-quiz-editor.png` |
-| **Question Editor** | `page_quiz_questions_teacher.dart` | `preview/sea-teacher-question-editor.png` |
-| **Teacher Grade Recap** | `page_menu_quiz_result_teacher.dart` | `preview/sea-teacher-quiz-recap.png` |
-| **Teacher Discussions** | `page_menu_discussion_teacher.dart` | `preview/sea-teacher-discussion.png` |
-| **Discussion Group Editor** | `page_menu_discussion_editor_teacher.dart` | `preview/sea-teacher-discussion-editor.png` |
-| **Discussion Details** | `page_menu_discussion_details_teacher.dart` | `preview/sea-teacher-discussion-detail.png` |
-| **Settings & Dev Mode** | `page_settings.dart` | `preview/sea-dev-settings.png` |
-| **Showcase Gallery** | `page_showcase_cards.dart` | `preview/sea-card-showcase.png` |
-| **Quiz Work Showcase** | `page_showcase_work_quiz.dart` | `preview/sea-dev-work-quiz.png` |
+| Page Name | Theme / Mode | Dart File | Preview Screenshot File |
+|---|---|---|---|
+| **Student Dashboard (Light)** | Light Mode | `page_menu_home_student.dart` | [`preview/dashboard_siswa_light.jpeg`](./preview/dashboard_siswa_light.jpeg) |
+| **Student Dashboard (Dark)** | Dark Mode | `page_menu_home_student.dart` | [`preview/dashboard_siswa_dark.jpeg`](./preview/dashboard_siswa_dark.jpeg) |
+| **Teacher Dashboard (Light)** | Light Mode | `page_menu_home_teacher.dart` | [`preview/dashboard_guru_light.jpeg`](./preview/dashboard_guru_light.jpeg) |
+| **Teacher Dashboard (Dark)** | Dark Mode | `page_menu_home_teacher.dart` | [`preview/dashboard_guru_dark.jpeg`](./preview/dashboard_guru_dark.jpeg) |
+| **AI Chatbot Assistant Panel** | Light Mode | `page_menu_discussion_chatroom_student.dart` | [`preview/chat_room_ai_siswa_light.jpeg`](./preview/chat_room_ai_siswa_light.jpeg) |
+| **Student Discussion Forum** | Light Mode | `page_menu_discussion_student.dart` | [`preview/forum_diskusi_siswa_light.jpeg`](./preview/forum_diskusi_siswa_light.jpeg) |
+| **Student Quiz List** | Light Mode | `page_menu_quiz_student.dart` | [`preview/kuis_siswa_light.jpeg`](./preview/kuis_siswa_light.jpeg) |
+| **Student Quiz Work Sheet** | Light Mode | `page_showcase_work_quiz.dart` | [`preview/pengerjaan_kuis_siswa_light.jpeg`](./preview/pengerjaan_kuis_siswa_light.jpeg) |
+| **Student Quiz Results** | Light Mode | `page_menu_quiz_result_student.dart` | [`preview/hasil_kuis_siswa_light.jpeg`](./preview/hasil_kuis_siswa_light.jpeg) |
+| **Teacher Quiz Management** | Light Mode | `page_menu_quiz_teacher.dart` | [`preview/kelola_kuis_guru_light.jpeg`](./preview/kelola_kuis_guru_light.jpeg) |
+| **Teacher Grade Recap** | Light Mode | `page_menu_quiz_result_teacher.dart` | [`preview/rekap_nilai_kuis_guru_light.jpeg`](./preview/rekap_nilai_kuis_guru_light.jpeg) |
+| **User Onboarding Guide** | Light Mode | `page_guide.dart` | [`preview/panduan_penggunaan_light.jpeg`](./preview/panduan_penggunaan_light.jpeg) |
 
 ---
 
